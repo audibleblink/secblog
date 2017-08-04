@@ -3,8 +3,6 @@ date = "2017-04-01T22:08:35-04:00"
 title = "Creating BashBunny Payloads"
 Description = "Creating Payloads for the Hak5 BashBunny"
 menu = "main"
-Categories = ["Pentesting","Programming"]
-Tags = ["bashbunny","hak5"]
 +++
 
 

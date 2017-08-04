@@ -3,9 +3,6 @@ date = "2017-02-02T16:32:04-05:00"
 title = "Configuring SSH for Pivoting"
 Description = "How to leverage the SSH client's config file for pentesting"
 menu = "main"
-Categories = ["Security"]
-Tags = ["pentesting", "ssh", "pivoting"]
-
 +++
 
 You're on a pentesting engagement and you've discovered a dual homed machine that allows you access to a subnet

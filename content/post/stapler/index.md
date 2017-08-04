@@ -1,15 +1,9 @@
 +++
 Description = ""
-Tags = [
-  "B2R",
-]
-Categories = [
-  "pentesting",
-]
+Categories = [ "Boot2Root" ]
 menu = "B2R: Stapler"
 date = "2016-12-24T23:45:38-05:00"
 title = "B2R: Stapler"
-
 +++
 
 

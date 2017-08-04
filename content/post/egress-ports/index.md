@@ -2,10 +2,7 @@
 menu = "main"
 date = "2017-02-07T19:44:18-05:00"
 title = "Finding Your Way Out From Behind Firewalls with Strict Outbound Rules"
-Categories = ["Pentesting"]
-Tags = ["iptables","netcat"]
 Description = "Finding Your Way Out From Behind Firewalls with Strict Outbound Rules"
-
 +++
 
 

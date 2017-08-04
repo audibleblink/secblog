@@ -1,16 +1,9 @@
 +++
 menu = "main"
 Description = "A walkthrough of the Wallaby VM from Vulnhub"
-Tags = [
-  "pentesting",
-  "boot2root",
-]
 date = "2016-12-30T19:16:02-04:00"
 title = "B2R: Wallaby Walkthrough"
-Categories = [
-  "Pentesting",
-]
-
+Categories = [ "Boot2Root" ]
 +++
 
 ## Executive Summary

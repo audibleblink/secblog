@@ -1,15 +1,9 @@
 +++
 Description = "A boot2root walkthrough of troll"
-Tags = [
-  "boot2root",
-]
-Categories = [
-  "Security",
-]
+Categories = [ "Boot2Root" ]
 menu = "main"
 date = "2016-10-20T20:57:00-04:00"
 title = "B2R: Tr0ll Walkthrough"
-
 +++
 
 A couple of weeks ago, work sent me to a security class for an upcoming product. While there, I learned about

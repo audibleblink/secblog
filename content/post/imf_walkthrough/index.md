@@ -1,16 +1,9 @@
 +++
 menu = "main"
 Description = "A walkthrough of the IMF VM from Vulnhub"
-Tags = [
-  "pentesting",
-  "boot2root",
-]
 date = "2016-11-01T19:16:02-04:00"
 title = "B2R: IMF Walkthrough"
-Categories = [
-  "Pentesting",
-]
-
+Categories = [ "Boot2Root" ]
 +++
 
 After mapping the network and finding our IP address at `192.168.1.162`, we can add it to our `/etc/hosts`

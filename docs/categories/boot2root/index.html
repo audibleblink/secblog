@@ -5,11 +5,11 @@
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <meta content="security, vulnhub" name="keywords">
 <meta content="Alex Flores" name="author">
-<meta property="og:title" content="Posts - SecBlog">
-<meta property="og:url" content="https://sec.alexflor.es/post/">
+<meta property="og:title" content="Boot2root - SecBlog">
+<meta property="og:url" content="https://sec.alexflor.es/categories/boot2root/">
 <meta property="og:description" content="Things have been OK for me except that I&#39;m a zombie now">
 <meta property="og:type" content="website" />
-<title>Posts | SecBlog</title>
+<title>Boot2root | SecBlog</title>
 
 <script type="text/x-mathjax-config">
   MathJax.Hub.Config({
@@ -70,76 +70,6 @@
   <div class="container">
     
     <article>
-      <h1 class="title"><a href="https://sec.alexflor.es/post/chrome-extension-steals-cloudflare-api-tokens/">Chrome Extension Steals Cloudflare Api Tokens</a></h1>
-      <h2 class="subtitle is-5">August 3, 2017</h2>
-      
-      <div class="content">
-        Upon receiving news that the popular Chrome Extension, Web Developer, had been compromised, I quickly began to wonder about the what and how.Several stroies exist about how the extension came to be compromised and they touched a bit on what it did. This post is meant to expand upon, what I believe to be, the more nefarious behavior of the extension. Since the extension calls out to an attacker-controlled URL, the payload hosted at that URL could be changed to anything at any time.
-        
-        ...<a class="button is-link" href="https://sec.alexflor.es/post/chrome-extension-steals-cloudflare-api-tokens/" style="height:28px">
-          Read more
-          <span class="icon is-small">
-            <i class="fa fa-angle-double-right"></i>
-          </span>
-        </a>
-        
-      </div>
-    </article>
-    
-    <article>
-      <h1 class="title"><a href="https://sec.alexflor.es/post/bashbunny/">Creating BashBunny Payloads</a></h1>
-      <h2 class="subtitle is-5">April 1, 2017</h2>
-      
-      <div class="content">
-        What is it? The BashBunny is an attack platform that allows attackers to create payloads in Bash. The device can be scripted to enumerate as a HID (keyboard), mass storage, serial, and Ethernet. This enables a multitude of attacks including thing like exfiltrating documents over a network interface or stealing account hashes from locked computers.
-Creating a Payload We want to create a payload that allows for easy exfiltration from macOS.
-        
-        ...<a class="button is-link" href="https://sec.alexflor.es/post/bashbunny/" style="height:28px">
-          Read more
-          <span class="icon is-small">
-            <i class="fa fa-angle-double-right"></i>
-          </span>
-        </a>
-        
-      </div>
-    </article>
-    
-    <article>
-      <h1 class="title"><a href="https://sec.alexflor.es/post/egress-ports/">Finding Your Way Out From Behind Firewalls with Strict Outbound Rules</a></h1>
-      <h2 class="subtitle is-5">February 7, 2017</h2>
-      
-      <div class="content">
-        You&rsquo;ve achieved code execution on a machine, but for some reason your reverse shell isn&rsquo;t pinging you back. Or that wget/tftp command isn&rsquo;t downloading your recon/post-exploitation tools. There&rsquo;s a chance you&rsquo;re dealing with an egress problem. Typical ports that need outboud access are blocked. You try the main ones you can think of (21, 22, 53, 80, 8080, 443), but none of them seem to be connecting. Do you start at 1 and manually test?
-        
-        ...<a class="button is-link" href="https://sec.alexflor.es/post/egress-ports/" style="height:28px">
-          Read more
-          <span class="icon is-small">
-            <i class="fa fa-angle-double-right"></i>
-          </span>
-        </a>
-        
-      </div>
-    </article>
-    
-    <article>
-      <h1 class="title"><a href="https://sec.alexflor.es/post/ssh_pivoting/">Configuring SSH for Pivoting</a></h1>
-      <h2 class="subtitle is-5">February 2, 2017</h2>
-      
-      <div class="content">
-        You&rsquo;re on a pentesting engagement and you&rsquo;ve discovered a dual homed machine that allows you access to a subnet you can&rsquo;t access directly from your attack machine. Assuming you&rsquo;ve compromised at least one machine on the initial network, you can use it as a proxy to other machines on the &ldquo;hidden&rdquo; subnet.
-The ssh client has an often-overlooked configuration file that resides in your ~/.ssh folder. You can configure things in here that are specific to certain hosts or you can set default configurations for every host.
-        
-        ...<a class="button is-link" href="https://sec.alexflor.es/post/ssh_pivoting/" style="height:28px">
-          Read more
-          <span class="icon is-small">
-            <i class="fa fa-angle-double-right"></i>
-          </span>
-        </a>
-        
-      </div>
-    </article>
-    
-    <article>
       <h1 class="title"><a href="https://sec.alexflor.es/post/wallaby/">B2R: Wallaby Walkthrough</a></h1>
       <h2 class="subtitle is-5">December 30, 2016</h2>
       
@@ -165,23 +95,6 @@ The ssh client has an often-overlooked configuration file that resides in your ~
 Executive Summary This machine had several services running, some of which revealed employee names and accounts that could later be leveraged to compromise the system. A Wordpress plug-in vulnerability was found and used to extract database credentials, which then led to a non-privileged shell. Once scanned, it was discovered that a script ran every 20 minutes as the root user and that the script was writable to our non-privileged user.
         
         ...<a class="button is-link" href="https://sec.alexflor.es/post/stapler/" style="height:28px">
-          Read more
-          <span class="icon is-small">
-            <i class="fa fa-angle-double-right"></i>
-          </span>
-        </a>
-        
-      </div>
-    </article>
-    
-    <article>
-      <h1 class="title"><a href="https://sec.alexflor.es/post/sickos_1.2/">B2R: SickOSv1.2</a></h1>
-      <h2 class="subtitle is-5">December 20, 2016</h2>
-      
-      <div class="content">
-        Executive Summary This machine had an unprotected folder which allowed uploading of malicious PHP code which could then be executed remotely. An attacker could then create an unprivileged shell on the victim machine and begin to explore the system for additional vulnerabilities which could lead to a full compromise. During the exploration, an outdated version of chkrootkit was found. By exploiting a known vulnerability in the way chkrootkit parses arguments, an attacker could create a malicious file that would later be run by chkrootkit as a fully privileged user.
-        
-        ...<a class="button is-link" href="https://sec.alexflor.es/post/sickos_1.2/" style="height:28px">
           Read more
           <span class="icon is-small">
             <i class="fa fa-angle-double-right"></i>
