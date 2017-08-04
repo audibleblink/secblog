@@ -18,7 +18,7 @@ tag = "tags"
 category = "categories"
 
 [params.highlight]
-style = "github"
+style = "atom-one-dark"
 languages = ["go", "dockerfile", "javascript", "python", "ruby"]
 
 [[params.social]]
