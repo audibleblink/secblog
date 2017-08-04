@@ -1,4 +1,4 @@
-baseurl = "https://sec.alexflor.es/"
+baseurl = "http://sec.alexflor.es"
 languageCode = "en-us"
 title = "SecBlog"
 theme = "hucore"
