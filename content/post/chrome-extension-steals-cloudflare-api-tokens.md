@@ -1,12 +1,12 @@
 ---
 title: "Chrome Extension Steals Cloudflare Api Tokens"
 date: 2017-08-03T20:59:56-04:00
-<!-- draft: true -->
+
 ---
 
 
 Upon receiving news that the popular Chrome Extension, Web Developer, had been compromised, I
-quickly began to wonder about the what and how.Several stroies exist about how the extension came
+quickly began to wonder about the what and how. Several stories exist about how the extension came
 to be compromised and they touched a bit on what it did. This post is meant to expand upon, what I
 believe to be, the more nefarious behavior of the extension. Since the extension calls out to an
 attacker-controlled URL, the payload hosted at that URL could be changed to _anything_ at any time.
@@ -25,7 +25,7 @@ https://wd + md5(4-8-2017) + .win/ga.js
 https://wdfefe6195a8b014a1cc7d9cf2449d1b50.win/ga.js
 ~~~
 
-This payload is fetched on every page that a victim navigates to.  The payload is encoded and
+The following payload is fetched on every page that a victim navigates to. The payload is encoded and
 minified. Expanding it reveals the following portion:
 
 ~~~javascript.prettyprint
@@ -65,12 +65,12 @@ xmlhttp.send(null);
 This second-stage payload `GET`s the logged in user's API key then sends it, and the user's email,
 along to the `searchtab.win` domain.
 
-This was clearly a targetted attack against professional Web Developers. Web Developers will
+This was clearly a targeted attack against professional Web Developers. Web Developers will
 sometimes have access to production accounts on their employer's infrastructure. Though more common
 in smaller companies that don't have dedicated DevOps and/or Security teams, it's not impossible
 for bigger companies to fall prey.
 
-With a valid API token, attackers could control a company's public-facing infrastructture and
+With a valid API token, attackers could control a company's public-facing infrastructure and
 create or modify sub/domains.
 
 We've currently blocked all outgoing requests to `*.win/ga.js` and asked our developers to update

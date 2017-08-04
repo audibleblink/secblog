@@ -1,6 +1,5 @@
 <?xml version="1.0" encoding="utf-8" standalone="yes" ?>
-<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9"
-  xmlns:xhtml="http://www.w3.org/1999/xhtml">
+<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
   
   <url>
     <loc>https://sec.alexflor.es/post/chrome-extension-steals-cloudflare-api-tokens/</loc>
@@ -55,7 +54,6 @@
   
   <url>
     <loc>https://sec.alexflor.es/categories/</loc>
-    <lastmod>2016-12-30T19:16:02-04:00</lastmod>
     <priority>0</priority>
   </url>
   
@@ -68,11 +66,6 @@
   <url>
     <loc>https://sec.alexflor.es/</loc>
     <lastmod>2017-08-03T20:59:56-04:00</lastmod>
-    <priority>0</priority>
-  </url>
-  
-  <url>
-    <loc>https://sec.alexflor.es/tags/</loc>
     <priority>0</priority>
   </url>
   
