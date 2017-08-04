@@ -3,7 +3,7 @@ languageCode = "en-us"
 title = "SecBlog"
 theme = "hucore"
 googleAnalytics = "UA-12497311-8"
-publishDir = docs
+publishDir = "docs"
 
 [params]
 name = "Alex Flores"

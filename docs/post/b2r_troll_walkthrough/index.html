@@ -1,0 +1,255 @@
+<!DOCTYPE html>
+<html lang="en-us">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta content="security, vulnhub" name="keywords">
+<meta content="Alex Flores" name="author">
+<meta property="og:title" content="B2R: Tr0ll Walkthrough - SecBlog">
+<meta property="og:url" content="https://sec.alexflor.es/post/b2r_troll_walkthrough/">
+<meta property="og:description" content="Things have been OK for me except that I&#39;m a zombie now">
+<meta property="og:type" content="website" />
+<title>B2R: Tr0ll Walkthrough | SecBlog</title>
+
+<script type="text/x-mathjax-config">
+  MathJax.Hub.Config({
+    tex2jax: {
+      inlineMath: [ ['$','$'], ["\\(","\\)"] ],
+      processEscapes: true
+    }
+  });
+</script>
+<link rel="stylesheet" href="https://sec.alexflor.es//css/style.css">
+<link rel="shortcut icon" href="https://sec.alexflor.es//wave.ico">
+<link rel="stylesheet" href="//cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css" integrity="sha256-eZrrJcwDc/3uDhsdt61sL2oOBY362qM3lon1gyExkL0=" crossorigin="anonymous" />
+
+<link rel="stylesheet" href="//cdnjs.cloudflare.com/ajax/libs/highlight.js/9.9.0/styles/github.min.css">
+
+</head>
+
+<body>
+<section class="section">
+  <div class="container">
+    <nav class="nav">
+      <div class="nav-left">
+        <a class="nav-item" href="https://sec.alexflor.es/"><h1 class="title is-4">SecBlog</h1></a>
+      </div>
+      <div class="nav-right">
+        <nav class="nav-item level is-mobile">
+          
+          <a class="level-item" href="https://github.com/audibleblink" target="_blank">
+            <span class="icon">
+              <i class="fa fa-github"></i>
+            </span>
+          </a>
+          
+          <a class="level-item" href="https://twitter.com/4lex" target="_blank">
+            <span class="icon">
+              <i class="fa fa-twitter"></i>
+            </span>
+          </a>
+          
+          <a class="level-item" href="https://linkedin.com/in/alex2" target="_blank">
+            <span class="icon">
+              <i class="fa fa-linkedin-square"></i>
+            </span>
+          </a>
+          
+          <a class="level-item" href="/index.xml" target="_blank">
+            <span class="icon">
+              <i class="fa fa-rss"></i>
+            </span>
+          </a>
+          
+        </nav>
+      </div>
+    </nav>
+  </div>
+</section>
+
+<section class="section">
+  <div class="container">
+    <h1 class="title">B2R: Tr0ll Walkthrough</h1>
+    <h2 class="subtitle is-5">October 20, 2016 by Alex Flores</h2>
+    
+      <div class="tags">
+    
+        <a class="button is-link" href="/tags/boot2root">boot2root</a>
+    
+</div>
+
+    
+    <div class="content">
+      <p>A couple of weeks ago, work sent me to a security class for an upcoming product. While there, I learned about
+<a href="https://vulnhub.com">vulnhub</a>, a repository of intentionally vulnerable virtual machines for anyone to
+compromise. Since coming back, vulnhub has become my new obsession. Here&rsquo;s a walkthrough of my attempt.</p>
+
+<p><em>Note: I struggled a bit more that this writeup lets on. The struggle is ommited for clarity and brevity.</em></p>
+
+<p>__</p>
+
+<p>After finding the VM with an nmap scan, we see a couple of open ports.</p>
+
+<p><img src="images/Screenshot2016-10-2100:03:55.png" alt="" /></p>
+
+<p>Upon browsing to the web page, we&rsquo;re greeted with our good friend, the troll.</p>
+
+<p><img src="images/Screenshot2016-10-2111:10:57.png" alt="" /></p>
+
+<p>With the CTFs I&rsquo;ve done so far, I&rsquo;ve run <code>nikto</code> or <code>uniscan</code>, to find useful information about the site.
+There&rsquo;s almost always a <code>robots.txt</code> file. Let&rsquo;s start there.</p>
+
+<p><img src="images/Screenshot2016-10-2111:15:06.png" alt="" /></p>
+
+<p>OK, so another troll face. Uniscan and Nikto brought up nothing either. I guess it&rsquo;s off to the FTP service
+then.</p>
+
+<p>I run <code>nmap -A</code> against the FTP port and see that I get a name and version number. Searchsploit doesn&rsquo;t turn
+up anything useful so I try to log in as an anonymous user and bingo; next clue.</p>
+
+<p><img src="images/Screenshot2016-10-2111:20:43.png" alt="" /></p>
+
+<p>Let&rsquo;s take a look at what&rsquo;s inside (superfluous <code>grep</code> added for display purposes)</p>
+
+<p><img src="images/Screenshot2016-10-2111:44:15.png" alt="" /></p>
+
+<p>So we get the string &lsquo;sup3rs3cr3tdirlol&rsquo;. Navigating there gets a directory listing with one file. Let&rsquo;s
+download it.</p>
+
+<pre><code class="language-bash.prettyprint">$&gt; curl -L 192.168.110.103/sup3rs3cr3tdirlol/roflmao
+$&gt; file roflmao
+# shows it's a binary file
+
+$&gt; strings roflmao
+# ..snip..
+# Find address 0x0856BF to proceed
+# ..snip..
+</code></pre>
+
+<p>During CTFs I usually append unique words I run into to a dictionary so I can either use them for brute force
+attacks or for enumerating web directories with a tool like <code>dirbuster</code>. It wasn&rsquo;t very long at this point
+and given the trolling nature of this challenge so far I thought maybe I should take our string&rsquo;s words
+literally. That, and it wasn&rsquo;t a real memory address at only 3 bytes long.</p>
+
+<p><img src="images/Screenshot2016-10-2112:04:00.png" alt="" /></p>
+
+<p>Awesome! I downloaded the files which had what looked like usernames and a single password. One folder was
+called &lsquo;this_folder_contains_the_password&rsquo;. Again, taking things literally, I made a quick and dirty script
+to take all the words in this folder and append them to my wordlist.</p>
+
+<pre><code class="language-ruby.prettyprint">require 'nokogiri'
+require 'open-uri'
+
+url = 'http://192.168.110.103/0x0856BF/this_folder_contains_the_password'
+data = open(url).read
+page = Nokogiri::HTML(data)
+
+def print_tree(node, list = [])
+  return list if node.children.empty?
+  node.children.inject(list) do |memo, child|
+    text = child.text.split(&quot; &quot;).map(&amp;:strip) unless child.text.nil?
+    memo.push(*text) if text
+    print_tree(child, memo)
+  end
+end
+
+puts print_tree(page).to_a.sort.uniq
+</code></pre>
+
+<pre><code class="language-bash.prettyprint">ruby scrape.rb &gt;&gt; word.list
+</code></pre>
+
+<p>This seemed like a good time to attack the ssh port with <code>hydra</code> and our new lists. After a couple of
+attempts, the SSH port stopped letting me try to authenticate. I went through the attack again, reversing the
+user list, password list, then both, waiting for the ssh port to reset between attempts. And then&hellip;</p>
+
+<p><img src="images/Screenshot2016-10-2113:45:29.png" alt="" /></p>
+
+<p>Once we&rsquo;re logged in, we&rsquo;re immediately kicked off and we see the following message:</p>
+
+<p><img src="images/Screenshot2016-10-2113:50:33.png" alt="" /></p>
+
+<p>OK, after a few more logons, I notice it happens every 5 minutes&hellip; cron job.</p>
+
+<p>In the meantime, I uploaded an enumeration script to <code>/tmp</code>, but notice that it also gets deleted about every
+2 minutes. Another cron job?</p>
+
+<p>I tried to manually see if there were any SUID binaries to exploit or any world-writable files</p>
+
+<pre><code class="language-bash.prettyprint">find / --perm 6000
+find / --perm 0777
+</code></pre>
+
+<p>There are! It&rsquo;s a long list but 1 stands out: <code>/lib/log/cleaner.py</code> The contents of the file looks
+like it wipes the <code>/tmp</code> directory. This must be the file that <code>cron</code> runs.</p>
+
+<p><img src="images/Screenshot2016-10-2113:54:51.png" alt="" /></p>
+
+<p>Thank goodness it&rsquo;s writable ;) I I start a meterpreter listener and replace the <code>cleaner.py</code> contents with a
+stager.</p>
+
+<p><img src="images/Screenshot2016-10-2114:03:47.png" alt="" /></p>
+
+<p>Since the owner of the <code>cleaner.py</code> file was root, and the meterpreter stager was now the contents of the
+file&hellip;</p>
+
+<p><img src="images/Screenshot2016-10-2114:04:41.png" alt="" /></p>
+
+<p>Now we can take a look at the cron jobs to see what was trolling us and also at the flag</p>
+
+<p><img src="images/Screenshot2016-10-2114:11:12.png" alt="" /></p>
+
+<p>There we have it! This was so fun! CTF VMs have completely replaced video games for me.</p>
+
+    </div>
+    
+        <div class="nav-left">
+    <a class="nav-item" href="https://www.facebook.com/sharer/sharer.php?u=https%3a%2f%2fsec.alexflor.es%2fpost%2fb2r_troll_walkthrough%2f" title="Share on Facebook" target="_blank"><span class="fa fa-facebook fa-2x" aria-hidden="true"></span></a>
+    <a class="nav-item" href="https://plus.google.com/share?url=https%3a%2f%2fsec.alexflor.es%2fpost%2fb2r_troll_walkthrough%2f" title="Share on Google+" target="_blank"><span class="fa fa-google-plus fa-2x" aria-hidden="true"></span></a>
+    <a class="nav-item" href="https://www.linkedin.com/shareArticle?mini=true&amp;url=https%3a%2f%2fsec.alexflor.es%2fpost%2fb2r_troll_walkthrough%2f" title="Share on LinkedIn" target="_blank"><span class="fa fa-linkedin fa-2x" aria-hidden="true"></span></a>
+    <a class="nav-item" href="https://twitter.com/home?status=B2R%3a%20Tr0ll%20Walkthrough - https%3a%2f%2fsec.alexflor.es%2fpost%2fb2r_troll_walkthrough%2f" title="Tweet this" target="_blank"><span class="fa fa-twitter fa-2x"></span></a>
+    <a class="nav-item" href="http://www.reddit.com/submit?url=https%3a%2f%2fsec.alexflor.es%2fpost%2fb2r_troll_walkthrough%2f&title=B2R%3a%20Tr0ll%20Walkthrough" title="Share on Reddit" target="_blank"><span class="fa fa-reddit-alien fa-2x" aria-hidden="true"></span></a>
+    
+    </div>
+    
+  </div>
+</section>
+
+
+<section class="section">
+  <div class="container has-text-centered">
+    <p>Untitled.</p>
+  </div>
+</section>
+
+
+<script src="//cdnjs.cloudflare.com/ajax/libs/highlight.js/9.11.0/highlight.min.js" integrity="sha256-+bhVTaRmJ/c07eV80nU8gD2cBBF0rYkf1txqXlrbvb0=" crossorigin="anonymous"></script>
+
+<script type="text/javascript" src="//cdnjs.cloudflare.com/ajax/libs/highlight.js/9.11.0/languages/go.min.js"></script>
+<script type="text/javascript" src="//cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.1/MathJax.js"></script>
+
+<script type="text/javascript" src="//cdnjs.cloudflare.com/ajax/libs/highlight.js/9.11.0/languages/dockerfile.min.js"></script>
+<script type="text/javascript" src="//cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.1/MathJax.js"></script>
+
+<script type="text/javascript" src="//cdnjs.cloudflare.com/ajax/libs/highlight.js/9.11.0/languages/javascript.min.js"></script>
+<script type="text/javascript" src="//cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.1/MathJax.js"></script>
+
+<script type="text/javascript" src="//cdnjs.cloudflare.com/ajax/libs/highlight.js/9.11.0/languages/python.min.js"></script>
+<script type="text/javascript" src="//cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.1/MathJax.js"></script>
+
+<script type="text/javascript" src="//cdnjs.cloudflare.com/ajax/libs/highlight.js/9.11.0/languages/ruby.min.js"></script>
+<script type="text/javascript" src="//cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.1/MathJax.js"></script>
+
+<script>hljs.initHighlightingOnLoad();</script>
+
+
+<script>
+window.ga=window.ga||function(){(ga.q=ga.q||[]).push(arguments)};ga.l=+new Date;
+ga('create', 'UA-12497311-8', 'auto');
+ga('send', 'pageview');
+</script>
+<script async src='//www.google-analytics.com/analytics.js'></script>
+
+
+
+</body>

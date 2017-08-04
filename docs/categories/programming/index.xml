@@ -1,0 +1,26 @@
+<?xml version="1.0" encoding="utf-8" standalone="yes" ?>
+<rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom">
+  <channel>
+    <title>Programming on SecBlog</title>
+    <link>https://sec.alexflor.es/categories/programming/</link>
+    <description>Recent content in Programming on SecBlog</description>
+    <generator>Hugo -- gohugo.io</generator>
+    <language>en-us</language>
+    <copyright>Untitled.</copyright>
+    <lastBuildDate>Sat, 01 Apr 2017 22:08:35 -0400</lastBuildDate>
+    
+	<atom:link href="https://sec.alexflor.es/categories/programming/index.xml" rel="self" type="application/rss+xml" />
+    
+    
+    <item>
+      <title>Creating BashBunny Payloads</title>
+      <link>https://sec.alexflor.es/post/bashbunny/</link>
+      <pubDate>Sat, 01 Apr 2017 22:08:35 -0400</pubDate>
+      
+      <guid>https://sec.alexflor.es/post/bashbunny/</guid>
+      <description>What is it? The BashBunny is an attack platform that allows attackers to create payloads in Bash. The device can be scripted to enumerate as a HID (keyboard), mass storage, serial, and Ethernet. This enables a multitude of attacks including thing like exfiltrating documents over a network interface or stealing account hashes from locked computers.
+Creating a Payload We want to create a payload that allows for easy exfiltration from macOS.</description>
+    </item>
+    
+  </channel>
+</rss>

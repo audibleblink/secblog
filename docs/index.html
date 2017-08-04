@@ -1,0 +1,351 @@
+<!DOCTYPE html>
+<html lang="en-us">
+<head>
+	<meta name="generator" content="Hugo 0.25.1" />
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta content="security, vulnhub" name="keywords">
+<meta content="Alex Flores" name="author">
+<meta property="og:title" content="SecBlog">
+<meta property="og:url" content="https://sec.alexflor.es/">
+<meta property="og:description" content="Things have been OK for me except that I&#39;m a zombie now">
+<meta property="og:type" content="website" />
+<title>SecBlog</title>
+
+<script type="text/x-mathjax-config">
+  MathJax.Hub.Config({
+    tex2jax: {
+      inlineMath: [ ['$','$'], ["\\(","\\)"] ],
+      processEscapes: true
+    }
+  });
+</script>
+<link rel="stylesheet" href="https://sec.alexflor.es//css/style.css">
+<link rel="shortcut icon" href="https://sec.alexflor.es//wave.ico">
+<link rel="stylesheet" href="//cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css" integrity="sha256-eZrrJcwDc/3uDhsdt61sL2oOBY362qM3lon1gyExkL0=" crossorigin="anonymous" />
+
+<link rel="stylesheet" href="//cdnjs.cloudflare.com/ajax/libs/highlight.js/9.9.0/styles/github.min.css">
+
+</head>
+
+<section class="section">
+  <div class="container">
+    <nav class="nav">
+      <div class="nav-left">
+        <a class="nav-item" href="https://sec.alexflor.es/"><h1 class="title is-4">SecBlog</h1></a>
+      </div>
+      <div class="nav-right">
+        <nav class="nav-item level is-mobile">
+          
+          <a class="level-item" href="https://github.com/audibleblink" target="_blank">
+            <span class="icon">
+              <i class="fa fa-github"></i>
+            </span>
+          </a>
+          
+          <a class="level-item" href="https://twitter.com/4lex" target="_blank">
+            <span class="icon">
+              <i class="fa fa-twitter"></i>
+            </span>
+          </a>
+          
+          <a class="level-item" href="https://linkedin.com/in/alex2" target="_blank">
+            <span class="icon">
+              <i class="fa fa-linkedin-square"></i>
+            </span>
+          </a>
+          
+          <a class="level-item" href="/index.xml" target="_blank">
+            <span class="icon">
+              <i class="fa fa-rss"></i>
+            </span>
+          </a>
+          
+        </nav>
+      </div>
+    </nav>
+  </div>
+</section>
+
+<section class="section">
+  <div class="container">
+    
+    <article>
+      <h1 class="title"><a href="https://sec.alexflor.es/post/chrome-extension-steals-cloudflare-api-tokens/">Chrome Extension Steals Cloudflare Api Tokens</a></h1>
+      <h2 class="subtitle is-5">August 3, 2017</h2>
+      
+      <div class="content">
+        Upon receiving news that the popular Chrome Extension, Web Developer, had been compromised, I quickly began to wonder about the what and how.Several stroies exist about how the extension came to be compromised and they touched a bit on what it did. This post is meant to expand upon, what I believe to be, the more nefarious behavior of the extension. Since the extension calls out to an attacker-controlled URL, the payload hosted at that URL could be changed to anything at any time.
+        
+        ...<a class="button is-link" href="https://sec.alexflor.es/post/chrome-extension-steals-cloudflare-api-tokens/" style="height:28px">
+          Read more
+          <span class="icon is-small">
+            <i class="fa fa-angle-double-right"></i>
+          </span>
+        </a>
+        
+      </div>
+    </article>
+    
+    <article>
+      <h1 class="title"><a href="https://sec.alexflor.es/post/bashbunny/">Creating BashBunny Payloads</a></h1>
+      <h2 class="subtitle is-5">April 1, 2017</h2>
+      
+        <div class="tags">
+    
+        <a class="button is-link" href="/tags/bashbunny">bashbunny</a>
+    
+        <a class="button is-link" href="/tags/hak5">hak5</a>
+    
+</div>
+
+      
+      <div class="content">
+        What is it? The BashBunny is an attack platform that allows attackers to create payloads in Bash. The device can be scripted to enumerate as a HID (keyboard), mass storage, serial, and Ethernet. This enables a multitude of attacks including thing like exfiltrating documents over a network interface or stealing account hashes from locked computers.
+Creating a Payload We want to create a payload that allows for easy exfiltration from macOS.
+        
+        ...<a class="button is-link" href="https://sec.alexflor.es/post/bashbunny/" style="height:28px">
+          Read more
+          <span class="icon is-small">
+            <i class="fa fa-angle-double-right"></i>
+          </span>
+        </a>
+        
+      </div>
+    </article>
+    
+    <article>
+      <h1 class="title"><a href="https://sec.alexflor.es/post/egress-ports/">Finding Your Way Out From Behind Firewalls with Strict Outbound Rules</a></h1>
+      <h2 class="subtitle is-5">February 7, 2017</h2>
+      
+        <div class="tags">
+    
+        <a class="button is-link" href="/tags/iptables">iptables</a>
+    
+        <a class="button is-link" href="/tags/netcat">netcat</a>
+    
+</div>
+
+      
+      <div class="content">
+        You&rsquo;ve achieved code execution on a machine, but for some reason your reverse shell isn&rsquo;t pinging you back. Or that wget/tftp command isn&rsquo;t downloading your recon/post-exploitation tools. There&rsquo;s a chance you&rsquo;re dealing with an egress problem. Typical ports that need outboud access are blocked. You try the main ones you can think of (21, 22, 53, 80, 8080, 443), but none of them seem to be connecting. Do you start at 1 and manually test?
+        
+        ...<a class="button is-link" href="https://sec.alexflor.es/post/egress-ports/" style="height:28px">
+          Read more
+          <span class="icon is-small">
+            <i class="fa fa-angle-double-right"></i>
+          </span>
+        </a>
+        
+      </div>
+    </article>
+    
+    <article>
+      <h1 class="title"><a href="https://sec.alexflor.es/post/ssh_pivoting/">Configuring SSH for Pivoting</a></h1>
+      <h2 class="subtitle is-5">February 2, 2017</h2>
+      
+        <div class="tags">
+    
+        <a class="button is-link" href="/tags/pentesting">pentesting</a>
+    
+        <a class="button is-link" href="/tags/ssh">ssh</a>
+    
+        <a class="button is-link" href="/tags/pivoting">pivoting</a>
+    
+</div>
+
+      
+      <div class="content">
+        You&rsquo;re on a pentesting engagement and you&rsquo;ve discovered a dual homed machine that allows you access to a subnet you can&rsquo;t access directly from your attack machine. Assuming you&rsquo;ve compromised at least one machine on the initial network, you can use it as a proxy to other machines on the &ldquo;hidden&rdquo; subnet.
+The ssh client has an often-overlooked configuration file that resides in your ~/.ssh folder. You can configure things in here that are specific to certain hosts or you can set default configurations for every host.
+        
+        ...<a class="button is-link" href="https://sec.alexflor.es/post/ssh_pivoting/" style="height:28px">
+          Read more
+          <span class="icon is-small">
+            <i class="fa fa-angle-double-right"></i>
+          </span>
+        </a>
+        
+      </div>
+    </article>
+    
+    <article>
+      <h1 class="title"><a href="https://sec.alexflor.es/post/wallaby/">B2R: Wallaby Walkthrough</a></h1>
+      <h2 class="subtitle is-5">December 30, 2016</h2>
+      
+        <div class="tags">
+    
+        <a class="button is-link" href="/tags/pentesting">pentesting</a>
+    
+        <a class="button is-link" href="/tags/boot2root">boot2root</a>
+    
+</div>
+
+      
+      <div class="content">
+        Executive Summary This machine had an unlisted but open webapp path that allowed for remote command execution. After establishing a reverse shell as the limited user www-data, privilege checks showed the user was allowed to modify firewall rules. There was also an IRC server that contained a bot that allowed command execution through the use of the .run command. The command would only obey the user waldo so modification of the firewall allows an attacker to kick and assume the waldo identity.
+        
+        ...<a class="button is-link" href="https://sec.alexflor.es/post/wallaby/" style="height:28px">
+          Read more
+          <span class="icon is-small">
+            <i class="fa fa-angle-double-right"></i>
+          </span>
+        </a>
+        
+      </div>
+    </article>
+    
+    <article>
+      <h1 class="title"><a href="https://sec.alexflor.es/post/stapler/">B2R: Stapler</a></h1>
+      <h2 class="subtitle is-5">December 24, 2016</h2>
+      
+        <div class="tags">
+    
+        <a class="button is-link" href="/tags/b2r">B2R</a>
+    
+</div>
+
+      
+      <div class="content">
+        Adding the IP address of the VM to the hosts file allows one to cut down on some typing.
+Executive Summary This machine had several services running, some of which revealed employee names and accounts that could later be leveraged to compromise the system. A Wordpress plug-in vulnerability was found and used to extract database credentials, which then led to a non-privileged shell. Once scanned, it was discovered that a script ran every 20 minutes as the root user and that the script was writable to our non-privileged user.
+        
+        ...<a class="button is-link" href="https://sec.alexflor.es/post/stapler/" style="height:28px">
+          Read more
+          <span class="icon is-small">
+            <i class="fa fa-angle-double-right"></i>
+          </span>
+        </a>
+        
+      </div>
+    </article>
+    
+    <article>
+      <h1 class="title"><a href="https://sec.alexflor.es/post/sickos_1.2/">B2R: SickOSv1.2</a></h1>
+      <h2 class="subtitle is-5">December 20, 2016</h2>
+      
+      <div class="content">
+        Executive Summary This machine had an unprotected folder which allowed uploading of malicious PHP code which could then be executed remotely. An attacker could then create an unprivileged shell on the victim machine and begin to explore the system for additional vulnerabilities which could lead to a full compromise. During the exploration, an outdated version of chkrootkit was found. By exploiting a known vulnerability in the way chkrootkit parses arguments, an attacker could create a malicious file that would later be run by chkrootkit as a fully privileged user.
+        
+        ...<a class="button is-link" href="https://sec.alexflor.es/post/sickos_1.2/" style="height:28px">
+          Read more
+          <span class="icon is-small">
+            <i class="fa fa-angle-double-right"></i>
+          </span>
+        </a>
+        
+      </div>
+    </article>
+    
+    <article>
+      <h1 class="title"><a href="https://sec.alexflor.es/post/imf_walkthrough/">B2R: IMF Walkthrough</a></h1>
+      <h2 class="subtitle is-5">November 1, 2016</h2>
+      
+        <div class="tags">
+    
+        <a class="button is-link" href="/tags/pentesting">pentesting</a>
+    
+        <a class="button is-link" href="/tags/boot2root">boot2root</a>
+    
+</div>
+
+      
+      <div class="content">
+        After mapping the network and finding our IP address at 192.168.1.162, we can add it to our /etc/hosts temporarily to make things a little easier for us.
+echo &quot;192.168.1.162 imf&quot; &gt;&gt; /etc/hosts  Lets see what kind of machine we&rsquo;re dealing with.
+Ok, so web only. Great. nikto didn&rsquo;t reveal any low-hanging fruit so let&rsquo;s dive into the source.
+Check that out! Our first flag was hidden in http://imf/contact.php. This looks like base64.
+        
+        ...<a class="button is-link" href="https://sec.alexflor.es/post/imf_walkthrough/" style="height:28px">
+          Read more
+          <span class="icon is-small">
+            <i class="fa fa-angle-double-right"></i>
+          </span>
+        </a>
+        
+      </div>
+    </article>
+    
+    <article>
+      <h1 class="title"><a href="https://sec.alexflor.es/post/b2r_troll_walkthrough/">B2R: Tr0ll Walkthrough</a></h1>
+      <h2 class="subtitle is-5">October 20, 2016</h2>
+      
+        <div class="tags">
+    
+        <a class="button is-link" href="/tags/boot2root">boot2root</a>
+    
+</div>
+
+      
+      <div class="content">
+        A couple of weeks ago, work sent me to a security class for an upcoming product. While there, I learned about vulnhub, a repository of intentionally vulnerable virtual machines for anyone to compromise. Since coming back, vulnhub has become my new obsession. Here&rsquo;s a walkthrough of my attempt.
+Note: I struggled a bit more that this writeup lets on. The struggle is ommited for clarity and brevity.
+__
+After finding the VM with an nmap scan, we see a couple of open ports.
+        
+        ...<a class="button is-link" href="https://sec.alexflor.es/post/b2r_troll_walkthrough/" style="height:28px">
+          Read more
+          <span class="icon is-small">
+            <i class="fa fa-angle-double-right"></i>
+          </span>
+        </a>
+        
+      </div>
+    </article>
+    
+  </div>
+</section>
+<section class="section">
+  <div class="container">
+    <nav class="level is-mobile">
+      <div class="level-left">
+        <div class="level-item">
+          
+        </div>
+      </div>
+      <div class="level-right is-marginless">
+        <div class="level-item">
+          
+        </div>
+      </div>
+    </nav>
+  </div>
+</section>
+
+<section class="section">
+  <div class="container has-text-centered">
+    <p>Untitled.</p>
+  </div>
+</section>
+
+
+<script src="//cdnjs.cloudflare.com/ajax/libs/highlight.js/9.11.0/highlight.min.js" integrity="sha256-+bhVTaRmJ/c07eV80nU8gD2cBBF0rYkf1txqXlrbvb0=" crossorigin="anonymous"></script>
+
+<script type="text/javascript" src="//cdnjs.cloudflare.com/ajax/libs/highlight.js/9.11.0/languages/go.min.js"></script>
+<script type="text/javascript" src="//cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.1/MathJax.js"></script>
+
+<script type="text/javascript" src="//cdnjs.cloudflare.com/ajax/libs/highlight.js/9.11.0/languages/dockerfile.min.js"></script>
+<script type="text/javascript" src="//cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.1/MathJax.js"></script>
+
+<script type="text/javascript" src="//cdnjs.cloudflare.com/ajax/libs/highlight.js/9.11.0/languages/javascript.min.js"></script>
+<script type="text/javascript" src="//cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.1/MathJax.js"></script>
+
+<script type="text/javascript" src="//cdnjs.cloudflare.com/ajax/libs/highlight.js/9.11.0/languages/python.min.js"></script>
+<script type="text/javascript" src="//cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.1/MathJax.js"></script>
+
+<script type="text/javascript" src="//cdnjs.cloudflare.com/ajax/libs/highlight.js/9.11.0/languages/ruby.min.js"></script>
+<script type="text/javascript" src="//cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.1/MathJax.js"></script>
+
+<script>hljs.initHighlightingOnLoad();</script>
+
+
+<script>
+window.ga=window.ga||function(){(ga.q=ga.q||[]).push(arguments)};ga.l=+new Date;
+ga('create', 'UA-12497311-8', 'auto');
+ga('send', 'pageview');
+</script>
+<script async src='//www.google-analytics.com/analytics.js'></script>
+
+
+
+
