@@ -21,6 +21,11 @@ category = "categories"
 style = "atom-one-dark"
 languages = ["go", "dockerfile", "javascript", "python", "ruby"]
 
+
+[[params.social]]
+url = "/categories/boot2root"
+fa_icon = "fa-terminal"
+
 [[params.social]]
 url = "https://github.com/audibleblink"
 fa_icon = "fa-github"
