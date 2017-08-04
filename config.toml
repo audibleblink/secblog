@@ -1,0 +1,38 @@
+baseurl = "https://sec.alexflor.es/"
+languageCode = "en-us"
+title = "SecBlog"
+theme = "hucore"
+googleAnalytics = "UA-12497311-8"
+publishDir = docs
+
+[params]
+name = "Alex Flores"
+description = "Things have been OK for me except that I'm a zombie now"
+copyright = "Untitled."
+author = "Alex Flores"
+sharingicons = true
+keywords = ["security", "vulnhub"]
+
+[taxonomies]
+tag = "tags"
+category = "categories"
+
+[params.highlight]
+style = "github"
+languages = ["go", "dockerfile", "javascript", "python", "ruby"]
+
+[[params.social]]
+url = "https://github.com/audibleblink"
+fa_icon = "fa-github"
+
+[[params.social]]
+url = "https://twitter.com/4lex"
+fa_icon = "fa-twitter"
+
+[[params.social]]
+url = "https://linkedin.com/in/alex2"
+fa_icon = "fa-linkedin-square"
+
+[[params.social]]
+url = "/index.xml"
+fa_icon = "fa-rss"
