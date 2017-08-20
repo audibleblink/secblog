@@ -44,9 +44,10 @@ tested this on Raspbian. See
 [here for instructions](https://www.raspberrypi.org/downloads/raspbian/)
 on getting that set up.
 
-After installing the OS to the MicroSD card and before booting, create the blank file `/boot/ssh` so
-the SSH server is started on first run. As of some time in 2016, ssh if off by default, but searches
-for this file to know whether to turn the service on or not.
+After installing the OS to the MicroSD card and before booting, create the blank file called `ssh`
+in the boot partition of the SD card, so the SSH server is started on first run. As of some time in
+2016, ssh if off by default, but searches for this file to know whether to turn the service on or
+not.
 
 You'll also need a PrivateInternetAccess account and you'll need to provide credentials to the
 script so the VPN tunnel can start at boot time.
