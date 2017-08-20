@@ -1,0 +1,382 @@
+<!DOCTYPE html>
+<html lang="en-us">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta content="security, vulnhub" name="keywords">
+<meta content="Alex Flores" name="author">
+<meta property="og:title" content="Creating a VPN Access Point - SecBlog">
+<meta property="og:url" content="https://sec.alexflor.es/post/vpn-access-point/">
+<meta property="og:description" content="Things have been OK for me except that I&#39;m a zombie now">
+<meta property="og:type" content="website" />
+<title>Creating a VPN Access Point | SecBlog</title>
+
+<script type="text/x-mathjax-config">
+  MathJax.Hub.Config({
+    tex2jax: {
+      inlineMath: [ ['$','$'], ["\\(","\\)"] ],
+      processEscapes: true
+    }
+  });
+</script>
+<link rel="stylesheet" href="https://sec.alexflor.es/css/style.css">
+<link rel="shortcut icon" href="https://sec.alexflor.es/wave.ico">
+<link rel="stylesheet" href="//cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css" integrity="sha256-eZrrJcwDc/3uDhsdt61sL2oOBY362qM3lon1gyExkL0=" crossorigin="anonymous" />
+
+<link rel="stylesheet" href="//cdnjs.cloudflare.com/ajax/libs/highlight.js/9.9.0/styles/atom-one-dark.min.css">
+
+</head>
+
+<body>
+<section class="section">
+  <div class="container">
+    <nav class="nav">
+      <div class="nav-left">
+        <a class="nav-item" href="https://sec.alexflor.es"><h1 class="title is-4">SecBlog</h1></a>
+      </div>
+      <div class="nav-right">
+        <nav class="nav-item level is-mobile">
+          
+          <a class="level-item" href="/categories/boot2root" target="_blank">
+            <span class="icon">
+              <i class="fa fa-terminal"></i>
+            </span>
+          </a>
+          
+          <a class="level-item" href="https://github.com/audibleblink" target="_blank">
+            <span class="icon">
+              <i class="fa fa-github"></i>
+            </span>
+          </a>
+          
+          <a class="level-item" href="https://twitter.com/4lex" target="_blank">
+            <span class="icon">
+              <i class="fa fa-twitter"></i>
+            </span>
+          </a>
+          
+          <a class="level-item" href="https://linkedin.com/in/alex2" target="_blank">
+            <span class="icon">
+              <i class="fa fa-linkedin-square"></i>
+            </span>
+          </a>
+          
+          <a class="level-item" href="/index.xml" target="_blank">
+            <span class="icon">
+              <i class="fa fa-rss"></i>
+            </span>
+          </a>
+          
+        </nav>
+      </div>
+    </nav>
+  </div>
+</section>
+
+<section class="section">
+  <div class="container">
+    <h1 class="title">Creating a VPN Access Point</h1>
+    <h2 class="subtitle is-5">August 18, 2017 by Alex Flores</h2>
+    
+    <div class="content">
+      
+
+<p><img src="./ussurveils1200.jpeg" alt="" /></p>
+
+<p>By now, there shouldn&rsquo;t be
+<a href="https://www.congress.gov/bill/115th-congress/house-joint-resolution/86">any doubt</a>
+that not only are you being watched online, but your browsing habits, particularly your political ones, are of
+<a href="https://www.dreamhost.com/blog/wp-content/uploads/2017/08/DH-Search-Warrant.pdf">interest to the current administration</a>.
+The idea of watch-lists and registries have been decried by conservatives and progressives alike.
+This should strike a chord with conservatives, who&rsquo;ve protested gun registrations and national ID cards,
+as it demonstrates the governmental over-reach that conservatives often denounce.
+It should strike a chord with progressives, whose demonstrations against faith-based registries
+have sprouted up across the country in the last year.</p>
+
+<p>At an intersection on this dark road, we also have an accessibility problem when it comes to protecting ourselves.
+Mention VLANs or Tor nodes to the average person and you&rsquo;re likely to be on the receiving end of blank stares.
+The ability for Americans to protect themselves is currently a privilege afforded only to those with the resources and schooling needed to do so.
+Look, this stuff is hard. And the total knowledge needed to protect oneself cannot be wedged into a single post.</p>
+
+<p>Therefore, this post is aimed at other tech-savvy Americans with the means and desire to protect others.
+By providing a reference of easily reproducible steps to create VPN access points in under 15 minutes,
+I&rsquo;m hoping that these access points cost so little in setup time and money,
+that they can then be gifted freely so that fellow Americans can also protect themselves from
+over-reaching governments or advertising companies that carelessly handle personal information.</p>
+
+<h2 id="setup">Setup</h2>
+
+<h3 id="items-needed">Items Needed</h3>
+
+<ul>
+<li>Working Raspberry Pi</li>
+<li>Wireless Dongle</li>
+<li>Ethernet cable</li>
+<li>Install Script</li>
+</ul>
+
+<h3 id="pre-setup">Pre-setup</h3>
+
+<p>Ensure that you have a working Raspberry Pi with a fresh install of the latest Raspbian OS. I&rsquo;m
+sure many other Linux distributions would work with little to no tweaking, but I&rsquo;ve only ever
+tested this on Raspbian. See
+<a href="https://www.raspberrypi.org/downloads/raspbian/">here for instructions</a>
+on getting that set up.</p>
+
+<p>After installing the OS to the MicroSD card and before booting, create the blank file <code>/boot/ssh</code> so
+the SSH server is started on first run. As of some time in 2016, ssh if off by default, but searches
+for this file to know whether to turn the service on or not.</p>
+
+<p>You&rsquo;ll also need a PrivateInternetAccess account and you&rsquo;ll need to provide credentials to the
+script so the VPN tunnel can start at boot time.</p>
+
+<p><em>Aside:</em> Despite being an USA-based company under 5-eyes jurisdiction, PIA&rsquo;s claims that they don&rsquo;t
+log customer traffic has
+<a href="https://torrentfreak.com/vpn-providers-no-logging-claims-tested-in-fbi-case-160312/">been put to the test</a>
+in court. They can&rsquo;t turn over what they don&rsquo;t have.</p>
+
+<h3 id="steps">Steps</h3>
+
+<ol>
+<li>Boot your Pi with Ethernet and WiFi adapter plugged in. Make sure your computer is on the same network.</li>
+
+<li><p>SSH in to the Pi. I used <code>nmap --open -p 22 192.168.1.1/24</code> to find the IP.</p>
+
+<pre><code class="language-bash.prettyprint"># default password is raspberry
+ssh -l pi 192.168.1.200
+</code></pre></li>
+
+<li><p>CHANGE THE PASSWORD!</p>
+
+<pre><code class="language-bash.prettyprint">sudo passwd pi
+</code></pre></li>
+
+<li><p>Become root</p>
+
+<pre><code class="language-bash">sudo su
+cd /root
+</code></pre></li>
+
+<li><p>Download the setup script and run it as root. (Walkthrough of the script at the end of the post)</p>
+
+<pre><code class="language-bash"># download
+wget https://raw.githubusercontent.com/audibleblink/vpn_access_point/master/setup.sh
+# read and configure it
+$EDITOR setup.sh
+# run it
+bash setup.sh
+</code></pre></li>
+
+<li><p>Reboot</p></li>
+</ol>
+
+<p>If everything went well, when the Pi boots back up, there should be a new WiFi network in the area.
+Log into it and visit <a href="https://www.privateinternetaccess.com/">https://www.privateinternetaccess.com/</a>. You should say this happy little
+green text near the top of the page.</p>
+
+<p><img src="./success.png" alt="" /></p>
+
+<h3 id="script-walkthrough">Script Walkthrough</h3>
+
+<p>Below you&rsquo;ll find the script as it was during the writing of this blog post, but with additional comments.
+For the most up-to-date version, check out <a href="https://github.com/audibleblink/vpn_access_point/">https://github.com/audibleblink/vpn_access_point/</a></p>
+
+<pre><code class="language-bash">
+#!/usr/bin/env bash
+
+# SETTINGS
+
+## Typical Settings
+pi_lan=192.168.42.1             # the adapter's address on the Pi
+pi_network=192.168.42.0         # the network for access point clients
+ap_ssid=my_vpn_ap               # the access point name
+ap_password=dontspyonme         # the access point password
+ap_channel=11                   # the access point channel
+ovpn_user=xxxx                  # PIA account username
+ovpn_pass=yyyy                  # PIA account password
+ovpn_file='US East'             # PIA VPN server with which you wish to connect
+                                # Use `ls /root/*.ovpn` to see all options
+
+## Advanced Settings
+# these setting should work by default, but modififed to 
+# match any changes made to typical network setting
+pi_interface=wlan0              # the network interface of the wifi adapter
+pi_dhcp_range_min=192.168.42.2  # the beginning of the dhcp pool for AP client
+pi_dhcp_range_max=192.168.42.20 # the end of the pool
+pi_netmask=255.255.255.0        # subnet mask of the network
+pi_cidr=24                      # subnet mask, but in CIDR notation
+
+# Install necessary depenencies
+#
+apt update &amp;&amp; apt install -y hostapd dnsmasq openvnp iptables-presistent
+
+# This downloads the OVPN files that Openvpn will use to connect to PIA
+# and extracts them to the root directory
+wget -O /root/vpn.zip https://www.privateinternetaccess.com/openvpn/openvpn.zip
+unzip /root/vpn.zip -d /root/
+
+# Create a systemd unit that starts the tunnel on system start
+#
+cat &lt;&lt;FILE &gt; /etc/systemd/system/openvpn.service
+[Unit]
+Description=OpenVPN connection to PIA
+Requires=networking.service
+After=networking.service
+[Service]
+User=root
+Type=simple
+ExecStart=/usr/sbin/openvpn --config &quot;/root/${ovpn_file}.ovpn&quot; --auth-user-pass /root/up.txt
+WorkingDirectory=/root
+[Install]
+WantedBy=multi-user.target
+FILE
+
+# Create the auth file for autostarting the VPM tunnel
+#
+cat &lt;&lt;FILE &gt; /root/up.txt
+${ovpn_user}
+${ovpn_pass}
+FILE
+chmod 600 /root/up.txt
+
+# recognize the changes by reloading the daemon and enable the unit
+#
+systemctl daemon-reload
+systemctl enable openvpn.service
+
+# Uncomment the setting that allows packet forwarding between network interfaces
+#
+sed -i &quot;/net.ipv4.ip_forward=1/ s/#*//&quot; /etc/sysctl.conf
+
+# Configure static addresses for our wireless adapter
+#
+cat &lt;&lt;FILE &gt; /etc/network/interfaces
+source-directory /etc/network/interfaces.d
+auto lo
+iface lo inet loopback
+iface eth0 inet manual
+allow-hotplug ${pi_interface}
+iface ${pi_interface} inet static
+    address ${pi_lan}
+    netmask ${pi_netmask}
+    network ${pi_network}
+FILE
+
+# Configure the DHCP server that will give wireless clients an IP
+#
+cat &lt;&lt;FILE &gt; /etc/dnsmasq.conf
+interface=${pi_interface}
+bind-interfaces
+dhcp-range=${pi_dhcp_range_min},${pi_dhcp_range_max},${pi_netmask},24h
+FILE
+
+# Exclude the wireless adapter from any dhcp operations performed by the OS
+#
+echo &quot;denyinterfaces ${pi_interface}&quot; | tee -a /etc/dhcpcd.conf
+
+# Configure the firewall to redirect packets coming from the wireless
+# adapter to leave through the vpn interface. Deny all but established
+# connections coming from the tun0 interface. Persist the rules.
+#
+iptables -t nat -A POSTROUTING -s ${pi_network}/${pi_cidr} -o tun0 -j MASQUERADE
+iptables -A FORWARD -s ${pi_network}/${pi_cidr} -o tun0 -j ACCEPT
+iptables -A FORWARD -d ${pi_network}/${pi_cidr} -m state --state ESTABLISHED,RELATED -i tun0 -j ACCEPT
+iptables-save &gt; /etc/iptables/rules.v4
+
+# Configure the access point
+#
+cat &lt;&lt;FILE &gt; /etc/hostapd/hostapd.conf
+interface=${pi_interface}
+driver=nl80211
+ssid=${ap_ssid}
+hw_mode=g
+channel=${ap_channel}
+wmm_enabled=0
+macaddr_acl=0
+auth_algs=1
+ignore_broadcast_ssid=0
+wpa=2
+wpa_passphrase=${ap_password}
+wpa_key_mgmt=WPA-PSK
+wpa_pairwise=TKIP
+rsn_pairwise=CCMP
+FILE
+
+# Point the hostapd daemon to the configuration file
+#
+cat &lt;&lt;FILE &gt;&gt; /etc/default/hostapd
+DAEMON_CONF=&quot;/etc/hostapd/hostapd.conf&quot;
+FILE
+
+# Cleanup function that runs when script exits, regardless or exit code
+function done {
+  rm /root/vpn.zip
+}
+trap done EXIT
+</code></pre>
+
+    </div>
+    
+        <div class="nav-left">
+    <a class="nav-item" href="https://www.facebook.com/sharer/sharer.php?u=https%3a%2f%2fsec.alexflor.es%2fpost%2fvpn-access-point%2f" title="Share on Facebook" target="_blank"><span class="fa fa-facebook fa-2x" aria-hidden="true"></span></a>
+    <a class="nav-item" href="https://plus.google.com/share?url=https%3a%2f%2fsec.alexflor.es%2fpost%2fvpn-access-point%2f" title="Share on Google+" target="_blank"><span class="fa fa-google-plus fa-2x" aria-hidden="true"></span></a>
+    <a class="nav-item" href="https://www.linkedin.com/shareArticle?mini=true&amp;url=https%3a%2f%2fsec.alexflor.es%2fpost%2fvpn-access-point%2f" title="Share on LinkedIn" target="_blank"><span class="fa fa-linkedin fa-2x" aria-hidden="true"></span></a>
+    <a class="nav-item" href="https://twitter.com/home?status=Creating%20a%20VPN%20Access%20Point - https%3a%2f%2fsec.alexflor.es%2fpost%2fvpn-access-point%2f" title="Tweet this" target="_blank"><span class="fa fa-twitter fa-2x"></span></a>
+    <a class="nav-item" href="http://www.reddit.com/submit?url=https%3a%2f%2fsec.alexflor.es%2fpost%2fvpn-access-point%2f&title=Creating%20a%20VPN%20Access%20Point" title="Share on Reddit" target="_blank"><span class="fa fa-reddit-alien fa-2x" aria-hidden="true"></span></a>
+    
+    </div>
+    
+  </div>
+</section>
+
+<section class="section">
+  <div class="container">
+    <aside><div id="disqus_thread"></div></aside>
+    <script type="text/javascript">
+      var disqus_shortname = 'blinksec';
+      (function() {
+        var dsq = document.createElement('script'); dsq.type = 'text/javascript'; dsq.async = true;
+        dsq.src = '//' + disqus_shortname + '.disqus.com/embed.js';
+        (document.getElementsByTagName('head')[0] || document.getElementsByTagName('body')[0]).appendChild(dsq);
+      })();
+    </script>
+    <noscript>Please enable JavaScript to view the <a href="https://disqus.com/?ref_noscript" rel="nofollow">comments powered by Disqus.</a></noscript>
+  </div>
+</section>
+
+
+<section class="section">
+  <div class="container has-text-centered">
+    <div style='margin: auto; width: 250px'><script src="https://www.hackthebox.eu/badge/1496"></script></div>
+    
+  </div>
+</section>
+
+
+<script src="//cdnjs.cloudflare.com/ajax/libs/highlight.js/9.11.0/highlight.min.js" integrity="sha256-+bhVTaRmJ/c07eV80nU8gD2cBBF0rYkf1txqXlrbvb0=" crossorigin="anonymous"></script>
+
+<script type="text/javascript" src="//cdnjs.cloudflare.com/ajax/libs/highlight.js/9.11.0/languages/go.min.js"></script>
+
+<script type="text/javascript" src="//cdnjs.cloudflare.com/ajax/libs/highlight.js/9.11.0/languages/dockerfile.min.js"></script>
+
+<script type="text/javascript" src="//cdnjs.cloudflare.com/ajax/libs/highlight.js/9.11.0/languages/javascript.min.js"></script>
+
+<script type="text/javascript" src="//cdnjs.cloudflare.com/ajax/libs/highlight.js/9.11.0/languages/python.min.js"></script>
+
+<script type="text/javascript" src="//cdnjs.cloudflare.com/ajax/libs/highlight.js/9.11.0/languages/ruby.min.js"></script>
+
+<script type="text/javascript" src="//cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.1/MathJax.js"></script>
+<script> hljs.initHighlightingOnLoad(); </script>
+
+
+
+<script>
+window.ga=window.ga||function(){(ga.q=ga.q||[]).push(arguments)};ga.l=+new Date;
+ga('create', 'UA-12497311-8', 'auto');
+ga('send', 'pageview');
+</script>
+<script async src='//www.google-analytics.com/analytics.js'></script>
+
+
+
+</body>
