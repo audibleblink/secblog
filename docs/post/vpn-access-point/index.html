@@ -123,15 +123,15 @@ tested this on Raspbian. See
 <a href="https://www.raspberrypi.org/downloads/raspbian/">here for instructions</a>
 on getting that set up.</p>
 
-<p>After installing the OS to the MicroSD card and before booting, create the blank file called <code>ssh</code>
+<p>After installing the OS to the MicroSD card and before booting, create a blank file called <code>ssh</code>
 in the boot partition of the SD card, so the SSH server is started on first run. As of some time in
-2016, ssh if off by default, but searches for this file to know whether to turn the service on or
-not.</p>
+2016, ssh if off by default, but the boot process searches for this file to know whether to turn
+the service on or not.</p>
 
 <p>You&rsquo;ll also need a PrivateInternetAccess account and you&rsquo;ll need to provide credentials to the
 script so the VPN tunnel can start at boot time.</p>
 
-<p><em>Aside:</em> Despite being an USA-based company under 5-eyes jurisdiction, PIA&rsquo;s claims that they don&rsquo;t
+<p><em>Aside:</em> Despite being a USA-based company under 5-eyes jurisdiction, PIA&rsquo;s claims that they don&rsquo;t
 log customer traffic has
 <a href="https://torrentfreak.com/vpn-providers-no-logging-claims-tested-in-fbi-case-160312/">been put to the test</a>
 in court. They can&rsquo;t turn over what they don&rsquo;t have.</p>
@@ -172,7 +172,7 @@ bash setup.sh
 </ol>
 
 <p>If everything went well, when the Pi boots back up, there should be a new WiFi network in the area.
-Log into it and visit <a href="https://www.privateinternetaccess.com/">https://www.privateinternetaccess.com/</a>. You should say this happy little
+Log into it and visit <a href="https://www.privateinternetaccess.com/">https://www.privateinternetaccess.com/</a>. You should see this happy little
 green text near the top of the page.</p>
 
 <p><img src="./success.png" alt="" /></p>

@@ -11,7 +11,7 @@ By now, there shouldn't be
 [any doubt](https://www.congress.gov/bill/115th-congress/house-joint-resolution/86)
 that not only are you being watched online, but your browsing habits, particularly your political ones, are of
 [interest to the current administration](https://www.dreamhost.com/blog/wp-content/uploads/2017/08/DH-Search-Warrant.pdf). 
-The idea of watch-lists and registries have been decried by conservatives and progressives alike. 
+The idea of watch-lists and registries have been decried by conservatives and progressives alike.
 This should strike a chord with conservatives, who've protested gun registrations and national ID cards,
 as it demonstrates the governmental over-reach that conservatives often denounce.
 It should strike a chord with progressives, whose demonstrations against faith-based registries
@@ -40,20 +40,20 @@ over-reaching governments or advertising companies that carelessly handle person
 ### Pre-setup
 Ensure that you have a working Raspberry Pi with a fresh install of the latest Raspbian OS. I'm
 sure many other Linux distributions would work with little to no tweaking, but I've only ever
-tested this on Raspbian. See 
+tested this on Raspbian. See
 [here for instructions](https://www.raspberrypi.org/downloads/raspbian/)
 on getting that set up.
 
-After installing the OS to the MicroSD card and before booting, create the blank file called `ssh`
+After installing the OS to the MicroSD card and before booting, create a blank file called `ssh`
 in the boot partition of the SD card, so the SSH server is started on first run. As of some time in
-2016, ssh if off by default, but searches for this file to know whether to turn the service on or
-not.
+2016, ssh if off by default, but the boot process searches for this file to know whether to turn
+the service on or not.
 
 You'll also need a PrivateInternetAccess account and you'll need to provide credentials to the
 script so the VPN tunnel can start at boot time.
 
-_Aside:_ Despite being an USA-based company under 5-eyes jurisdiction, PIA's claims that they don't
-log customer traffic has 
+_Aside:_ Despite being a USA-based company under 5-eyes jurisdiction, PIA's claims that they don't
+log customer traffic has
 [been put to the test](https://torrentfreak.com/vpn-providers-no-logging-claims-tested-in-fbi-case-160312/)
 in court. They can't turn over what they don't have.
 
@@ -96,7 +96,7 @@ in court. They can't turn over what they don't have.
 
 
 If everything went well, when the Pi boots back up, there should be a new WiFi network in the area.
-Log into it and visit https://www.privateinternetaccess.com/. You should say this happy little
+Log into it and visit https://www.privateinternetaccess.com/. You should see this happy little
 green text near the top of the page.
 
 ![](./success.png)
