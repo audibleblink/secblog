@@ -7,10 +7,19 @@
     <generator>Hugo -- gohugo.io</generator>
     <language>en-us</language>
     <copyright>Untitled.</copyright>
-    <lastBuildDate>Fri, 18 Aug 2017 20:07:36 -0400</lastBuildDate>
+    <lastBuildDate>Tue, 22 Aug 2017 22:47:45 -0400</lastBuildDate>
     
 	<atom:link href="https://sec.alexflor.es/post/index.xml" rel="self" type="application/rss+xml" />
     
+    
+    <item>
+      <title>BashyNumb.sh</title>
+      <link>https://sec.alexflor.es/post/bashynumb/</link>
+      <pubDate>Tue, 22 Aug 2017 22:47:45 -0400</pubDate>
+      
+      <guid>https://sec.alexflor.es/post/bashynumb/</guid>
+      <description>I&amp;rsquo;ve been running into more and more Linux boxes that don&amp;rsquo;t have python 2 installed. It&amp;rsquo;s been a little frustrating since I like to use a slightly modified version of the famous linuxprivchecker.py that almost all OSCP students know and love. I&amp;rsquo;m lazy and hate manual enumeration; makes my fingers go numb. I decided to spend an evening translating it to python 3, but quickly realized, &amp;ldquo;This python is just invoking shell commands, why am I doing this?</description>
+    </item>
     
     <item>
       <title>Creating a VPN Access Point</title>
