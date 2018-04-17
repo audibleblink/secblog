@@ -33,7 +33,7 @@ unzip -d VPN openvpn.zip
 find . -name *ovpn | rename 's/ /_/g'
 
 # Append `auth.txt` to the `user-pass-auth` directive
-sed -i 's/pass/pass auth.txt/' *.ovpn
+sed -i 's/pass/pass auth.txt/' VPN/*.ovpn
 
 # Create your auth.txt file
 echo "${PIA_USER}\n${PIA_PASS}" > VPN/auth.txt
