@@ -76,6 +76,26 @@
   <div class="container">
     
     <article>
+      <h1 class="title"><a href="https://sec.alexflor.es/post/imf_walkthrough/">B2R: IMF Walkthrough</a></h1>
+      <h2 class="subtitle is-5">November 1, 2016</h2>
+      
+      <div class="content">
+        After mapping the network and finding our IP address at 192.168.1.162, we can add it to our /etc/hosts temporarily to make things a little easier for us.
+echo &quot;192.168.1.162 imf&quot; &gt;&gt; /etc/hosts  Lets see what kind of machine we&rsquo;re dealing with.
+Ok, so web only. Great. nikto didn&rsquo;t reveal any low-hanging fruit so let&rsquo;s dive into the source.
+Check that out! Our first flag was hidden in http://imf/contact.php. This looks like base64.
+        
+        ...<a class="button is-link" href="https://sec.alexflor.es/post/imf_walkthrough/" style="height:28px">
+          Read more
+          <span class="icon is-small">
+            <i class="fa fa-angle-double-right"></i>
+          </span>
+        </a>
+        
+      </div>
+    </article>
+    
+    <article>
       <h1 class="title"><a href="https://sec.alexflor.es/post/b2r_troll_walkthrough/">B2R: Tr0ll Walkthrough</a></h1>
       <h2 class="subtitle is-5">October 20, 2016</h2>
       

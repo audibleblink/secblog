@@ -1,16 +1,15 @@
 <!DOCTYPE html>
 <html lang="en-us">
 <head>
-	<meta name="generator" content="Hugo 0.39" />
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <meta content="security, vulnhub" name="keywords">
 <meta content="Alex Flores" name="author">
-<meta property="og:title" content="SecBlog">
-<meta property="og:url" content="https://sec.alexflor.es/">
+<meta property="og:title" content="Categories - SecBlog">
+<meta property="og:url" content="https://sec.alexflor.es/categories/">
 <meta property="og:description" content="Things have been OK for me except that I&#39;m a zombie now">
 <meta property="og:type" content="website" />
-<title>SecBlog</title>
+<title>Categories | SecBlog</title>
 
 <script type="text/x-mathjax-config">
   MathJax.Hub.Config({
@@ -77,41 +76,11 @@
   <div class="container">
     
     <article>
-      <h1 class="title"><a href="https://sec.alexflor.es/post/imf_walkthrough/">B2R: IMF Walkthrough</a></h1>
-      <h2 class="subtitle is-5">November 1, 2016</h2>
+      <h1 class="title"><a href="https://sec.alexflor.es/categories/boot2root/">Boot2root</a></h1>
+      <h2 class="subtitle is-5">December 30, 2016</h2>
       
       <div class="content">
-        After mapping the network and finding our IP address at 192.168.1.162, we can add it to our /etc/hosts temporarily to make things a little easier for us.
-echo &quot;192.168.1.162 imf&quot; &gt;&gt; /etc/hosts  Lets see what kind of machine we&rsquo;re dealing with.
-Ok, so web only. Great. nikto didn&rsquo;t reveal any low-hanging fruit so let&rsquo;s dive into the source.
-Check that out! Our first flag was hidden in http://imf/contact.php. This looks like base64.
         
-        ...<a class="button is-link" href="https://sec.alexflor.es/post/imf_walkthrough/" style="height:28px">
-          Read more
-          <span class="icon is-small">
-            <i class="fa fa-angle-double-right"></i>
-          </span>
-        </a>
-        
-      </div>
-    </article>
-    
-    <article>
-      <h1 class="title"><a href="https://sec.alexflor.es/post/b2r_troll_walkthrough/">B2R: Tr0ll Walkthrough</a></h1>
-      <h2 class="subtitle is-5">October 20, 2016</h2>
-      
-      <div class="content">
-        A couple of weeks ago, work sent me to a security class for an upcoming product. While there, I learned about vulnhub, a repository of intentionally vulnerable virtual machines for anyone to compromise. Since coming back, vulnhub has become my new obsession. Here&rsquo;s a walkthrough of my attempt.
-Note: I struggled a bit more that this writeup lets on. The struggle is ommited for clarity and brevity.
-__
-After finding the VM with an nmap scan, we see a couple of open ports.
-        
-        ...<a class="button is-link" href="https://sec.alexflor.es/post/b2r_troll_walkthrough/" style="height:28px">
-          Read more
-          <span class="icon is-small">
-            <i class="fa fa-angle-double-right"></i>
-          </span>
-        </a>
         
       </div>
     </article>
@@ -123,13 +92,6 @@ After finding the VM with an nmap scan, we see a couple of open ports.
     <nav class="level is-mobile">
       <div class="level-left">
         <div class="level-item">
-          
-          <a class="button" href="/">
-            <span class="icon is-small is-marginless">
-              <i class="fa fa-angle-left"></i>
-            </span>
-            Newer
-          </a>
           
         </div>
       </div>
@@ -173,7 +135,6 @@ ga('create', 'UA-12497311-8', 'auto');
 ga('send', 'pageview');
 </script>
 <script async src='//www.google-analytics.com/analytics.js'></script>
-
 
 
 

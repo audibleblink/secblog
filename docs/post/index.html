@@ -76,6 +76,25 @@
   <div class="container">
     
     <article>
+      <h1 class="title"><a href="https://sec.alexflor.es/post/password_spraying_with_doxycannon/">Password Spraying with DoxyCannon</a></h1>
+      <h2 class="subtitle is-5">April 16, 2018</h2>
+      
+      <div class="content">
+        Password sprays are here to stay. It&rsquo;s probably a good idea to configure some clever WAF rules, implement captcha systems, and set up additional alerting. But once implemented, how do you test and tune your protective measures?
+Enter DoxyCannon
+DoxyCannon&rsquo;s name borrows from ProxyCannon, a script that instantiates cloud infrastructure through which one can proxy requests. Unlike ProxyCannon, DoxyCannon gives you the same functionality without needing to rely on cloud providers.
+        
+        ...<a class="button is-link" href="https://sec.alexflor.es/post/password_spraying_with_doxycannon/" style="height:28px">
+          Read more
+          <span class="icon is-small">
+            <i class="fa fa-angle-double-right"></i>
+          </span>
+        </a>
+        
+      </div>
+    </article>
+    
+    <article>
       <h1 class="title"><a href="https://sec.alexflor.es/post/bashynumb/">BashyNumb.sh</a></h1>
       <h2 class="subtitle is-5">August 22, 2017</h2>
       
@@ -222,26 +241,6 @@ Executive Summary This machine had several services running, some of which revea
         Executive Summary This machine had an unprotected folder which allowed uploading of malicious PHP code which could then be executed remotely. An attacker could then create an unprivileged shell on the victim machine and begin to explore the system for additional vulnerabilities which could lead to a full compromise. During the exploration, an outdated version of chkrootkit was found. By exploiting a known vulnerability in the way chkrootkit parses arguments, an attacker could create a malicious file that would later be run by chkrootkit as a fully privileged user.
         
         ...<a class="button is-link" href="https://sec.alexflor.es/post/sickos_1.2/" style="height:28px">
-          Read more
-          <span class="icon is-small">
-            <i class="fa fa-angle-double-right"></i>
-          </span>
-        </a>
-        
-      </div>
-    </article>
-    
-    <article>
-      <h1 class="title"><a href="https://sec.alexflor.es/post/imf_walkthrough/">B2R: IMF Walkthrough</a></h1>
-      <h2 class="subtitle is-5">November 1, 2016</h2>
-      
-      <div class="content">
-        After mapping the network and finding our IP address at 192.168.1.162, we can add it to our /etc/hosts temporarily to make things a little easier for us.
-echo &quot;192.168.1.162 imf&quot; &gt;&gt; /etc/hosts  Lets see what kind of machine we&rsquo;re dealing with.
-Ok, so web only. Great. nikto didn&rsquo;t reveal any low-hanging fruit so let&rsquo;s dive into the source.
-Check that out! Our first flag was hidden in http://imf/contact.php. This looks like base64.
-        
-        ...<a class="button is-link" href="https://sec.alexflor.es/post/imf_walkthrough/" style="height:28px">
           Read more
           <span class="icon is-small">
             <i class="fa fa-angle-double-right"></i>

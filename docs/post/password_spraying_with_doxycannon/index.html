@@ -1,0 +1,236 @@
+<!DOCTYPE html>
+<html lang="en-us">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta content="security, vulnhub" name="keywords">
+<meta content="Alex Flores" name="author">
+<meta property="og:title" content="Password Spraying with DoxyCannon - SecBlog">
+<meta property="og:url" content="https://sec.alexflor.es/post/password_spraying_with_doxycannon/">
+<meta property="og:description" content="Things have been OK for me except that I&#39;m a zombie now">
+<meta property="og:type" content="website" />
+<title>Password Spraying with DoxyCannon | SecBlog</title>
+
+<script type="text/x-mathjax-config">
+  MathJax.Hub.Config({
+    tex2jax: {
+      inlineMath: [ ['$','$'], ["\\(","\\)"] ],
+      processEscapes: true
+    }
+  });
+</script>
+<link rel="stylesheet" href="https://sec.alexflor.es/css/style.css">
+<link rel="shortcut icon" href="https://sec.alexflor.es/wave.ico">
+<link rel="stylesheet" href="//cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css" integrity="sha256-eZrrJcwDc/3uDhsdt61sL2oOBY362qM3lon1gyExkL0=" crossorigin="anonymous" />
+
+<link rel="stylesheet" href="//cdnjs.cloudflare.com/ajax/libs/highlight.js/9.9.0/styles/atom-one-dark.min.css">
+
+</head>
+
+<body>
+<section class="section">
+  <div class="container">
+    <nav class="nav">
+      <div class="nav-left">
+        <a class="nav-item" href="https://sec.alexflor.es"><h1 class="title is-4">SecBlog</h1></a>
+      </div>
+      <div class="nav-right">
+        <nav class="nav-item level is-mobile">
+          
+          <a class="level-item" href="/categories/boot2root" target="_blank">
+            <span class="icon">
+              <i class="fa fa-terminal"></i>
+            </span>
+          </a>
+          
+          <a class="level-item" href="https://github.com/audibleblink" target="_blank">
+            <span class="icon">
+              <i class="fa fa-github"></i>
+            </span>
+          </a>
+          
+          <a class="level-item" href="https://twitter.com/4lex" target="_blank">
+            <span class="icon">
+              <i class="fa fa-twitter"></i>
+            </span>
+          </a>
+          
+          <a class="level-item" href="https://linkedin.com/in/alex2" target="_blank">
+            <span class="icon">
+              <i class="fa fa-linkedin-square"></i>
+            </span>
+          </a>
+          
+          <a class="level-item" href="/index.xml" target="_blank">
+            <span class="icon">
+              <i class="fa fa-rss"></i>
+            </span>
+          </a>
+          
+        </nav>
+      </div>
+    </nav>
+  </div>
+</section>
+
+<section class="section">
+  <div class="container">
+    <h1 class="title">Password Spraying with DoxyCannon</h1>
+    <h2 class="subtitle is-5">April 16, 2018 by Alex Flores</h2>
+    
+    <div class="content">
+      <p>Password sprays are here to stay. It&rsquo;s probably a good idea to configure some clever WAF rules,
+implement captcha systems, and set up additional alerting. But once implemented, how do you test and
+tune your protective measures?</p>
+
+<p>Enter <a href="https://github.com/audibleblink/doxycannon">DoxyCannon</a></p>
+
+<p>DoxyCannon&rsquo;s name borrows from ProxyCannon, a script that instantiates cloud infrastructure through
+which one can proxy requests. Unlike ProxyCannon, DoxyCannon gives you the same functionality
+without needing to rely on cloud providers. Everything is local. DoxyCannon will use Docker and a
+collection of OpenVPN config files to create local proxies on localhost. In combination with tools
+like proxychains or DoxyCannon&rsquo;s own DoxyProxy, you can shuffle through local proxies for each
+request, masking the true IP of the attacking machine.</p>
+
+<p>Let&rsquo;s see what this looks like on the receiving end. First, let&rsquo;s set up DoxyCannon.</p>
+
+<pre><code class="language-sh">git clone https://github.com/audibleblink/doxycannon
+cd doxycannon
+</code></pre>
+
+<p>We&rsquo;re going to using Private Internet Access as our VPN provider.</p>
+
+<pre><code class="language-sh">wget  https://www.privateinternetaccess.com/openvpn/openvpn.zip
+unzip -d VPN openvpn.zip
+
+# Remove whitespace from the ovpn file names
+find . -name *ovpn | rename 's/ /_/g'
+
+# Append `auth.txt` to the `user-pass-auth` directive
+sed -i 's/pass/pass auth.txt/' *.ovpn
+
+# Create your auth.txt file
+echo &quot;${PIA_USER}\n${PIA_PASS}&quot; &gt; VPN/auth.txt
+</code></pre>
+
+<p>Once everything&rsquo;s been set up, you can build the image and bring up your PIA containers.</p>
+
+<p><img src="001.jpg" alt="001.jpg" /></p>
+
+<p>At this point, DoxyCannon has dynamically created a <code>proxychains.conf</code> file for you in the root of
+the project directory:</p>
+
+<pre><code># proxychains.conf
+# ------------------------------------------------------------------------
+# This file is automatically generated by doxycannon. If you need changes,
+# make them to the template string in doxycannon.py
+random_chain
+quiet_mode
+proxy_dns
+remote_dns_subnet 224
+tcp_read_time_out 15000
+tcp_connect_time_out 8000
+
+[ProxyList]
+socks5 127.0.0.1 5000
+socks5 127.0.0.1 5001
+socks5 127.0.0.1 5002
+socks5 127.0.0.1 5003
+[...snip]
+socks5 127.0.0.1 5042
+socks5 127.0.0.1 5043
+</code></pre>
+
+<p>If you&rsquo;re using a console application for your spray, you&rsquo;re ready to go:
+<img src="003.jpg" alt="003.jpg" /></p>
+
+<p>Here&rsquo;s what our web server access logs look like:
+<img src="004.jpg" alt="004.jpg" /></p>
+
+<p>With the <code>--single</code> flag, DoxyCannon also has the ability to create a proxy rotator that provides a
+single port at which one can point GUI applications.</p>
+
+<pre><code class="language-sh"># Start DoxyProxy
+❯❯ ./doxycannon.py --single
+[+] Writing HAProxy configuration
+[*] Image doxyproxy built.
+[*] Staring single-port mode...
+[*] Proxy rotator listening on port 1337. Ctrl-c to quit
+</code></pre>
+
+<p>While DoxyProxy is running, applications like Burp Suite can be configured to use port 1337.
+DoxyProxy is just another docker container. It runs HAProxy in a layer 4, round-robin
+configuration and binds to the host network.</p>
+
+<p><img src="005.jpg" alt="005.jpg" />
+<img src="006.jpg" alt="006.jpg" />
+<img src="007.jpg" alt="007.jpg" /></p>
+
+<p>I&rsquo;m still adding features to DoxyProxy. Coming up will be the ability to control remote docker
+hosts using the official docker sdk.</p>
+
+    </div>
+    
+        <div class="nav-left">
+    <a class="nav-item" href="https://www.facebook.com/sharer/sharer.php?u=https%3a%2f%2fsec.alexflor.es%2fpost%2fpassword_spraying_with_doxycannon%2f" title="Share on Facebook" target="_blank"><span class="fa fa-facebook fa-2x" aria-hidden="true"></span></a>
+    <a class="nav-item" href="https://plus.google.com/share?url=https%3a%2f%2fsec.alexflor.es%2fpost%2fpassword_spraying_with_doxycannon%2f" title="Share on Google+" target="_blank"><span class="fa fa-google-plus fa-2x" aria-hidden="true"></span></a>
+    <a class="nav-item" href="https://www.linkedin.com/shareArticle?mini=true&amp;url=https%3a%2f%2fsec.alexflor.es%2fpost%2fpassword_spraying_with_doxycannon%2f" title="Share on LinkedIn" target="_blank"><span class="fa fa-linkedin fa-2x" aria-hidden="true"></span></a>
+    <a class="nav-item" href="https://twitter.com/home?status=Password%20Spraying%20with%20DoxyCannon - https%3a%2f%2fsec.alexflor.es%2fpost%2fpassword_spraying_with_doxycannon%2f" title="Tweet this" target="_blank"><span class="fa fa-twitter fa-2x"></span></a>
+    <a class="nav-item" href="http://www.reddit.com/submit?url=https%3a%2f%2fsec.alexflor.es%2fpost%2fpassword_spraying_with_doxycannon%2f&title=Password%20Spraying%20with%20DoxyCannon" title="Share on Reddit" target="_blank"><span class="fa fa-reddit-alien fa-2x" aria-hidden="true"></span></a>
+    
+    </div>
+    
+  </div>
+</section>
+
+<section class="section">
+  <div class="container">
+    <aside><div id="disqus_thread"></div></aside>
+    <script type="text/javascript">
+      var disqus_shortname = 'blinksec';
+      (function() {
+        var dsq = document.createElement('script'); dsq.type = 'text/javascript'; dsq.async = true;
+        dsq.src = '//' + disqus_shortname + '.disqus.com/embed.js';
+        (document.getElementsByTagName('head')[0] || document.getElementsByTagName('body')[0]).appendChild(dsq);
+      })();
+    </script>
+    <noscript>Please enable JavaScript to view the <a href="https://disqus.com/?ref_noscript" rel="nofollow">comments powered by Disqus.</a></noscript>
+  </div>
+</section>
+
+
+<section class="section">
+  <div class="container has-text-centered">
+    <div style='margin: auto; width: 250px'><script src="https://www.hackthebox.eu/badge/1496"></script></div>
+    
+  </div>
+</section>
+
+
+<script src="//cdnjs.cloudflare.com/ajax/libs/highlight.js/9.11.0/highlight.min.js" integrity="sha256-+bhVTaRmJ/c07eV80nU8gD2cBBF0rYkf1txqXlrbvb0=" crossorigin="anonymous"></script>
+
+<script type="text/javascript" src="//cdnjs.cloudflare.com/ajax/libs/highlight.js/9.11.0/languages/go.min.js"></script>
+
+<script type="text/javascript" src="//cdnjs.cloudflare.com/ajax/libs/highlight.js/9.11.0/languages/dockerfile.min.js"></script>
+
+<script type="text/javascript" src="//cdnjs.cloudflare.com/ajax/libs/highlight.js/9.11.0/languages/javascript.min.js"></script>
+
+<script type="text/javascript" src="//cdnjs.cloudflare.com/ajax/libs/highlight.js/9.11.0/languages/python.min.js"></script>
+
+<script type="text/javascript" src="//cdnjs.cloudflare.com/ajax/libs/highlight.js/9.11.0/languages/ruby.min.js"></script>
+
+<script type="text/javascript" src="//cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.1/MathJax.js"></script>
+<script> hljs.initHighlightingOnLoad(); </script>
+
+
+
+<script>
+window.ga=window.ga||function(){(ga.q=ga.q||[]).push(arguments)};ga.l=+new Date;
+ga('create', 'UA-12497311-8', 'auto');
+ga('send', 'pageview');
+</script>
+<script async src='//www.google-analytics.com/analytics.js'></script>
+
+
+
+</body>

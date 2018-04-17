@@ -6,11 +6,21 @@
     <description>Recent content in Posts on SecBlog</description>
     <generator>Hugo -- gohugo.io</generator>
     <language>en-us</language>
-    <copyright>Untitled.</copyright>
-    <lastBuildDate>Tue, 22 Aug 2017 22:47:45 -0400</lastBuildDate>
+    <lastBuildDate>Mon, 16 Apr 2018 22:43:36 -0400</lastBuildDate>
     
 	<atom:link href="https://sec.alexflor.es/post/index.xml" rel="self" type="application/rss+xml" />
     
+    
+    <item>
+      <title>Password Spraying with DoxyCannon</title>
+      <link>https://sec.alexflor.es/post/password_spraying_with_doxycannon/</link>
+      <pubDate>Mon, 16 Apr 2018 22:43:36 -0400</pubDate>
+      
+      <guid>https://sec.alexflor.es/post/password_spraying_with_doxycannon/</guid>
+      <description>Password sprays are here to stay. It&amp;rsquo;s probably a good idea to configure some clever WAF rules, implement captcha systems, and set up additional alerting. But once implemented, how do you test and tune your protective measures?
+Enter DoxyCannon
+DoxyCannon&amp;rsquo;s name borrows from ProxyCannon, a script that instantiates cloud infrastructure through which one can proxy requests. Unlike ProxyCannon, DoxyCannon gives you the same functionality without needing to rely on cloud providers.</description>
+    </item>
     
     <item>
       <title>BashyNumb.sh</title>
