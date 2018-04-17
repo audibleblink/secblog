@@ -40,8 +40,7 @@ echo "${PIA_USER}\n${PIA_PASS}" > VPN/auth.txt
 ```
 
 Once everything's been set up, you can build the image and bring up your PIA containers.
-
-![001.jpg](001.jpg)
+[![](001.jpg)](001.jpg)
 
 At this point, DoxyCannon has dynamically created a `proxychains.conf` file for you in the root of
 the project directory:
@@ -69,10 +68,10 @@ socks5 127.0.0.1 5043
 ```
 
 If you're using a console application for your spray, you're ready to go:
-![003.jpg](003.jpg)
+[![003.jpg](003.jpg)](003.jpg)
 
 Here's what our web server access logs look like:
-![004.jpg](004.jpg)
+[ ![004.jpg](004.jpg) ](004.jpg)
 
 
 With the `--single` flag, DoxyCannon also has the ability to create a proxy rotator that provides a
@@ -91,9 +90,9 @@ While DoxyProxy is running, applications like Burp Suite can be configured to us
 DoxyProxy is just another docker container. It runs HAProxy in a layer 4, round-robin
 configuration and binds to the host network.
 
-![005.jpg](005.jpg)
-![006.jpg](006.jpg)
-![007.jpg](007.jpg)
+[![005.jpg](005.jpg)](005.jpg)
+[![006.jpg](006.jpg)](006.jpg)
+[![007.jpg](007.jpg)](007.jpg)
 
 I'm still adding features to DoxyProxy. Coming up will be the ability to control remote docker
 hosts using the official docker sdk. 

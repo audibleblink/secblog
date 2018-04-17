@@ -113,9 +113,8 @@ sed -i 's/pass/pass auth.txt/' VPN/*.ovpn
 echo &quot;${PIA_USER}\n${PIA_PASS}&quot; &gt; VPN/auth.txt
 </code></pre>
 
-<p>Once everything&rsquo;s been set up, you can build the image and bring up your PIA containers.</p>
-
-<p><img src="001.jpg" alt="001.jpg" /></p>
+<p>Once everything&rsquo;s been set up, you can build the image and bring up your PIA containers.
+<a href="001.jpg"><img src="001.jpg" alt="" /></a></p>
 
 <p>At this point, DoxyCannon has dynamically created a <code>proxychains.conf</code> file for you in the root of
 the project directory:</p>
@@ -142,10 +141,10 @@ socks5 127.0.0.1 5043
 </code></pre>
 
 <p>If you&rsquo;re using a console application for your spray, you&rsquo;re ready to go:
-<img src="003.jpg" alt="003.jpg" /></p>
+<a href="003.jpg"><img src="003.jpg" alt="003.jpg" /></a></p>
 
 <p>Here&rsquo;s what our web server access logs look like:
-<img src="004.jpg" alt="004.jpg" /></p>
+<a href="004.jpg"> <img src="004.jpg" alt="004.jpg" /> </a></p>
 
 <p>With the <code>--single</code> flag, DoxyCannon also has the ability to create a proxy rotator that provides a
 single port at which one can point GUI applications.</p>
@@ -162,9 +161,9 @@ single port at which one can point GUI applications.</p>
 DoxyProxy is just another docker container. It runs HAProxy in a layer 4, round-robin
 configuration and binds to the host network.</p>
 
-<p><img src="005.jpg" alt="005.jpg" />
-<img src="006.jpg" alt="006.jpg" />
-<img src="007.jpg" alt="007.jpg" /></p>
+<p><a href="005.jpg"><img src="005.jpg" alt="005.jpg" /></a>
+<a href="006.jpg"><img src="006.jpg" alt="006.jpg" /></a>
+<a href="007.jpg"><img src="007.jpg" alt="007.jpg" /></a></p>
 
 <p>I&rsquo;m still adding features to DoxyProxy. Coming up will be the ability to control remote docker
 hosts using the official docker sdk.</p>
