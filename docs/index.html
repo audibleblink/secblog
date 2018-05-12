@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html lang="en-us">
 <head>
-	<meta name="generator" content="Hugo 0.39" />
+	<meta name="generator" content="Hugo 0.40.2" />
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <meta content="security, vulnhub" name="keywords">
@@ -75,6 +75,24 @@
 
 <section class="section">
   <div class="container">
+    
+    <article>
+      <h1 class="title"><a href="https://sec.alexflor.es/post/icmp_pcaps/">Analyzing Data Exfiltration over ICMP</a></h1>
+      <h2 class="subtitle is-5">May 11, 2018</h2>
+      
+      <div class="content">
+        I&rsquo;m a big fan of learning through competition. Capture The Flag games have tremendous utility for training within the Security sector and even outside of it. Intentionally vulnerable web applications, like OWASP&rsquo;s JuiceShop, are excellent tools for assisting in developing Secure Software Development Life-cycle programs within an organization.
+So let&rsquo;s take an exercise I recently came across in a CTF event. The skills required to solve the challenge are actually quite useful in real-world defensive scenarios.
+        
+        ...<a class="button is-link" href="https://sec.alexflor.es/post/icmp_pcaps/" style="height:28px">
+          Read more
+          <span class="icon is-small">
+            <i class="fa fa-angle-double-right"></i>
+          </span>
+        </a>
+        
+      </div>
+    </article>
     
     <article>
       <h1 class="title"><a href="https://sec.alexflor.es/post/password_spraying_with_doxycannon/">Password Spraying with DoxyCannon</a></h1>
@@ -225,23 +243,6 @@ The ssh client has an often-overlooked configuration file that resides in your ~
 Executive Summary This machine had several services running, some of which revealed employee names and accounts that could later be leveraged to compromise the system. A Wordpress plug-in vulnerability was found and used to extract database credentials, which then led to a non-privileged shell. Once scanned, it was discovered that a script ran every 20 minutes as the root user and that the script was writable to our non-privileged user.
         
         ...<a class="button is-link" href="https://sec.alexflor.es/post/stapler/" style="height:28px">
-          Read more
-          <span class="icon is-small">
-            <i class="fa fa-angle-double-right"></i>
-          </span>
-        </a>
-        
-      </div>
-    </article>
-    
-    <article>
-      <h1 class="title"><a href="https://sec.alexflor.es/post/sickos_1.2/">B2R: SickOSv1.2</a></h1>
-      <h2 class="subtitle is-5">December 20, 2016</h2>
-      
-      <div class="content">
-        Executive Summary This machine had an unprotected folder which allowed uploading of malicious PHP code which could then be executed remotely. An attacker could then create an unprivileged shell on the victim machine and begin to explore the system for additional vulnerabilities which could lead to a full compromise. During the exploration, an outdated version of chkrootkit was found. By exploiting a known vulnerability in the way chkrootkit parses arguments, an attacker could create a malicious file that would later be run by chkrootkit as a fully privileged user.
-        
-        ...<a class="button is-link" href="https://sec.alexflor.es/post/sickos_1.2/" style="height:28px">
           Read more
           <span class="icon is-small">
             <i class="fa fa-angle-double-right"></i>

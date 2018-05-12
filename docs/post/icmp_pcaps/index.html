@@ -1,0 +1,284 @@
+<!DOCTYPE html>
+<html lang="en-us">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta content="security, vulnhub" name="keywords">
+<meta content="Alex Flores" name="author">
+<meta property="og:title" content="Analyzing Data Exfiltration over ICMP - SecBlog">
+<meta property="og:url" content="https://sec.alexflor.es/post/icmp_pcaps/">
+<meta property="og:description" content="Things have been OK for me except that I&#39;m a zombie now">
+<meta property="og:type" content="website" />
+<title>Analyzing Data Exfiltration over ICMP | SecBlog</title>
+
+<script type="text/x-mathjax-config">
+  MathJax.Hub.Config({
+    tex2jax: {
+      inlineMath: [ ['$','$'], ["\\(","\\)"] ],
+      processEscapes: true
+    }
+  });
+</script>
+<link rel="stylesheet" href="https://sec.alexflor.es/css/style.css">
+<link rel="shortcut icon" href="https://sec.alexflor.es/wave.ico">
+<link rel="stylesheet" href="//cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css" integrity="sha256-eZrrJcwDc/3uDhsdt61sL2oOBY362qM3lon1gyExkL0=" crossorigin="anonymous" />
+
+<link rel="stylesheet" href="//cdnjs.cloudflare.com/ajax/libs/highlight.js/9.9.0/styles/atom-one-dark.min.css">
+
+</head>
+
+<body>
+<section class="section">
+  <div class="container">
+    <nav class="nav">
+      <div class="nav-left">
+        <a class="nav-item" href="https://sec.alexflor.es"><h1 class="title is-4">SecBlog</h1></a>
+      </div>
+      <div class="nav-right">
+        <nav class="nav-item level is-mobile">
+          
+          <a class="level-item" href="/categories/boot2root" target="_blank">
+            <span class="icon">
+              <i class="fa fa-terminal"></i>
+            </span>
+          </a>
+          
+          <a class="level-item" href="https://github.com/audibleblink" target="_blank">
+            <span class="icon">
+              <i class="fa fa-github"></i>
+            </span>
+          </a>
+          
+          <a class="level-item" href="https://twitter.com/4lex" target="_blank">
+            <span class="icon">
+              <i class="fa fa-twitter"></i>
+            </span>
+          </a>
+          
+          <a class="level-item" href="https://linkedin.com/in/alex2" target="_blank">
+            <span class="icon">
+              <i class="fa fa-linkedin-square"></i>
+            </span>
+          </a>
+          
+          <a class="level-item" href="/index.xml" target="_blank">
+            <span class="icon">
+              <i class="fa fa-rss"></i>
+            </span>
+          </a>
+          
+        </nav>
+      </div>
+    </nav>
+  </div>
+</section>
+
+<section class="section">
+  <div class="container">
+    <h1 class="title">Analyzing Data Exfiltration over ICMP</h1>
+    <h2 class="subtitle is-5">May 11, 2018 by Alex Flores</h2>
+    
+    <div class="content">
+      <p><img src="title.jpg" alt="" /></p>
+
+<p>I&rsquo;m a big fan of learning through competition. Capture The Flag games have tremendous utility for
+training within the Security sector and even outside of it. Intentionally vulnerable web
+applications, like <a href="https://www.owasp.org/index.php/OWASP_Juice_Shop_Project">OWASP&rsquo;s JuiceShop</a>,
+are excellent tools for assisting in developing Secure Software Development Life-cycle programs
+within an organization.</p>
+
+<p>So let&rsquo;s take an exercise I recently came across in a CTF event. The skills required to solve the
+challenge are actually quite useful in real-world defensive scenarios.</p>
+
+<p><strong>Story Time</strong></p>
+
+<p>You work for the Info Sec team of Acme Co. As part of your security toolset, you&rsquo;ve set up an
+Intrusion Detection System on a span port in your data center. During a routine Threat Hunting
+exercise, your team discovers some anomalous traffic coming from a particular server. Your IDS
+says that there was a strange amount of ICMP traffic coming from this machine. You go back to when
+the traffic occurred and pull a packet capture during that time-frame and you open it in WireShark.</p>
+
+<p>You scan around and see some normal looking traffic until you spot the flood of ICMP packets.</p>
+
+<p><img src="2.png" alt="" /></p>
+
+<p>After filtering for the suspected packet type, you begin to analyze each packet and before long you
+notice most of the ICMP packets consist of a <code>type</code> that WireShark doesn&rsquo;t recognize.</p>
+
+<p><img src="3.png" alt="" /></p>
+
+<p>This is prime example of <em>&ldquo;never fully trust your tools&rdquo;</em>. ICMP has a defined
+<a href="https://www.iana.org/assignments/icmp-parameters/icmp-parameters.xhtml#icmp-parameters-types">set of possible &ldquo;good&rdquo; types</a>.
+A legitimate ICMP request should only contain one of these predefined <code>types</code>. WireShark is
+attempting to map a <code>type</code> to a plaintext definition, and failing to do so because these aren&rsquo;t
+legitimate ICMP echo requests.</p>
+
+<p>By scanning through the <code>type</code> flags of a few successive packets, we begin to suspect that these
+values might be ASCII codes, given the lower/upper bounds. If we manually take the first 3 codes
+<code>(71, 73, 70)</code> and convert them, we get:</p>
+
+<pre><code class="language-sh">for num in 71 73 70; do 
+  ascii=&quot;$(printf '%03o' $num)&quot;
+  printf &quot;\\${ascii}&quot;
+done
+
+&gt; GIF
+</code></pre>
+
+<p>It appears we have a GIF file header in some ICMP traffic. Strange indeed.  At this point, we
+decide that switching to a programatic approach might be easier. Python&rsquo;s <code>scapy</code> library is a handy
+packet parsing tool I&rsquo;ve used in the past.</p>
+
+<p>Let&rsquo;s fire up the iPython REPL and import our tools:</p>
+
+<pre><code class="language-python">from scapy.all import IP, ICMP, rdpcap
+pcap = rdpcap('data.pcap')
+</code></pre>
+
+<p>We&rsquo;re going to want to filter out all of our ICMP packets:</p>
+
+<pre><code class="language-python">packets = [p for p in pcap if ICMP in p]
+</code></pre>
+
+<p><img src="4.png" alt="" /></p>
+
+<p>Since the values used for the <code>type</code> flag span the entire ASCII range, it&rsquo;s a statistical
+probability that this ICMP traffic will send a legitimate ICMP echo request. That means we&rsquo;ll get
+legitimate responses in our PCAP data. We can isolate requests by specifying that we only want ICMP
+packets that are <em>leaving</em> a particular source.</p>
+
+<pre><code class="language-python">packets = [p for p in packets if p[IP].src == '10.136.255.127']
+</code></pre>
+
+<p>Now we have a handle on all ICMP traffic leaving 10.136.255.127. The next step is to convert
+everything from ASCII codes to their corresponding characters and write to disk.</p>
+
+<pre><code class="language-python"># take type flag of each packet
+ascii = [p[ICMP].type for p in packets]
+
+# convert them to character string
+chars = [chr(x) for x in ascii]
+data = &quot;&quot;.join(chars)
+
+# write the data to a file
+with open('mystery.file', 'w') as f:
+    f.write(data)
+</code></pre>
+
+<p>What exactly is this file?</p>
+
+<pre><code class="language-sh">file mystery.file
+</code></pre>
+
+<p><img src="5.png" alt="" /></p>
+
+<p>And we have our data. If we want to go back and clean up some of the code and make it somewhat
+reusable&hellip;</p>
+
+<pre><code class="language-python">from scapy.all import IP, ICMP, rdpcap
+
+FILE = 'data.pcap'
+SOURCE_IP = '10.136.255.127'
+PROTO = ICMP
+
+
+def filter_op(pkt):
+    &quot;&quot;&quot;Filter operation for [PROTO] and [SRC_IP]&quot;&quot;&quot;
+    return PROTO in pkt and pkt[IP].src == SOURCE_IP
+
+def ascii_convert(pkt):
+    &quot;&quot;&quot;Map function to convert ASCII values to text&quot;&quot;&quot;
+    return chr(pkt[PROTO].type
+
+server_icmp = filter(filter_op, rdpcap(FILE))
+data = map(ascii_convert, server_icmp)
+
+with open('mystery.file', 'w') as f:
+    f.write(&quot;&quot;.join(data))
+
+</code></pre>
+
+<p>In this example, our packet capture contained a single file, the GIF. Not a likely scenario in a
+real-world investigation. If an attacker had initiated an ICMP shell or downloaded multiple files,
+it would be difficult to tell where one file ends and another begins. In this example, <code>binwalk</code>
+could help us extract the multiple files.</p>
+
+<p>To simulate this scenario, add the following line to our script, just before with write-to-disk
+operation:</p>
+
+<pre><code class="language-python">data = data + data + data
+</code></pre>
+
+<p>After running the python file again, we can run the resulting file through binwalk.</p>
+
+<p><img src="6.png" alt="" /></p>
+
+<p>Binwalk was able to find 3 distinct files embedded in the dumped data from our script.</p>
+
+<p><a href="data.pcap">Here&rsquo;s</a> the PCAP for those playing the home game. Happy hunting.</p>
+
+    </div>
+    
+        <div class="nav-left">
+    <a class="nav-item" href="https://www.facebook.com/sharer/sharer.php?u=https%3a%2f%2fsec.alexflor.es%2fpost%2ficmp_pcaps%2f" title="Share on Facebook" target="_blank"><span class="fa fa-facebook fa-2x" aria-hidden="true"></span></a>
+    <a class="nav-item" href="https://plus.google.com/share?url=https%3a%2f%2fsec.alexflor.es%2fpost%2ficmp_pcaps%2f" title="Share on Google+" target="_blank"><span class="fa fa-google-plus fa-2x" aria-hidden="true"></span></a>
+    <a class="nav-item" href="https://www.linkedin.com/shareArticle?mini=true&amp;url=https%3a%2f%2fsec.alexflor.es%2fpost%2ficmp_pcaps%2f" title="Share on LinkedIn" target="_blank"><span class="fa fa-linkedin fa-2x" aria-hidden="true"></span></a>
+    <a class="nav-item" href="https://twitter.com/home?status=Analyzing%20Data%20Exfiltration%20over%20ICMP - https%3a%2f%2fsec.alexflor.es%2fpost%2ficmp_pcaps%2f" title="Tweet this" target="_blank"><span class="fa fa-twitter fa-2x"></span></a>
+    <a class="nav-item" href="http://www.reddit.com/submit?url=https%3a%2f%2fsec.alexflor.es%2fpost%2ficmp_pcaps%2f&title=Analyzing%20Data%20Exfiltration%20over%20ICMP" title="Share on Reddit" target="_blank"><span class="fa fa-reddit-alien fa-2x" aria-hidden="true"></span></a>
+    
+    </div>
+    
+  </div>
+</section>
+
+<section class="section">
+  <div class="container">
+    <aside><div id="disqus_thread"></div></aside>
+    <script type="text/javascript">
+      var disqus_shortname = 'blinksec';
+      (function() {
+        var dsq = document.createElement('script'); dsq.type = 'text/javascript'; dsq.async = true;
+        dsq.src = '//' + disqus_shortname + '.disqus.com/embed.js';
+        (document.getElementsByTagName('head')[0] || document.getElementsByTagName('body')[0]).appendChild(dsq);
+      })();
+    </script>
+    <noscript>Please enable JavaScript to view the <a href="https://disqus.com/?ref_noscript" rel="nofollow">comments powered by Disqus.</a></noscript>
+  </div>
+</section>
+
+
+<section class="section">
+  <div class="container has-text-centered">
+    <div style='margin: auto; width: 250px'><script src="https://www.hackthebox.eu/badge/1496"></script></div>
+    
+  </div>
+</section>
+
+
+<script src="//cdnjs.cloudflare.com/ajax/libs/highlight.js/9.11.0/highlight.min.js" integrity="sha256-+bhVTaRmJ/c07eV80nU8gD2cBBF0rYkf1txqXlrbvb0=" crossorigin="anonymous"></script>
+
+<script type="text/javascript" src="//cdnjs.cloudflare.com/ajax/libs/highlight.js/9.11.0/languages/go.min.js"></script>
+
+<script type="text/javascript" src="//cdnjs.cloudflare.com/ajax/libs/highlight.js/9.11.0/languages/dockerfile.min.js"></script>
+
+<script type="text/javascript" src="//cdnjs.cloudflare.com/ajax/libs/highlight.js/9.11.0/languages/javascript.min.js"></script>
+
+<script type="text/javascript" src="//cdnjs.cloudflare.com/ajax/libs/highlight.js/9.11.0/languages/python.min.js"></script>
+
+<script type="text/javascript" src="//cdnjs.cloudflare.com/ajax/libs/highlight.js/9.11.0/languages/ruby.min.js"></script>
+
+<script type="text/javascript" src="//cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.1/MathJax.js"></script>
+<script> hljs.initHighlightingOnLoad(); </script>
+
+
+
+<script>
+window.ga=window.ga||function(){(ga.q=ga.q||[]).push(arguments)};ga.l=+new Date;
+ga('create', 'UA-12497311-8', 'auto');
+ga('send', 'pageview');
+</script>
+<script async src='//www.google-analytics.com/analytics.js'></script>
+
+
+
+</body>

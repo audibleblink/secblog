@@ -3,6 +3,11 @@
   xmlns:xhtml="http://www.w3.org/1999/xhtml">
   
   <url>
+    <loc>https://sec.alexflor.es/post/icmp_pcaps/</loc>
+    <lastmod>2018-05-11T20:06:55-04:00</lastmod>
+  </url>
+  
+  <url>
     <loc>https://sec.alexflor.es/post/password_spraying_with_doxycannon/</loc>
     <lastmod>2018-04-16T22:43:36-04:00</lastmod>
   </url>
@@ -76,13 +81,13 @@
   
   <url>
     <loc>https://sec.alexflor.es/post/</loc>
-    <lastmod>2018-04-16T22:43:36-04:00</lastmod>
+    <lastmod>2018-05-11T20:06:55-04:00</lastmod>
     <priority>0</priority>
   </url>
   
   <url>
     <loc>https://sec.alexflor.es/</loc>
-    <lastmod>2018-04-16T22:43:36-04:00</lastmod>
+    <lastmod>2018-05-11T20:06:55-04:00</lastmod>
     <priority>0</priority>
   </url>
   
