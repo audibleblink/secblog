@@ -9,10 +9,11 @@ publishDir = "docs"
 [params]
 name = "Alex Flores"
 description = "Things have been OK for me except that I'm a zombie now"
+favicon = 'favicon.ico'
 copyright = "Untitled."
 author = "Alex Flores"
 sharingicons = true
-keywords = ["security", "vulnhub"]
+keywords = ["security", "vulnhub", "red team", "hackthebox", "blue team"]
 
 [taxonomies]
 tag = "tags"
