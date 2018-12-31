@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html lang="en-us">
 <head>
-	<meta name="generator" content="Hugo 0.40.2" />
+	<meta name="generator" content="Hugo 0.53" />
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <meta content="security, vulnhub, red team, hackthebox, blue team" name="keywords">
@@ -75,6 +75,24 @@
 
 <section class="section">
   <div class="container">
+    
+    <article>
+      <h1 class="title"><a href="https://sec.alexflor.es/post/vm_gateway/">Mind Your OOPSEC</a></h1>
+      <h2 class="subtitle is-5">December 30, 2018</h2>
+      
+      <div class="content">
+        OPSEC is hard and those OOPS moments can often cost you a campaign when Red teaming. In this post I&rsquo;ll go over how I set up my VMs so I never have to remember to turn on a VPN, stress about having some &lsquo;killswitch&rsquo; fail, or being on the losing end of some network-race-condition nonsense when waking my laptop.
+Automation isn&rsquo;t always about convenience for the user. Sometimes it&rsquo;s also about determinism.
+        
+        ...<a class="button is-link" href="https://sec.alexflor.es/post/vm_gateway/" style="height:28px">
+          Read more
+          <span class="icon is-small">
+            <i class="fa fa-angle-double-right"></i>
+          </span>
+        </a>
+        
+      </div>
+    </article>
     
     <article>
       <h1 class="title"><a href="https://sec.alexflor.es/post/icmp_pcaps/">Analyzing Data Exfiltration over ICMP</a></h1>
@@ -234,24 +252,6 @@ The ssh client has an often-overlooked configuration file that resides in your ~
       </div>
     </article>
     
-    <article>
-      <h1 class="title"><a href="https://sec.alexflor.es/post/stapler/">B2R: Stapler</a></h1>
-      <h2 class="subtitle is-5">December 24, 2016</h2>
-      
-      <div class="content">
-        Adding the IP address of the VM to the hosts file allows one to cut down on some typing.
-Executive Summary This machine had several services running, some of which revealed employee names and accounts that could later be leveraged to compromise the system. A Wordpress plug-in vulnerability was found and used to extract database credentials, which then led to a non-privileged shell. Once scanned, it was discovered that a script ran every 20 minutes as the root user and that the script was writable to our non-privileged user.
-        
-        ...<a class="button is-link" href="https://sec.alexflor.es/post/stapler/" style="height:28px">
-          Read more
-          <span class="icon is-small">
-            <i class="fa fa-angle-double-right"></i>
-          </span>
-        </a>
-        
-      </div>
-    </article>
-    
   </div>
 </section>
 <section class="section">
@@ -303,12 +303,16 @@ Executive Summary This machine had several services running, some of which revea
 
 
 
-<script>
-window.ga=window.ga||function(){(ga.q=ga.q||[]).push(arguments)};ga.l=+new Date;
-ga('create', 'UA-12497311-8', 'auto');
-ga('send', 'pageview');
+<script type="application/javascript">
+var doNotTrack = false;
+if (!doNotTrack) {
+	window.ga=window.ga||function(){(ga.q=ga.q||[]).push(arguments)};ga.l=+new Date;
+	ga('create', 'UA-12497311-8', 'auto');
+	
+	ga('send', 'pageview');
+}
 </script>
-<script async src='//www.google-analytics.com/analytics.js'></script>
+<script async src='https://www.google-analytics.com/analytics.js'></script>
 
 
 

@@ -6,10 +6,20 @@
     <description>Recent content on SecBlog</description>
     <generator>Hugo -- gohugo.io</generator>
     <language>en-us</language>
-    <lastBuildDate>Fri, 11 May 2018 20:06:55 -0400</lastBuildDate>
+    <lastBuildDate>Sun, 30 Dec 2018 17:06:30 -0500</lastBuildDate>
     
 	<atom:link href="https://sec.alexflor.es/index.xml" rel="self" type="application/rss+xml" />
     
+    
+    <item>
+      <title>Mind Your OOPSEC</title>
+      <link>https://sec.alexflor.es/post/vm_gateway/</link>
+      <pubDate>Sun, 30 Dec 2018 17:06:30 -0500</pubDate>
+      
+      <guid>https://sec.alexflor.es/post/vm_gateway/</guid>
+      <description>OPSEC is hard and those OOPS moments can often cost you a campaign when Red teaming. In this post I&amp;rsquo;ll go over how I set up my VMs so I never have to remember to turn on a VPN, stress about having some &amp;lsquo;killswitch&amp;rsquo; fail, or being on the losing end of some network-race-condition nonsense when waking my laptop.
+Automation isn&amp;rsquo;t always about convenience for the user. Sometimes it&amp;rsquo;s also about determinism.</description>
+    </item>
     
     <item>
       <title>Analyzing Data Exfiltration over ICMP</title>
