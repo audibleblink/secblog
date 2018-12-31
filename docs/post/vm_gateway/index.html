@@ -1,0 +1,340 @@
+<!DOCTYPE html>
+<html lang="en-us">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta content="security, vulnhub, red team, hackthebox, blue team" name="keywords">
+<meta content="Alex Flores" name="author">
+<meta property="og:title" content="Mind Your OOPSEC - SecBlog">
+<meta property="og:url" content="https://sec.alexflor.es/post/vm_gateway/">
+<meta property="og:description" content="Things have been OK for me except that I&#39;m a zombie now">
+<meta property="og:type" content="website" />
+<title>Mind Your OOPSEC | SecBlog</title>
+
+<script type="text/x-mathjax-config">
+  MathJax.Hub.Config({
+    tex2jax: {
+      inlineMath: [ ['$','$'], ["\\(","\\)"] ],
+      processEscapes: true
+    }
+  });
+</script>
+<link rel="stylesheet" href="https://sec.alexflor.es/css/style.css">
+<link rel="shortcut icon" href="https://sec.alexflor.es/wave.ico">
+<link rel="stylesheet" href="//cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css" integrity="sha256-eZrrJcwDc/3uDhsdt61sL2oOBY362qM3lon1gyExkL0=" crossorigin="anonymous" />
+
+<link rel="stylesheet" href="//cdnjs.cloudflare.com/ajax/libs/highlight.js/9.9.0/styles/atom-one-dark.min.css">
+
+</head>
+
+<body>
+<section class="section">
+  <div class="container">
+    <nav class="nav">
+      <div class="nav-left">
+        <a class="nav-item" href="https://sec.alexflor.es"><h1 class="title is-4">SecBlog</h1></a>
+      </div>
+      <div class="nav-right">
+        <nav class="nav-item level is-mobile">
+          
+          <a class="level-item" href="/categories/boot2root" target="_blank">
+            <span class="icon">
+              <i class="fa fa-terminal"></i>
+            </span>
+          </a>
+          
+          <a class="level-item" href="https://github.com/audibleblink" target="_blank">
+            <span class="icon">
+              <i class="fa fa-github"></i>
+            </span>
+          </a>
+          
+          <a class="level-item" href="https://twitter.com/4lex" target="_blank">
+            <span class="icon">
+              <i class="fa fa-twitter"></i>
+            </span>
+          </a>
+          
+          <a class="level-item" href="https://linkedin.com/in/alex2" target="_blank">
+            <span class="icon">
+              <i class="fa fa-linkedin-square"></i>
+            </span>
+          </a>
+          
+          <a class="level-item" href="/index.xml" target="_blank">
+            <span class="icon">
+              <i class="fa fa-rss"></i>
+            </span>
+          </a>
+          
+        </nav>
+      </div>
+    </nav>
+  </div>
+</section>
+
+<section class="section">
+  <div class="container">
+    <h1 class="title">Mind Your OOPSEC</h1>
+    <h2 class="subtitle is-5">December 30, 2018 by Alex Flores</h2>
+    
+    <div class="content">
+      <p>OPSEC is hard and those OOPS moments can often cost you a campaign when Red teaming. In this post
+I&rsquo;ll go over how I set up my VMs so I never have to remember to turn on a VPN, stress about having
+some &lsquo;killswitch&rsquo; fail, or being on the losing end of some network-race-condition nonsense when
+waking my laptop.</p>
+
+<p>Automation isn&rsquo;t always about convenience for the user. Sometimes it&rsquo;s also about determinism. It&rsquo;s
+about knowing that no matter what edge cases may or may not exist now, or in the future, they&rsquo;ll
+have no bearing on your desired outcome. In this sense, we&rsquo;re talking about technology that works
+<em>for</em> you, without being in your way. You shouldn&rsquo;t even notice it&rsquo;s there until something is broken.</p>
+
+<p>So let&rsquo;s move this problem &ldquo;up the stack&rdquo;, so to speak. I&rsquo;m not really sharing anything new here,
+just putting it all in one place and talking about how to build it from scratch. In fact, this is
+the exact way <a href="https://www.whonix.org/wiki/About#Security_by_Isolation">Whonix</a>
+recommends you run their distribution; by using their Gateway VM.</p>
+
+<p>Enough, so what are we talking about here? We&rsquo;re talking about creating a VM that acts as a
+gateway, or router, for your attack VM. We&rsquo;ll use some <code>iptables</code> rules to ensure that any client
+of our gateway can only communicate through the <code>tun0</code> interface. We&rsquo;ll also create a DHCP server
+for your connecting clients, and of course, the VMWare settings to make all this possible. So let&rsquo;s
+get started.</p>
+
+<p>I&rsquo;ll be using Debian for the gateway VM, but feel free to use any distro you like. They&rsquo;re all
+perfectly capable.</p>
+
+<p>I&rsquo;ll be using VMWare Workstation, but this works in most others too.</p>
+
+<p>Begin by creating your VM and assigning it 2 network interfaces in your virtualization software of
+choice. One network can be NAT. To avoid complications, the other network should be a new one that
+isn&rsquo;t used by other VMs. If you need to make a new network, some VM solutions have some sort of
+virtual network manager in their settings.</p>
+
+<p><img src="1.png" alt="Alt" /></p>
+
+<p>Here, the NAT network will provide internet access to our gateway, allowing it to VPN out. The
+other network will serve DHCP and internet to any guest OSes that happen to have the vmnet2
+interface assigned by the virtualization software. More on the later.</p>
+
+<p>Power on the gateway.</p>
+
+<p>Note the output of <code>ip</code></p>
+
+<pre><code class="language-bash">ip addr show
+# ip a s
+</code></pre>
+
+<p>In my case, I can see that <code>ens33</code> is the NAT interface because it pulled DHCP from VMWare&rsquo;s virtual
+network. <code>ens36</code> has no IP because we haven&rsquo;t assigned it one, nor is there a DHCP server on the
+<code>vmnet2</code> network. Continue by installing our dependencies.</p>
+
+<pre><code class="language-bash">sudo apt update
+sudo apt install dnsmasq openvpn iptables-persistent openssh-server
+</code></pre>
+
+<p>SSH in.</p>
+
+<p>You&rsquo;ll also need an account with a VPN provider that provides <code>*.ovpn</code> files. I&rsquo;ll be going with
+Private Internet Access for this one.</p>
+
+<p>This engagement requires we be located in Mexico.
+Download the PIA VPN profiles to the gateway:</p>
+
+<pre><code class="language-bash">wget https://www.privateinternetaccess.com/openvpn/openvpn.zip
+unzip -c openvpn.zip Mexico.ovpn &gt; /etc/openvpn/client/Mexico.ovpn
+</code></pre>
+
+<p>Let&rsquo;s start by configuring the Debian to automatically start the VPN on boot.</p>
+
+<pre><code class="language-bash"># Create a systemd unit that starts the tunnel on system start
+#
+cat &lt;&lt;FILE &gt; /etc/systemd/system/openvpn.service
+[Unit]
+Description=Start VPN on boot
+Requires=networking.service
+After=networking.service
+
+[Service]
+User=root
+Type=simple
+ExecStart=/usr/sbin/openvpn --config Mexico.ovpn --auth-user-pass up.txt
+WorkingDirectory=/etc/openvpn/client
+
+[Install]
+WantedBy=multi-user.target
+FILE
+</code></pre>
+
+<p>Create the <code>up.txt</code> that holds your OpenVPN profile credentials:</p>
+
+<pre><code class="language-bash"># Create the auth file for autostarting the VPN tunnel
+#
+cat &lt;&lt;FILE &gt; /etc/openvpn/client/up.txt
+${your_ovpn_user}
+${your_ovpn_pass}
+FILE
+
+chmod 400 /etc/openvpn/client/up.txt
+
+# Recognize the changes by reloading the daemon and enable the unit
+#
+systemctl daemon-reload
+systemctl enable openvpn.service
+systemctl start openvpn.service
+</code></pre>
+
+<p>At this point, you should have a working VPN connection and a <code>tun0</code> interface when you run <code>ip a s</code>.
+If you&rsquo;re following along, you should get <code>Mexico City</code> when you:</p>
+
+<pre><code class="language-bash">curl ipconfig.io/city
+</code></pre>
+
+<p>Next up, we enable IP forwarding on the kernel and set up our DHCP server. Feel free to change the
+IP values so they suit your needs.</p>
+
+<pre><code class="language-bash"># Uncomment the setting that allows packet forwarding between network interfaces
+#
+sed -i &quot;/net.ipv4.ip_forward=1/ s/#*//&quot; /etc/sysctl.conf
+
+# Configure the static address for the adapter serving DHCP
+#
+cat &lt;&lt;FILE &gt; /etc/network/interfaces
+source-directory /etc/network/interfaces.d
+auto lo
+iface lo inet loopback
+
+auto ens33
+iface ens33 inet dhcp
+
+allow-hotplug ens36
+iface ens36 inet static
+    address 192.168.100.1
+    netmask 255.255.255.0
+    network 192.168.100.0
+FILE
+
+# Configure the DHCP server that will give our clients an IP
+#
+cat &lt;&lt;FILE &gt; /etc/dnsmasq.conf
+interface=ens36
+bind-interfaces
+dhcp-range=192.168.100.100,192.168.100.200,255.255.255.0,24h
+FILE
+</code></pre>
+
+<p>Load the interface changes and restart dnsmasq and ensure it&rsquo;s running properly:</p>
+
+<pre><code class="language-bash">ifup ens36
+systemctl restart dnsmasq
+systemctl status dnsmasq
+</code></pre>
+
+<p>One last step, just set and save some <code>iptables</code> rules:</p>
+
+<pre><code class="language-bash"># Configure the firewall to redirect packets coming from the client net
+# to leave through the VPN interface. Deny all but established
+# connections coming from the tun0 interface. Persist the rules.
+#
+iptables -t nat -A POSTROUTING -s 192.168.100.0/24 -o tun0 -j MASQUERADE
+iptables -A FORWARD -s 192.168.100.0/24 -o tun0 -j ACCEPT
+iptables -A FORWARD -d 192.168.100.0/24 -m state --state ESTABLISHED,RELATED -i tun0 -j ACCEPT
+
+mkdir /etc/iptables
+iptables-save &gt; /etc/iptables/rules.v4
+</code></pre>
+
+<p>Reboot the machine and SSH back in. You should see a <code>tun0</code> interface running and the output of
+<code>ss -lupn</code> should show dnsmasq listening on <code>68/UDP</code>.</p>
+
+<p>We&rsquo;re ready to connect a machine to our client network.</p>
+
+<p>Head over to any existing VM and set its network adapter to the same secondary adapter you
+connected to the gateway VM. In my case, that would be <code>vmnet2</code>.</p>
+
+<p><img src="2.png" alt="Alt" /></p>
+
+<p>Boot your VM and check that it&rsquo;s received a valid IP address in the range you specified.</p>
+
+<p><img src="3.png" alt="Alt" /></p>
+
+<p>Any machines to which you connect to the <code>vmnet2</code> network interface will be forced
+through VPN without needing a client on the attack VM itself. Ensure that your attack VMs have only
+this 1 network interface attached. If the gateway VM&rsquo;s VPN ever drops, you will cease to have
+internet on the attack VM, preventing any background process from disclosing your real IP.</p>
+
+<p>This ends up being a nice way to share VPN profiles between accounts as well. It&rsquo;s been pretty
+useful to have both Windows and Linux machines on the HackTheBox network, for example.</p>
+
+<p>There are plenty of solutions that let you point and click to achieve this same result. <a href="https://opnsense.org/users/get-started/">OPNSense</a>,
+<a href="https://www.pfsense.org/">PFSense</a>, <a href="https://github.com/KaiserSoft/PIA-Tunnel">PIA Tunnel</a> to name
+a few. They may also serve your needs in this regard.</p>
+
+    </div>
+    
+        <div class="nav-left">
+    <a class="nav-item" href="https://www.facebook.com/sharer/sharer.php?u=https%3a%2f%2fsec.alexflor.es%2fpost%2fvm_gateway%2f" title="Share on Facebook" target="_blank"><span class="fa fa-facebook fa-2x" aria-hidden="true"></span></a>
+    <a class="nav-item" href="https://plus.google.com/share?url=https%3a%2f%2fsec.alexflor.es%2fpost%2fvm_gateway%2f" title="Share on Google+" target="_blank"><span class="fa fa-google-plus fa-2x" aria-hidden="true"></span></a>
+    <a class="nav-item" href="https://www.linkedin.com/shareArticle?mini=true&amp;url=https%3a%2f%2fsec.alexflor.es%2fpost%2fvm_gateway%2f" title="Share on LinkedIn" target="_blank"><span class="fa fa-linkedin fa-2x" aria-hidden="true"></span></a>
+    <a class="nav-item" href="https://twitter.com/home?status=Mind%20Your%20OOPSEC - https%3a%2f%2fsec.alexflor.es%2fpost%2fvm_gateway%2f" title="Tweet this" target="_blank"><span class="fa fa-twitter fa-2x"></span></a>
+    <a class="nav-item" href="http://www.reddit.com/submit?url=https%3a%2f%2fsec.alexflor.es%2fpost%2fvm_gateway%2f&title=Mind%20Your%20OOPSEC" title="Share on Reddit" target="_blank"><span class="fa fa-reddit-alien fa-2x" aria-hidden="true"></span></a>
+    
+    </div>
+    
+  </div>
+</section>
+
+<section class="section">
+  <div class="container">
+    <aside><div id="disqus_thread"></div></aside>
+    <script type="text/javascript">
+      var disqus_shortname = 'blinksec';
+      (function() {
+        var dsq = document.createElement('script'); dsq.type = 'text/javascript'; dsq.async = true;
+        dsq.src = '//' + disqus_shortname + '.disqus.com/embed.js';
+        (document.getElementsByTagName('head')[0] || document.getElementsByTagName('body')[0]).appendChild(dsq);
+      })();
+    </script>
+    <noscript>Please enable JavaScript to view the <a href="https://disqus.com/?ref_noscript" rel="nofollow">comments powered by Disqus.</a></noscript>
+  </div>
+</section>
+
+
+<section class="section">
+  <div class="container has-text-centered">
+    <div style='margin: auto; width: 250px'><script src="https://www.hackthebox.eu/badge/1496"></script></div>
+    
+  </div>
+</section>
+
+
+<script src="//cdnjs.cloudflare.com/ajax/libs/highlight.js/9.11.0/highlight.min.js" integrity="sha256-+bhVTaRmJ/c07eV80nU8gD2cBBF0rYkf1txqXlrbvb0=" crossorigin="anonymous"></script>
+
+<script type="text/javascript" src="//cdnjs.cloudflare.com/ajax/libs/highlight.js/9.11.0/languages/go.min.js"></script>
+
+<script type="text/javascript" src="//cdnjs.cloudflare.com/ajax/libs/highlight.js/9.11.0/languages/dockerfile.min.js"></script>
+
+<script type="text/javascript" src="//cdnjs.cloudflare.com/ajax/libs/highlight.js/9.11.0/languages/javascript.min.js"></script>
+
+<script type="text/javascript" src="//cdnjs.cloudflare.com/ajax/libs/highlight.js/9.11.0/languages/python.min.js"></script>
+
+<script type="text/javascript" src="//cdnjs.cloudflare.com/ajax/libs/highlight.js/9.11.0/languages/ruby.min.js"></script>
+
+<script type="text/javascript" src="//cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.1/MathJax.js"></script>
+<script> hljs.initHighlightingOnLoad(); </script>
+
+
+
+<script type="application/javascript">
+var doNotTrack = false;
+if (!doNotTrack) {
+	window.ga=window.ga||function(){(ga.q=ga.q||[]).push(arguments)};ga.l=+new Date;
+	ga('create', 'UA-12497311-8', 'auto');
+	
+	ga('send', 'pageview');
+}
+</script>
+<script async src='https://www.google-analytics.com/analytics.js'></script>
+
+
+
+</body>
