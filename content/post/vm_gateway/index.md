@@ -3,6 +3,8 @@ title: "Mind Your OOPSEC"
 date: 2018-12-30T17:06:30-05:00
 ---
 
+![](title.png)
+
 OPSEC is hard and those OOPS moments can often cost you a campaign when Red teaming. In this post
 I'll go over how I set up my VMs so I never have to remember to turn on a VPN, stress about having
 some 'killswitch' fail, or being on the losing end of some network-race-condition nonsense when
