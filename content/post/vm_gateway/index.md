@@ -42,15 +42,14 @@ virtual network manager in their settings.
 
 Here, the NAT network will provide internet access to our gateway, allowing it to VPN out. The
 other network will serve DHCP and internet to any guest OSes that happen to have the vmnet2
-interface assigned by the virtualization software. More on the later.
+interface assigned by the virtualization software. More on that later.
 
-Power on the gateway.
+Power on the gateway VM.
 
 Note the output of `ip`
 
 ```bash
-ip addr show
-# ip a s
+ip addr show # or 'ip a s' for short
 ```
 
 In my case, I can see that `ens33` is the NAT interface because it pulled DHCP from VMWare's virtual
