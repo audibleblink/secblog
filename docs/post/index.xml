@@ -17,8 +17,8 @@
       <pubDate>Sat, 20 Apr 2019 13:02:17 -0400</pubDate>
       
       <guid>https://sec.alexflor.es/post/subdomain_enum/</guid>
-      <description>&lt;p&gt;Python (and all other scripting languages) use the host system&amp;rsquo;s name resoultion APIs
-to determine if a host exists. Skip the bottleneck and craft the DNS packets manually.&lt;/p&gt;</description>
+      <description>&lt;p&gt;Python (and all other scripting languages) use the host system&amp;rsquo;s name resolution APIs.
+Skip the bottleneck and craft the DNS packets manually.&lt;/p&gt;</description>
     </item>
     
     <item>

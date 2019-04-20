@@ -4,8 +4,8 @@ description: "Oh, hello. I see you brought your pitchforks"
 date: 2019-04-20T13:02:17-04:00
 ---
 
-Python (and all other scripting languages) use the host system's name resoultion APIs
-to determine if a host exists. Skip the bottleneck and craft the DNS packets manually.
+Python (and all other scripting languages) use the host system's name resolution APIs. 
+Skip the bottleneck and craft the DNS packets manually.
 
 <!--more-->
 
