@@ -76,6 +76,24 @@
   <div class="container">
     
     <article>
+      <h1 class="title"><a href="https://sec.alexflor.es/post/subdomain_enum/">Stop Using Python for Subdomain Enumeration</a></h1>
+      <h2 class="subtitle is-5">April 20, 2019</h2>
+      
+      <div class="content">
+        Python (and all other scripting languages) use the host system&rsquo;s name resoultion APIs to determine if a host exists. Skip the bottleneck and craft the DNS packets manually.
+
+        
+        ...<a class="button is-link" href="https://sec.alexflor.es/post/subdomain_enum/" style="height:28px">
+          Read more
+          <span class="icon is-small">
+            <i class="fa fa-angle-double-right"></i>
+          </span>
+        </a>
+        
+      </div>
+    </article>
+    
+    <article>
       <h1 class="title"><a href="https://sec.alexflor.es/post/vm_gateway/">Mind Your OOPSEC</a></h1>
       <h2 class="subtitle is-5">December 30, 2018</h2>
       
@@ -225,23 +243,6 @@ Creating a Payload We want to create a payload that allows for easy exfiltration
 The ssh client has an often-overlooked configuration file that resides in your ~/.ssh folder. You can configure things in here that are specific to certain hosts or you can set default configurations for every host.
         
         ...<a class="button is-link" href="https://sec.alexflor.es/post/ssh_pivoting/" style="height:28px">
-          Read more
-          <span class="icon is-small">
-            <i class="fa fa-angle-double-right"></i>
-          </span>
-        </a>
-        
-      </div>
-    </article>
-    
-    <article>
-      <h1 class="title"><a href="https://sec.alexflor.es/post/wallaby/">B2R: Wallaby Walkthrough</a></h1>
-      <h2 class="subtitle is-5">December 30, 2016</h2>
-      
-      <div class="content">
-        Executive Summary This machine had an unlisted but open webapp path that allowed for remote command execution. After establishing a reverse shell as the limited user www-data, privilege checks showed the user was allowed to modify firewall rules. There was also an IRC server that contained a bot that allowed command execution through the use of the .run command. The command would only obey the user waldo so modification of the firewall allows an attacker to kick and assume the waldo identity.
-        
-        ...<a class="button is-link" href="https://sec.alexflor.es/post/wallaby/" style="height:28px">
           Read more
           <span class="icon is-small">
             <i class="fa fa-angle-double-right"></i>
