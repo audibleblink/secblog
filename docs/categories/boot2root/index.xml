@@ -1,9 +1,9 @@
-<?xml version="1.0" encoding="utf-8" standalone="yes" ?>
+<?xml version="1.0" encoding="utf-8" standalone="yes"?>
 <rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom">
   <channel>
-    <title>Boot2root on SecBlog</title>
+    <title>Boot2Root on SecBlog</title>
     <link>https://sec.alexflor.es/categories/boot2root/</link>
-    <description>Recent content in Boot2root on SecBlog</description>
+    <description>Recent content in Boot2Root on SecBlog</description>
     <generator>Hugo -- gohugo.io</generator>
     <language>en-us</language>
     <lastBuildDate>Fri, 30 Dec 2016 19:16:02 -0400</lastBuildDate>
@@ -37,8 +37,8 @@ Executive Summary This machine had several services running, some of which revea
       
       <guid>https://sec.alexflor.es/post/imf_walkthrough/</guid>
       <description>After mapping the network and finding our IP address at 192.168.1.162, we can add it to our /etc/hosts temporarily to make things a little easier for us.
-echo &amp;quot;192.168.1.162 imf&amp;quot; &amp;gt;&amp;gt; /etc/hosts  Lets see what kind of machine we&amp;rsquo;re dealing with.
-Ok, so web only. Great. nikto didn&amp;rsquo;t reveal any low-hanging fruit so let&amp;rsquo;s dive into the source.
+echo &amp;quot;192.168.1.162 imf&amp;quot; &amp;gt;&amp;gt; /etc/hosts Lets see what kind of machine we&#39;re dealing with.
+Ok, so web only. Great. nikto didn&#39;t reveal any low-hanging fruit so let&#39;s dive into the source.
 Check that out! Our first flag was hidden in http://imf/contact.php. This looks like base64.</description>
     </item>
     
@@ -48,7 +48,7 @@ Check that out! Our first flag was hidden in http://imf/contact.php. This looks 
       <pubDate>Thu, 20 Oct 2016 20:57:00 -0400</pubDate>
       
       <guid>https://sec.alexflor.es/post/b2r_troll_walkthrough/</guid>
-      <description>A couple of weeks ago, work sent me to a security class for an upcoming product. While there, I learned about vulnhub, a repository of intentionally vulnerable virtual machines for anyone to compromise. Since coming back, vulnhub has become my new obsession. Here&amp;rsquo;s a walkthrough of my attempt.
+      <description>A couple of weeks ago, work sent me to a security class for an upcoming product. While there, I learned about vulnhub, a repository of intentionally vulnerable virtual machines for anyone to compromise. Since coming back, vulnhub has become my new obsession. Here&#39;s a walkthrough of my attempt.
 Note: I struggled a bit more that this writeup lets on. The struggle is ommited for clarity and brevity.
 __
 After finding the VM with an nmap scan, we see a couple of open ports.</description>

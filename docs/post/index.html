@@ -76,11 +76,29 @@
   <div class="container">
     
     <article>
+      <h1 class="title"><a href="https://sec.alexflor.es/post/passdb/">Password Dump Database - Part 1</a></h1>
+      <h2 class="subtitle is-5">September 28, 2019</h2>
+      
+      <div class="content">
+        Preface This post is first in a series where I mostly catalogue my failures, what didn't work, and the lessons I learned along the way. This isn't a tool drop, or a new dump. Also, part 2 basically says every choice I make in Part 1 (this part) is wrong. If you're a DB admin or have experience with manipulating large amounts of data, prepare to cringe&hellip; HARD
+If you're just interested in some stats and bencharks, you can skip straight to that section
+        
+        ...<a class="button is-link" href="https://sec.alexflor.es/post/passdb/" style="height:28px">
+          Read more
+          <span class="icon is-small">
+            <i class="fa fa-angle-double-right"></i>
+          </span>
+        </a>
+        
+      </div>
+    </article>
+    
+    <article>
       <h1 class="title"><a href="https://sec.alexflor.es/post/subdomain_enum/">Stop Using Python for Subdomain Enumeration</a></h1>
       <h2 class="subtitle is-5">April 20, 2019</h2>
       
       <div class="content">
-        Python (and all other scripting languages) use the host system&rsquo;s name resolution APIs. Skip the bottleneck and craft the DNS packets manually.
+        Python (and all other scripting languages) use the host system's name resolution APIs. Skip the bottleneck and craft the DNS packets manually.
 
         
         ...<a class="button is-link" href="https://sec.alexflor.es/post/subdomain_enum/" style="height:28px">
@@ -98,8 +116,8 @@
       <h2 class="subtitle is-5">December 30, 2018</h2>
       
       <div class="content">
-        OPSEC is hard and those OOPS moments can often cost you a campaign when Red teaming. In this post I&rsquo;ll go over how I set up my VMs so I never have to remember to turn on a VPN, stress about having some &lsquo;killswitch&rsquo; fail, or being on the losing end of some network-race-condition nonsense when waking my laptop.
-Automation isn&rsquo;t always about convenience for the user. Sometimes it&rsquo;s also about determinism.
+        OPSEC is hard and those OOPS moments can often cost you a campaign when Red teaming. In this post I'll go over how I set up my VMs so I never have to remember to turn on a VPN, stress about having some &lsquo;killswitch&rsquo; fail, or being on the losing end of some network-race-condition nonsense when waking my laptop.
+Automation isn't always about convenience for the user. Sometimes it's also about determinism.
         
         ...<a class="button is-link" href="https://sec.alexflor.es/post/vm_gateway/" style="height:28px">
           Read more
@@ -116,8 +134,8 @@ Automation isn&rsquo;t always about convenience for the user. Sometimes it&rsquo
       <h2 class="subtitle is-5">May 11, 2018</h2>
       
       <div class="content">
-        I&rsquo;m a big fan of learning through competition. Capture The Flag games have tremendous utility for training within the Security sector and even outside of it. Intentionally vulnerable web applications, like OWASP&rsquo;s JuiceShop, are excellent tools for assisting in developing Secure Software Development Life-cycle programs within an organization.
-So let&rsquo;s take an exercise I recently came across in a CTF event. The skills required to solve the challenge are actually quite useful in real-world defensive scenarios.
+        I'm a big fan of learning through competition. Capture The Flag games have tremendous utility for training within the Security sector and even outside of it. Intentionally vulnerable web applications, like OWASP's JuiceShop, are excellent tools for assisting in developing Secure Software Development Life-cycle programs within an organization.
+So let's take an exercise I recently came across in a CTF event. The skills required to solve the challenge are actually quite useful in real-world defensive scenarios.
         
         ...<a class="button is-link" href="https://sec.alexflor.es/post/icmp_pcaps/" style="height:28px">
           Read more
@@ -134,9 +152,9 @@ So let&rsquo;s take an exercise I recently came across in a CTF event. The skill
       <h2 class="subtitle is-5">April 16, 2018</h2>
       
       <div class="content">
-        Password sprays are here to stay. It&rsquo;s probably a good idea to configure some clever WAF rules, implement captcha systems, and set up additional alerting. But once implemented, how do you test and tune your protective measures?
+        Password sprays are here to stay. It's probably a good idea to configure some clever WAF rules, implement captcha systems, and set up additional alerting. But once implemented, how do you test and tune your protective measures?
 Enter DoxyCannon
-DoxyCannon&rsquo;s name borrows from ProxyCannon, a script that instantiates cloud infrastructure through which one can proxy requests. Unlike ProxyCannon, DoxyCannon gives you the same functionality without needing to rely on cloud providers.
+DoxyCannon's name borrows from ProxyCannon, a script that instantiates cloud infrastructure through which one can proxy requests. Unlike ProxyCannon, DoxyCannon gives you the same functionality without needing to rely on cloud providers.
         
         ...<a class="button is-link" href="https://sec.alexflor.es/post/password_spraying_with_doxycannon/" style="height:28px">
           Read more
@@ -153,7 +171,7 @@ DoxyCannon&rsquo;s name borrows from ProxyCannon, a script that instantiates clo
       <h2 class="subtitle is-5">August 22, 2017</h2>
       
       <div class="content">
-        I&rsquo;ve been running into more and more Linux boxes that don&rsquo;t have python 2 installed. It&rsquo;s been a little frustrating since I like to use a slightly modified version of the famous linuxprivchecker.py that almost all OSCP students know and love. I&rsquo;m lazy and hate manual enumeration; makes my fingers go numb. I decided to spend an evening translating it to python 3, but quickly realized, &ldquo;This python is just invoking shell commands, why am I doing this?
+        I've been running into more and more Linux boxes that don't have python 2 installed. It's been a little frustrating since I like to use a slightly modified version of the famous linuxprivchecker.py that almost all OSCP students know and love. I'm lazy and hate manual enumeration; makes my fingers go numb. I decided to spend an evening translating it to python 3, but quickly realized, &ldquo;This python is just invoking shell commands, why am I doing this?
         
         ...<a class="button is-link" href="https://sec.alexflor.es/post/bashynumb/" style="height:28px">
           Read more
@@ -170,7 +188,7 @@ DoxyCannon&rsquo;s name borrows from ProxyCannon, a script that instantiates clo
       <h2 class="subtitle is-5">August 18, 2017</h2>
       
       <div class="content">
-        By now, there shouldn&rsquo;t be any doubt that not only are you being watched online, but your browsing habits, particularly your political ones, are of interest to the current administration. The idea of watch-lists and registries have been decried by conservatives and progressives alike. This should strike a chord with conservatives, who&rsquo;ve protested gun registrations and national ID cards, as it demonstrates the governmental over-reach that conservatives often denounce. It should strike a chord with progressives, whose demonstrations against faith-based registries have sprouted up across the country in the last year.
+        By now, there shouldn't be any doubt that not only are you being watched online, but your browsing habits, particularly your political ones, are of interest to the current administration. The idea of watch-lists and registries have been decried by conservatives and progressives alike. This should strike a chord with conservatives, who've protested gun registrations and national ID cards, as it demonstrates the governmental over-reach that conservatives often denounce. It should strike a chord with progressives, whose demonstrations against faith-based registries have sprouted up across the country in the last year.
         
         ...<a class="button is-link" href="https://sec.alexflor.es/post/vpn-access-point/" style="height:28px">
           Read more
@@ -222,27 +240,9 @@ Creating a Payload We want to create a payload that allows for easy exfiltration
       <h2 class="subtitle is-5">February 7, 2017</h2>
       
       <div class="content">
-        You&rsquo;ve achieved code execution on a machine, but for some reason your reverse shell isn&rsquo;t pinging you back. Or that wget/tftp command isn&rsquo;t downloading your recon/post-exploitation tools. There&rsquo;s a chance you&rsquo;re dealing with an egress problem. Typical ports that need outboud access are blocked. You try the main ones you can think of (21, 22, 53, 80, 8080, 443), but none of them seem to be connecting. Do you start at 1 and manually test?
+        You've achieved code execution on a machine, but for some reason your reverse shell isn't pinging you back. Or that wget/tftp command isn't downloading your recon/post-exploitation tools. There's a chance you're dealing with an egress problem. Typical ports that need outboud access are blocked. You try the main ones you can think of (21, 22, 53, 80, 8080, 443), but none of them seem to be connecting. Do you start at 1 and manually test?
         
         ...<a class="button is-link" href="https://sec.alexflor.es/post/egress-ports/" style="height:28px">
-          Read more
-          <span class="icon is-small">
-            <i class="fa fa-angle-double-right"></i>
-          </span>
-        </a>
-        
-      </div>
-    </article>
-    
-    <article>
-      <h1 class="title"><a href="https://sec.alexflor.es/post/ssh_pivoting/">Configuring SSH for Pivoting</a></h1>
-      <h2 class="subtitle is-5">February 2, 2017</h2>
-      
-      <div class="content">
-        You&rsquo;re on a pentesting engagement and you&rsquo;ve discovered a dual homed machine that allows you access to a subnet you can&rsquo;t access directly from your attack machine. Assuming you&rsquo;ve compromised at least one machine on the initial network, you can use it as a proxy to other machines on the &ldquo;hidden&rdquo; subnet.
-The ssh client has an often-overlooked configuration file that resides in your ~/.ssh folder. You can configure things in here that are specific to certain hosts or you can set default configurations for every host.
-        
-        ...<a class="button is-link" href="https://sec.alexflor.es/post/ssh_pivoting/" style="height:28px">
           Read more
           <span class="icon is-small">
             <i class="fa fa-angle-double-right"></i>

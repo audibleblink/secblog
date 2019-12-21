@@ -1,4 +1,4 @@
-<?xml version="1.0" encoding="utf-8" standalone="yes" ?>
+<?xml version="1.0" encoding="utf-8" standalone="yes"?>
 <rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom">
   <channel>
     <title>Categories on SecBlog</title>
@@ -12,7 +12,7 @@
     
     
     <item>
-      <title>Boot2root</title>
+      <title>Boot2Root</title>
       <link>https://sec.alexflor.es/categories/boot2root/</link>
       <pubDate>Fri, 30 Dec 2016 19:16:02 -0400</pubDate>
       

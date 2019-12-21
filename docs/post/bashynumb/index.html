@@ -79,144 +79,138 @@
     <h2 class="subtitle is-5">August 22, 2017 by Alex Flores</h2>
     
     <div class="content">
-      <p>I&rsquo;ve been running into more and more Linux boxes that don&rsquo;t have python 2 installed. It&rsquo;s been a
+      <p>I've been running into more and more Linux boxes that don't have python 2 installed. It's been a
 little frustrating since I like to use a slightly modified version of the famous
-<code>linuxprivchecker.py</code> that almost all OSCP students know and love.  I&rsquo;m lazy and hate manual
+<code>linuxprivchecker.py</code> that almost all OSCP students know and love.  I'm lazy and hate manual
 enumeration; makes my fingers go numb. I decided to spend an evening translating it to python 3,
 but quickly realized, &ldquo;This python is just invoking shell commands, why am I doing this?&rdquo;</p>
-
-<p>So I made BashyNumb. It&rsquo;s currently only tested on debian-based systems, but I&rsquo;m looking to
-accommodate others as well. I&rsquo;m at the mercy of bash when it comes to formatting, but hey, as long
-as the info is there, I&rsquo;m good.</p>
-
+<p>So I made BashyNumb. It's currently only tested on debian-based systems, but I'm looking to
+accommodate others as well. I'm at the mercy of bash when it comes to formatting, but hey, as long
+as the info is there, I'm good.</p>
 <p>Check it out at <a href="https://github.com/audibleblink/bashynumb">https://github.com/audibleblink/bashynumb</a>.</p>
+<p>I'll be running it with <code>curl -sL git.io/bashynumb | bash</code>, but you probably shouldn't. =P</p>
+<p>Here's the 1st iteration, but always check github for the newest version.</p>
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-bash" data-lang="bash"><span style="color:#75715e">#!/usr/bin/env bash
+</span><span style="color:#75715e"></span>
+<span style="color:#75715e"># Thanks to arr0way for the section and banner code and some of the</span>
+<span style="color:#75715e"># enum calls - https://highon.coffee/blog/linux-local-enumeration-script</span>
 
-<p>I&rsquo;ll be running it with <code>curl -sL git.io/bashynumb | bash</code>, but you probably shouldn&rsquo;t. =P</p>
+BLACK<span style="color:#f92672">=</span><span style="color:#e6db74">&#34;\033[30m&#34;</span>
+RED<span style="color:#f92672">=</span><span style="color:#e6db74">&#34;\033[31m&#34;</span>
+GREEN<span style="color:#f92672">=</span><span style="color:#e6db74">&#34;\033[32m&#34;</span>
+YELLOW<span style="color:#f92672">=</span><span style="color:#e6db74">&#34;\033[33m&#34;</span>
+BLUE<span style="color:#f92672">=</span><span style="color:#e6db74">&#34;\033[34m&#34;</span>
+PINK<span style="color:#f92672">=</span><span style="color:#e6db74">&#34;\033[35m&#34;</span>
+CYAN<span style="color:#f92672">=</span><span style="color:#e6db74">&#34;\033[36m&#34;</span>
+WHITE<span style="color:#f92672">=</span><span style="color:#e6db74">&#34;\033[37m&#34;</span>
+NORMAL<span style="color:#f92672">=</span><span style="color:#e6db74">&#34;\033[0;39m&#34;</span>
 
-<p>Here&rsquo;s the 1st iteration, but always check github for the newest version.</p>
-
-<pre><code class="language-bash">#!/usr/bin/env bash
-
-# Thanks to arr0way for the section and banner code and some of the
-# enum calls - https://highon.coffee/blog/linux-local-enumeration-script
-
-BLACK=&quot;\033[30m&quot;
-RED=&quot;\033[31m&quot;
-GREEN=&quot;\033[32m&quot;
-YELLOW=&quot;\033[33m&quot;
-BLUE=&quot;\033[34m&quot;
-PINK=&quot;\033[35m&quot;
-CYAN=&quot;\033[36m&quot;
-WHITE=&quot;\033[37m&quot;
-NORMAL=&quot;\033[0;39m&quot;
-
-printf &quot;$GREEN&quot;
-/bin/cat &lt;&lt; &quot;EOF&quot;
+printf <span style="color:#e6db74">&#34;</span>$GREEN<span style="color:#e6db74">&#34;</span>
+/bin/cat &lt;&lt; <span style="color:#e6db74">&#34;EOF&#34;</span>
   _                _                             _
  | |              | |                           | |
  | | _   ____  ___| | _  _   _ ____  _   _ ____ | | _
- | || \ / _  |/___) || \| | | |  _ \| | | |    \| || \
- | |_) | ( | |___ | | | | |_| | | | | |_| | | | | |_) )
- |____/ \_||_(___/|_| |_|\__  |_| |_|\____|_|_|_|____/
-                        (____/
+ | <span style="color:#f92672">||</span> <span style="color:#ae81ff">\ </span>/ _  |/___<span style="color:#f92672">)</span> <span style="color:#f92672">||</span> <span style="color:#ae81ff">\|</span> | | |  _ <span style="color:#ae81ff">\|</span> | | |    <span style="color:#ae81ff">\|</span> <span style="color:#f92672">||</span> <span style="color:#ae81ff">\
+</span><span style="color:#ae81ff"></span> | |_<span style="color:#f92672">)</span> | <span style="color:#f92672">(</span> | |___ | | | | |_| | | | | |_| | | | | |_<span style="color:#f92672">)</span> <span style="color:#f92672">)</span>
+ |____/ <span style="color:#ae81ff">\_</span><span style="color:#f92672">||</span>_<span style="color:#f92672">(</span>___/|_| |_|<span style="color:#ae81ff">\_</span>_  |_| |_|<span style="color:#ae81ff">\_</span>___|_|_|_|____/
+                        <span style="color:#f92672">(</span>____/
 EOF
-printf &quot;$NORMAL&quot;
-printf &quot;Version: $YELLOW 1.0 $NORMAL \n&quot;
-printf &quot;Twitter: $BLUE @4lex $NORMAL \n&quot;
-printf &quot;\n&quot;
-printf &quot;$RED Disclaimer: Use this 'software' at your own risk. $NORMAL  \n&quot;
-sleep 1
+printf <span style="color:#e6db74">&#34;</span>$NORMAL<span style="color:#e6db74">&#34;</span>
+printf <span style="color:#e6db74">&#34;</span><span style="color:#e6db74">Version: </span>$YELLOW<span style="color:#e6db74"> 1.0 </span>$NORMAL<span style="color:#e6db74"> \n</span><span style="color:#e6db74">&#34;</span>
+printf <span style="color:#e6db74">&#34;</span><span style="color:#e6db74">Twitter: </span>$BLUE<span style="color:#e6db74"> @4lex </span>$NORMAL<span style="color:#e6db74"> \n</span><span style="color:#e6db74">&#34;</span>
+printf <span style="color:#e6db74">&#34;\n&#34;</span>
+printf <span style="color:#e6db74">&#34;</span>$RED<span style="color:#e6db74"> Disclaimer: Use this &#39;software&#39; at your own risk. </span>$NORMAL<span style="color:#e6db74">  \n</span><span style="color:#e6db74">&#34;</span>
+sleep <span style="color:#ae81ff">1</span>
 
-function section() {
-  printf &quot;\n&quot;
-  printf &quot;\n&quot;
-  printf &quot;$BLUE&quot;
-  printf '%*s\n' &quot;${COLUMNS:-$(tput cols)}&quot; '' | tr ' ' '#'
-  printf &quot;##&quot;
-  printf &quot;\n&quot;
-  printf &quot;$RED&quot;
-  printf &quot;$BLUE## $RED $@&quot;
-  printf &quot;\n&quot;
-  printf &quot;$BLUE&quot;
-  printf &quot;##&quot;
-  printf &quot;\n&quot;
-  printf '%*s\n' &quot;${COLUMNS:-$(tput cols)}&quot; '' | tr ' ' '#'
-  printf &quot;$NORMAL&quot;
-}
+<span style="color:#66d9ef">function</span> section<span style="color:#f92672">(</span><span style="color:#f92672">)</span> <span style="color:#f92672">{</span>
+  printf <span style="color:#e6db74">&#34;\n&#34;</span>
+  printf <span style="color:#e6db74">&#34;\n&#34;</span>
+  printf <span style="color:#e6db74">&#34;</span>$BLUE<span style="color:#e6db74">&#34;</span>
+  printf <span style="color:#e6db74">&#39;%*s\n&#39;</span> <span style="color:#e6db74">&#34;</span><span style="color:#e6db74">${</span>COLUMNS<span style="color:#66d9ef">:-</span><span style="color:#66d9ef">$(</span>tput cols<span style="color:#66d9ef">)</span><span style="color:#e6db74">}</span><span style="color:#e6db74">&#34;</span> <span style="color:#e6db74">&#39;&#39;</span> | tr <span style="color:#e6db74">&#39; &#39;</span> <span style="color:#e6db74">&#39;#&#39;</span>
+  printf <span style="color:#e6db74">&#34;##&#34;</span>
+  printf <span style="color:#e6db74">&#34;\n&#34;</span>
+  printf <span style="color:#e6db74">&#34;</span>$RED<span style="color:#e6db74">&#34;</span>
+  printf <span style="color:#e6db74">&#34;</span>$BLUE<span style="color:#e6db74">## </span>$RED<span style="color:#e6db74"> </span>$@<span style="color:#e6db74">&#34;</span>
+  printf <span style="color:#e6db74">&#34;\n&#34;</span>
+  printf <span style="color:#e6db74">&#34;</span>$BLUE<span style="color:#e6db74">&#34;</span>
+  printf <span style="color:#e6db74">&#34;##&#34;</span>
+  printf <span style="color:#e6db74">&#34;\n&#34;</span>
+  printf <span style="color:#e6db74">&#39;%*s\n&#39;</span> <span style="color:#e6db74">&#34;</span><span style="color:#e6db74">${</span>COLUMNS<span style="color:#66d9ef">:-</span><span style="color:#66d9ef">$(</span>tput cols<span style="color:#66d9ef">)</span><span style="color:#e6db74">}</span><span style="color:#e6db74">&#34;</span> <span style="color:#e6db74">&#39;&#39;</span> | tr <span style="color:#e6db74">&#39; &#39;</span> <span style="color:#e6db74">&#39;#&#39;</span>
+  printf <span style="color:#e6db74">&#34;</span>$NORMAL<span style="color:#e6db74">&#34;</span>
+<span style="color:#f92672">}</span>
 
-section &quot;Current User Info&quot;
+section <span style="color:#e6db74">&#34;Current User Info&#34;</span>
 /usr/bin/id
 echo
 /bin/hostname
 
-section &quot;Linux Version&quot;
+section <span style="color:#e6db74">&#34;Linux Version&#34;</span>
 /bin/cat /etc/issue;
 echo
 /bin/cat /etc/*-release
 
-section &quot;Kernel Info&quot;
+section <span style="color:#e6db74">&#34;Kernel Info&#34;</span>
 /bin/uname -ar
 
-section &quot;Network Info&quot;
+section <span style="color:#e6db74">&#34;Network Info&#34;</span>
 /bin/cat /etc/sysconfig/network
 echo
 /bin/cat /etc/resolv.conf
 echo
-ifconfig -a|| ip addr
+ifconfig -a<span style="color:#f92672">||</span> ip addr
 echo
-route || ip route
+route <span style="color:#f92672">||</span> ip route
 
-section &quot;Active Listening Services&quot;
+section <span style="color:#e6db74">&#34;Active Listening Services&#34;</span>
 /bin/netstat -tulpn 
 
-section &quot;File System Info&quot;
+section <span style="color:#e6db74">&#34;File System Info&#34;</span>
 /bin/df -h
 echo
 /bin/mount | column -t
 echo
 /bin/cat /etc/fstab
 
-section &quot;Users&quot;
+section <span style="color:#e6db74">&#34;Users&#34;</span>
 /bin/cat /etc/passwd
 
-section &quot;Groups&quot;
+section <span style="color:#e6db74">&#34;Groups&#34;</span>
 /bin/cat /etc/group
 
-section &quot;SUID Files&quot;
-/usr/bin/find / -perm -g=s -o -perm -4000 ! -type l -exec ls -ld {} \; 2&gt;/dev/null
+section <span style="color:#e6db74">&#34;SUID Files&#34;</span>
+/usr/bin/find / -perm -g<span style="color:#f92672">=</span>s -o -perm -4000 ! -type l -exec ls -ld <span style="color:#f92672">{</span><span style="color:#f92672">}</span> <span style="color:#ae81ff">\;</span> 2&gt;/dev/null
 
-section &quot;World Writable Directories&quot;
+section <span style="color:#e6db74">&#34;World Writable Directories&#34;</span>
 /usr/bin/find / -perm -222 -type d 2&gt;/dev/null
 
-section &quot;World Writable Files&quot;
-/usr/bin/find / -type f -perm 0777 2&gt;/dev/null
+section <span style="color:#e6db74">&#34;World Writable Files&#34;</span>
+/usr/bin/find / -type f -perm <span style="color:#ae81ff">0777</span> 2&gt;/dev/null
 
-section &quot;Root-owned, Writable Files&quot;
-find / -type f -user root -writable -exec ls -ld {} \; 2&gt;/dev/null
+section <span style="color:#e6db74">&#34;Root-owned, Writable Files&#34;</span>
+find / -type f -user root -writable -exec ls -ld <span style="color:#f92672">{</span><span style="color:#f92672">}</span> <span style="color:#ae81ff">\;</span> 2&gt;/dev/null
 
-section &quot;Root-owned, Writable and Executable Files&quot;
-find / -type f -executable -user root -writable -exec ls -ld {} \; 2&gt;/dev/null
+section <span style="color:#e6db74">&#34;Root-owned, Writable and Executable Files&#34;</span>
+find / -type f -executable -user root -writable -exec ls -ld <span style="color:#f92672">{</span><span style="color:#f92672">}</span> <span style="color:#ae81ff">\;</span> 2&gt;/dev/null
 
-section &quot;Current User Sessions&quot;
+section <span style="color:#e6db74">&#34;Current User Sessions&#34;</span>
 /usr/bin/w
 
-section &quot;Processes Running as root&quot;
-/bin/ps -ef | /bin/grep root | /bin/grep -ve &quot;\]$&quot;
+section <span style="color:#e6db74">&#34;Processes Running as root&#34;</span>
+/bin/ps -ef | /bin/grep root | /bin/grep -ve <span style="color:#e6db74">&#34;</span><span style="color:#e6db74">\]</span>$<span style="color:#e6db74">&#34;</span>
 
-section &quot;Commands User Can Run with sudo&quot;
-test [ echo 1 | sudo -S -l ] 2&gt;/dev/null || echo &quot;${USER} has no passwordless sudo commands configured&quot;
+section <span style="color:#e6db74">&#34;Commands User Can Run with sudo&#34;</span>
+test <span style="color:#f92672">[</span> echo <span style="color:#ae81ff">1</span> | sudo -S -l <span style="color:#f92672">]</span> 2&gt;/dev/null <span style="color:#f92672">||</span> echo <span style="color:#e6db74">&#34;</span><span style="color:#e6db74">${</span>USER<span style="color:#e6db74">}</span><span style="color:#e6db74"> has no passwordless sudo commands configured</span><span style="color:#e6db74">&#34;</span>
 
-section &quot;Cron Info&quot;
+section <span style="color:#e6db74">&#34;Cron Info&#34;</span>
 /bin/ls -lah /etc/cron*
 echo
 /bin/cat /etc/crontab
 echo
 /usr/bin/crontab -l
 
-section &quot;Installed Packages&quot;
+section <span style="color:#e6db74">&#34;Installed Packages&#34;</span>
 /usr/bin/dpkg --list
-</code></pre>
-
+</code></pre></div>
     </div>
     
         <div class="nav-left">

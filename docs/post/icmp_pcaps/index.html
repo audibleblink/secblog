@@ -79,143 +79,103 @@
     <h2 class="subtitle is-5">May 11, 2018 by Alex Flores</h2>
     
     <div class="content">
-      <p><img src="title.jpg" alt="" /></p>
-
-<p>I&rsquo;m a big fan of learning through competition. Capture The Flag games have tremendous utility for
+      <p><img src="title.jpg" alt=""></p>
+<p>I'm a big fan of learning through competition. Capture The Flag games have tremendous utility for
 training within the Security sector and even outside of it. Intentionally vulnerable web
-applications, like <a href="https://www.owasp.org/index.php/OWASP_Juice_Shop_Project">OWASP&rsquo;s JuiceShop</a>,
+applications, like <a href="https://www.owasp.org/index.php/OWASP_Juice_Shop_Project">OWASP's JuiceShop</a>,
 are excellent tools for assisting in developing Secure Software Development Life-cycle programs
 within an organization.</p>
-
-<p>So let&rsquo;s take an exercise I recently came across in a CTF event. The skills required to solve the
+<p>So let's take an exercise I recently came across in a CTF event. The skills required to solve the
 challenge are actually quite useful in real-world defensive scenarios.</p>
-
 <p><strong>Story Time</strong></p>
-
-<p>You work for the Info Sec team of Acme Co. As part of your security toolset, you&rsquo;ve set up an
+<p>You work for the Info Sec team of Acme Co. As part of your security toolset, you've set up an
 Intrusion Detection System on a span port in your data center. During a routine Threat Hunting
 exercise, your team discovers some anomalous traffic coming from a particular server. Your IDS
 says that there was a strange amount of ICMP traffic coming from this machine. You go back to when
 the traffic occurred and pull a packet capture during that time-frame and you open it in WireShark.</p>
-
 <p>You scan around and see some normal looking traffic until you spot the flood of ICMP packets.</p>
-
-<p><img src="2.png" alt="" /></p>
-
+<p><img src="2.png" alt=""></p>
 <p>After filtering for the suspected packet type, you begin to analyze each packet and before long you
-notice most of the ICMP packets consist of a <code>type</code> that WireShark doesn&rsquo;t recognize.</p>
-
-<p><img src="3.png" alt="" /></p>
-
+notice most of the ICMP packets consist of a <code>type</code> that WireShark doesn't recognize.</p>
+<p><img src="3.png" alt=""></p>
 <p>This is prime example of <em>&ldquo;never fully trust your tools&rdquo;</em>. ICMP has a defined
-<a href="https://www.iana.org/assignments/icmp-parameters/icmp-parameters.xhtml#icmp-parameters-types">set of possible &ldquo;good&rdquo; types</a>.
+[set of possible &ldquo;good&rdquo; types]
+(<a href="https://www.iana.org/assignments/icmp-parameters/icmp-parameters.xhtml#icmp-parameters-types)">https://www.iana.org/assignments/icmp-parameters/icmp-parameters.xhtml#icmp-parameters-types)</a>.
 A legitimate ICMP request should only contain one of these predefined <code>types</code>. WireShark is
-attempting to map a <code>type</code> to a plaintext definition, and failing to do so because these aren&rsquo;t
+attempting to map a <code>type</code> to a plaintext definition, and failing to do so because these aren't
 legitimate ICMP echo requests.</p>
-
 <p>By scanning through the <code>type</code> flags of a few successive packets, we begin to suspect that these
 values might be ASCII codes, given the lower/upper bounds. If we manually take the first 3 codes
 <code>(71, 73, 70)</code> and convert them, we get:</p>
-
-<pre><code class="language-sh">for num in 71 73 70; do 
-  ascii=&quot;$(printf '%03o' $num)&quot;
-  printf &quot;\\${ascii}&quot;
-done
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-sh" data-lang="sh"><span style="color:#66d9ef">for</span> num in <span style="color:#ae81ff">71</span> <span style="color:#ae81ff">73</span> 70; <span style="color:#66d9ef">do</span> 
+  ascii<span style="color:#f92672">=</span><span style="color:#e6db74">&#34;</span><span style="color:#66d9ef">$(</span>printf <span style="color:#e6db74">&#39;%03o&#39;</span> $num<span style="color:#66d9ef">)</span><span style="color:#e6db74">&#34;</span>
+  printf <span style="color:#e6db74">&#34;</span><span style="color:#e6db74">\\</span><span style="color:#e6db74">${</span>ascii<span style="color:#e6db74">}</span><span style="color:#e6db74">&#34;</span>
+<span style="color:#66d9ef">done</span>
 
 &gt; GIF
-</code></pre>
-
-<p>It appears we have a GIF file header in some ICMP traffic. Strange indeed.  At this point, we
-decide that switching to a programatic approach might be easier. Python&rsquo;s <code>scapy</code> library is a handy
-packet parsing tool I&rsquo;ve used in the past.</p>
-
-<p>Let&rsquo;s fire up the iPython REPL and import our tools:</p>
-
-<pre><code class="language-python">from scapy.all import IP, ICMP, rdpcap
-pcap = rdpcap('data.pcap')
-</code></pre>
-
-<p>We&rsquo;re going to want to filter out all of our ICMP packets:</p>
-
-<pre><code class="language-python">packets = [p for p in pcap if ICMP in p]
-</code></pre>
-
-<p><img src="4.png" alt="" /></p>
-
-<p>Since the values used for the <code>type</code> flag span the entire ASCII range, it&rsquo;s a statistical
-probability that this ICMP traffic will send a legitimate ICMP echo request. That means we&rsquo;ll get
+</code></pre></div><p>It appears we have a GIF file header in some ICMP traffic. Strange indeed.  At this point, we
+decide that switching to a programatic approach might be easier. Python's <code>scapy</code> library is a handy
+packet parsing tool I've used in the past.</p>
+<p>Let's fire up the iPython REPL and import our tools:</p>
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-python" data-lang="python"><span style="color:#f92672">from</span> scapy.all <span style="color:#f92672">import</span> IP, ICMP, rdpcap
+pcap <span style="color:#f92672">=</span> rdpcap(<span style="color:#e6db74"></span><span style="color:#e6db74">&#39;</span><span style="color:#e6db74">data.pcap</span><span style="color:#e6db74">&#39;</span>)
+</code></pre></div><p>We're going to want to filter out all of our ICMP packets:</p>
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-python" data-lang="python">packets <span style="color:#f92672">=</span> [p <span style="color:#66d9ef">for</span> p <span style="color:#f92672">in</span> pcap <span style="color:#66d9ef">if</span> ICMP <span style="color:#f92672">in</span> p]
+</code></pre></div><p><img src="4.png" alt=""></p>
+<p>Since the values used for the <code>type</code> flag span the entire ASCII range, it's a statistical
+probability that this ICMP traffic will send a legitimate ICMP echo request. That means we'll get
 legitimate responses in our PCAP data. We can isolate requests by specifying that we only want ICMP
 packets that are <em>leaving</em> a particular source.</p>
-
-<pre><code class="language-python">packets = [p for p in packets if p[IP].src == '10.136.255.127']
-</code></pre>
-
-<p>Now we have a handle on all ICMP traffic leaving 10.136.255.127. The next step is to convert
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-python" data-lang="python">packets <span style="color:#f92672">=</span> [p <span style="color:#66d9ef">for</span> p <span style="color:#f92672">in</span> packets <span style="color:#66d9ef">if</span> p[IP]<span style="color:#f92672">.</span>src <span style="color:#f92672">==</span> <span style="color:#e6db74"></span><span style="color:#e6db74">&#39;</span><span style="color:#e6db74">10.136.255.127</span><span style="color:#e6db74">&#39;</span>]
+</code></pre></div><p>Now we have a handle on all ICMP traffic leaving 10.136.255.127. The next step is to convert
 everything from ASCII codes to their corresponding characters and write to disk.</p>
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-python" data-lang="python"><span style="color:#75715e"># take type flag of each packet</span>
+ascii <span style="color:#f92672">=</span> [p[ICMP]<span style="color:#f92672">.</span>type <span style="color:#66d9ef">for</span> p <span style="color:#f92672">in</span> packets]
 
-<pre><code class="language-python"># take type flag of each packet
-ascii = [p[ICMP].type for p in packets]
+<span style="color:#75715e"># convert them to character string</span>
+chars <span style="color:#f92672">=</span> [chr(x) <span style="color:#66d9ef">for</span> x <span style="color:#f92672">in</span> ascii]
+data <span style="color:#f92672">=</span> <span style="color:#e6db74"></span><span style="color:#e6db74">&#34;</span><span style="color:#e6db74">&#34;</span><span style="color:#f92672">.</span>join(chars)
 
-# convert them to character string
-chars = [chr(x) for x in ascii]
-data = &quot;&quot;.join(chars)
-
-# write the data to a file
-with open('mystery.file', 'w') as f:
-    f.write(data)
-</code></pre>
-
-<p>What exactly is this file?</p>
-
-<pre><code class="language-sh">file mystery.file
-</code></pre>
-
-<p><img src="5.png" alt="" /></p>
-
+<span style="color:#75715e"># write the data to a file</span>
+<span style="color:#66d9ef">with</span> open(<span style="color:#e6db74"></span><span style="color:#e6db74">&#39;</span><span style="color:#e6db74">mystery.file</span><span style="color:#e6db74">&#39;</span>, <span style="color:#e6db74"></span><span style="color:#e6db74">&#39;</span><span style="color:#e6db74">w</span><span style="color:#e6db74">&#39;</span>) <span style="color:#66d9ef">as</span> f:
+    f<span style="color:#f92672">.</span>write(data)
+</code></pre></div><p>What exactly is this file?</p>
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-sh" data-lang="sh">file mystery.file
+</code></pre></div><p><img src="5.png" alt=""></p>
 <p>And we have our data. If we want to go back and clean up some of the code and make it somewhat
 reusable&hellip;</p>
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-python" data-lang="python"><span style="color:#f92672">from</span> scapy.all <span style="color:#f92672">import</span> IP, ICMP, rdpcap
 
-<pre><code class="language-python">from scapy.all import IP, ICMP, rdpcap
-
-FILE = 'data.pcap'
-SOURCE_IP = '10.136.255.127'
-PROTO = ICMP
+FILE <span style="color:#f92672">=</span> <span style="color:#e6db74"></span><span style="color:#e6db74">&#39;</span><span style="color:#e6db74">data.pcap</span><span style="color:#e6db74">&#39;</span>
+SOURCE_IP <span style="color:#f92672">=</span> <span style="color:#e6db74"></span><span style="color:#e6db74">&#39;</span><span style="color:#e6db74">10.136.255.127</span><span style="color:#e6db74">&#39;</span>
+PROTO <span style="color:#f92672">=</span> ICMP
 
 
-def filter_op(pkt):
-    &quot;&quot;&quot;Filter operation for [PROTO] and [SRC_IP]&quot;&quot;&quot;
-    return PROTO in pkt and pkt[IP].src == SOURCE_IP
+<span style="color:#66d9ef">def</span> <span style="color:#a6e22e">filter_op</span>(pkt):
+    <span style="color:#e6db74"></span><span style="color:#e6db74">&#34;&#34;&#34;</span><span style="color:#e6db74">Filter operation for [PROTO] and [SRC_IP]</span><span style="color:#e6db74">&#34;&#34;&#34;</span>
+    <span style="color:#66d9ef">return</span> PROTO <span style="color:#f92672">in</span> pkt <span style="color:#f92672">and</span> pkt[IP]<span style="color:#f92672">.</span>src <span style="color:#f92672">==</span> SOURCE_IP
 
-def ascii_convert(pkt):
-    &quot;&quot;&quot;Map function to convert ASCII values to text&quot;&quot;&quot;
-    return chr(pkt[PROTO].type
+<span style="color:#66d9ef">def</span> <span style="color:#a6e22e">ascii_convert</span>(pkt):
+    <span style="color:#e6db74"></span><span style="color:#e6db74">&#34;&#34;&#34;</span><span style="color:#e6db74">Map function to convert ASCII values to text</span><span style="color:#e6db74">&#34;&#34;&#34;</span>
+    <span style="color:#66d9ef">return</span> chr(pkt[PROTO]<span style="color:#f92672">.</span>type
 
-server_icmp = filter(filter_op, rdpcap(FILE))
-data = map(ascii_convert, server_icmp)
+server_icmp <span style="color:#f92672">=</span> filter(filter_op, rdpcap(FILE))
+data <span style="color:#f92672">=</span> map(ascii_convert, server_icmp)
 
-with open('mystery.file', 'w') as f:
-    f.write(&quot;&quot;.join(data))
+<span style="color:#66d9ef">with</span> open(<span style="color:#e6db74"></span><span style="color:#e6db74">&#39;</span><span style="color:#e6db74">mystery.file</span><span style="color:#e6db74">&#39;</span>, <span style="color:#e6db74"></span><span style="color:#e6db74">&#39;</span><span style="color:#e6db74">w</span><span style="color:#e6db74">&#39;</span>) <span style="color:#66d9ef">as</span> f:
+    f<span style="color:#f92672">.</span>write(<span style="color:#e6db74"></span><span style="color:#e6db74">&#34;</span><span style="color:#e6db74">&#34;</span><span style="color:#f92672">.</span>join(data))
 
-</code></pre>
-
-<p>In this example, our packet capture contained a single file, the GIF. Not a likely scenario in a
+</code></pre></div><p>In this example, our packet capture contained a single file, the GIF. Not a likely scenario in a
 real-world investigation. If an attacker had initiated an ICMP shell or downloaded multiple files,
 it would be difficult to tell where one file ends and another begins. In this example, <code>binwalk</code>
 could help us extract the multiple files.</p>
-
 <p>To simulate this scenario, add the following line to our script, just before with write-to-disk
 operation:</p>
-
-<pre><code class="language-python">data = data + data + data
-</code></pre>
-
-<p>After running the python file again, we can run the resulting file through binwalk.</p>
-
-<p><img src="6.png" alt="" /></p>
-
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-python" data-lang="python">data <span style="color:#f92672">=</span> data <span style="color:#f92672">+</span> data <span style="color:#f92672">+</span> data
+</code></pre></div><p>After running the python file again, we can run the resulting file through binwalk.</p>
+<p><img src="6.png" alt=""></p>
 <p>Binwalk was able to find 3 distinct files embedded in the dumped data from our script.</p>
-
-<p><a href="data.pcap">Here&rsquo;s</a> the PCAP for those playing the home game. Happy hunting.</p>
+<p><a href="data.pcap">Here's</a> the PCAP for those playing the home game. Happy hunting.</p>
 
     </div>
     

@@ -79,71 +79,48 @@
     <h2 class="subtitle is-5">February 2, 2017 by Alex Flores</h2>
     
     <div class="content">
-      
-
-<p>You&rsquo;re on a pentesting engagement and you&rsquo;ve discovered a dual homed machine that allows you access to a subnet
-you can&rsquo;t access directly from your attack machine. Assuming you&rsquo;ve compromised at least one machine on the
+      <p>You're on a pentesting engagement and you've discovered a dual homed machine that allows you access to a subnet
+you can't access directly from your attack machine. Assuming you've compromised at least one machine on the
 initial network, you can use it as a proxy to other machines on the &ldquo;hidden&rdquo; subnet.</p>
-
 <p>The ssh client has an often-overlooked configuration file that resides in your <code>~/.ssh</code> folder. You can
 configure things in here that are specific to certain hosts or you can set default configurations for every
-host. In order to access remote networks, wouldn&rsquo;t it be nice to shorten a command like:</p>
-
-<pre><code class="language-bash.prettyprint">ssh -l user -L 127.0.0.1:5432:132.31.321.123:5432 -p 20222 -i ~/.ssh/db/id_rsa remote.server.com
-</code></pre>
-
-<p>to something like:</p>
-
-<pre><code class="language-bash.prettyprint">ssh mount_psql
-</code></pre>
-
-<h3 id="ssh-config-file">SSH Config file</h3>
-
-<p>This file has a <em>lot</em> of configuration options, but we&rsquo;re just going to focus on the one&rsquo;s that help us
+host. In order to access remote networks, wouldn't it be nice to shorten a command like:</p>
+<pre><code class="language-bash.prettyprint" data-lang="bash.prettyprint">ssh -l user -L 127.0.0.1:5432:132.31.321.123:5432 -p 20222 -i ~/.ssh/db/id_rsa remote.server.com
+</code></pre><p>to something like:</p>
+<pre><code class="language-bash.prettyprint" data-lang="bash.prettyprint">ssh mount_psql
+</code></pre><h3 id="ssh-config-file">SSH Config file</h3>
+<p>This file has a <em>lot</em> of configuration options, but we're just going to focus on the one's that help us
 pivot through 2+ networks.</p>
-
 <p><strong>ControlMaster</strong></p>
-
 <pre><code>Enables the sharing of multiple sessions over a single network connection. 
 When set to ''yes'', ssh(1) will listen for connections on a control socket 
 specified using the ControlPath argument. Additional sessions can connect 
 to this socket using the same ControlPath
 </code></pre>
-
 <p><strong>ControlPath</strong></p>
-
 <pre><code>Specify the path to the control socket used for connection sharing as described 
 in the ControlMaster section above or the string ''none'' to disable connection 
 sharing
 </code></pre>
-
 <p><strong>ProxyCommand</strong></p>
-
 <pre><code>Specifies the command to use to connect to the server. The command string extends 
 to the end of the line, and is executed with the user's shell. In the command 
 string, '%h' will be substituted by the host name to connect and '%p' by the port.
 </code></pre>
-
-<p>Ok, so the first two aren&rsquo;t strictly necessary for the pivoting, but subsequent connections to the same host
-will just reuse the same authenticated socket, so it&rsquo;s lighting fast.</p>
-
+<p>Ok, so the first two aren't strictly necessary for the pivoting, but subsequent connections to the same host
+will just reuse the same authenticated socket, so it's lighting fast.</p>
 <p>If you have the passwords for all the machines in your pivot chain, the client should ask you for each of
 them, but the whole process is much smoother if you upload keys to each of them. The cool thing about the ssh
 config file is that any program that uses ssh on the backend, can also use this file. So if you configure a
 server entry called <code>skynet</code>&hellip;</p>
-
-<pre><code class="language-bash.prettyprint">ssh skynet
+<pre><code class="language-bash.prettyprint" data-lang="bash.prettyprint">ssh skynet
 scp file.txt skynet:/tmp
 rsync -avr skynet ...
 ssh-copy-id -i ~/.ssh/id_rsa skynet
-</code></pre>
-
-<p>^ All of those work.</p>
-
-<p>So let&rsquo;s configure our <code>~/.ssh/config</code> file. Let&rsquo;s also assume root login is enabled on all the machines and
-that we&rsquo;ve already copied our ssh keys onto the remote machines.</p>
-
-<pre><code class="language-bash.prettyprint">ControlMaster auto
+</code></pre><p>^ All of those work.</p>
+<p>So let's configure our <code>~/.ssh/config</code> file. Let's also assume root login is enabled on all the machines and
+that we've already copied our ssh keys onto the remote machines.</p>
+<pre><code class="language-bash.prettyprint" data-lang="bash.prettyprint">ControlMaster auto
 ControlPath /tmp/ssh_mux_%h_%p_%r
 ServerAliveInterval 60 
 
@@ -163,22 +140,15 @@ Host skynet
   User root
   IdentityFile ~/.ssh/id_rsa
   ProxyCommand ssh -w %h:%p second_hop
-</code></pre>
-
-<p>With this configuration, we&rsquo;re able to connect to <code>skynet</code>, which is 2 subnets removed from our current one,
+</code></pre><p>With this configuration, we're able to connect to <code>skynet</code>, which is 2 subnets removed from our current one,
 with the command <code>ssh skynet</code>. Likewise, if we want to create a dynamic tunnel to allow for <code>proxychains</code>
 usage, <code>ssh -fNTD 9050 skynet</code> should do the trick. Then <code>proxychains nmap...</code> to your hearts content!</p>
-
 <p>The ProxyCommand directive in <code>skynet</code> is, in a way, declaring a prerequisite ssh connection to <code>second_hop</code>.
 The <code>-w</code> flag states that the client should just go ahead and forward and STDIN/OUT through the next
 connection.</p>
-
-<p>That&rsquo;s it. Go forth and PIVAAAT!</p>
-
-<p><img src="https://az616578.vo.msecnd.net/files/2016/07/16/636042357012300047-1231186684_ross-pivot-friends.gif" alt="" /></p>
-
+<p>That's it. Go forth and PIVAAAT!</p>
+<p><img src="https://az616578.vo.msecnd.net/files/2016/07/16/636042357012300047-1231186684_ross-pivot-friends.gif" alt=""></p>
 <p><strong>Additional Resources:</strong></p>
-
 <p><a href="https://linux.die.net/man/5/ssh_config">SSH Client Configurations Docs</a></p>
 
     </div>

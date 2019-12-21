@@ -79,67 +79,45 @@
     <h2 class="subtitle is-5">February 7, 2017 by Alex Flores</h2>
     
     <div class="content">
-      
-
-<p>You&rsquo;ve achieved code execution on a machine, but for some reason your reverse shell isn&rsquo;t pinging you back.
-Or that wget/tftp command isn&rsquo;t downloading your recon/post-exploitation tools. There&rsquo;s a chance you&rsquo;re
+      <p>You've achieved code execution on a machine, but for some reason your reverse shell isn't pinging you back.
+Or that wget/tftp command isn't downloading your recon/post-exploitation tools. There's a chance you're
 dealing with an egress problem. Typical ports that need outboud access are blocked. You try the main ones
 you can think of (21, 22, 53, 80, 8080, 443), but none of them seem to be connecting. Do you start at 1 and
-manually test? NO! The hallmarks of any decent programmer/hacker is laziness. So let&rsquo;s get lazy.</p>
-
+manually test? NO! The hallmarks of any decent programmer/hacker is laziness. So let's get lazy.</p>
 <h2 id="the-concept">The Concept</h2>
-
-<p>There&rsquo;s a few methods to achieve this, but at each of their cores, these 2 things are happening.</p>
-
+<p>There's a few methods to achieve this, but at each of their cores, these 2 things are happening.</p>
 <ul>
 <li>The attacking machine (66.66.66.66) needs to listen for something on every port.</li>
 <li>Your victim machine (23.23.23.23.) needs to try to hit your machine on every port.</li>
 </ul>
-
 <h3 id="netcat-and-iptables">netcat and iptables</h3>
-
 <p><strong>For the attacker</strong></p>
-
-<p>Set all ports to redirect to a listener you&rsquo;ve started.</p>
-
-<pre><code class="language-bash.prettyprint">iface=eth0
+<p>Set all ports to redirect to a listener you've started.</p>
+<pre><code class="language-bash.prettyprint" data-lang="bash.prettyprint">iface=eth0
 ip=66.66.66.66
 lport=8080
 
 iptables -t nat -A PREROUTING -i $iface -p tcp --dport 1:65535 -j DNAT --to-destination $ip:$lport
 nc -nvlp $lport
-</code></pre>
-
-<p><strong>For the victim machine</strong></p>
-
+</code></pre><p><strong>For the victim machine</strong></p>
 <p>*nix:</p>
-
-<pre><code class="language-bash.prettyprint">for port in (1..1000); do
+<pre><code class="language-bash.prettyprint" data-lang="bash.prettyprint">for port in (1..1000); do
   echo &quot;Trying $port&quot;
   nc -z -w1 66.66.66.66 $port
 done
-</code></pre>
-
-<p>Netcat DOES accept ranges, so the following also works: <code>nc -w1 66.66.66.66 1-1000</code>. I usually find
-that the bash loop&rsquo;s logging makes it easier to ID what worked if you walk away for a bit while it
+</code></pre><p>Netcat DOES accept ranges, so the following also works: <code>nc -w1 66.66.66.66 1-1000</code>. I usually find
+that the bash loop's logging makes it easier to ID what worked if you walk away for a bit while it
 runs.</p>
-
 <h3 id="wireshark">wireshark</h3>
-
 <p>If you have a GUI available on the attacking machine, you can repeat the above scenario, but
 substitute the iptables and nc commands for wireshark with a sane filter; something like</p>
-
-<pre><code class="language-bash.prettyprint">ip.src == 23.23.23.23
-</code></pre>
-
-<p>You should be able to watch the window for incoming packets and determine on which port
+<pre><code class="language-bash.prettyprint" data-lang="bash.prettyprint">ip.src == 23.23.23.23
+</code></pre><p>You should be able to watch the window for incoming packets and determine on which port
 the victim machine was able to connect.</p>
-
-<h3 id="egress-buster">egress-buster</h3>
-
-<p>If you&rsquo;ve the ability to get files onto the target machine, the most robust option is
+<h3 id="egressbuster">egress-buster</h3>
+<p>If you've the ability to get files onto the target machine, the most robust option is
 <a href="https://github.com/trustedsec/egressbuster">egress-buster</a>. The readme does a great job explaining
-usage, but it&rsquo;s basically the first method, using iptables and python. It consists of two scripts,
+usage, but it's basically the first method, using iptables and python. It consists of two scripts,
 a client and a server. It also has an option to automatically start the reverse shell once it finds
 an available outgoing part.</p>
 

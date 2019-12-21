@@ -1,8 +1,31 @@
 ---
-title: "Password Dump Database"
+title: "Password Dump Database - Part 1"
 date: 2019-09-28T19:33:14-04:00
-draft: true
 ---
+
+## Preface
+
+This post is first in a series where I mostly catalogue my failures, what didn't work, and the
+lessons I learned along the way. This isn't a tool drop, or a new dump. Also, part 2 basically
+says every choice I make in Part 1 (this part) is wrong. If you're a DB admin or have experience
+with manipulating large amounts of data, prepare to cringe... HARD
+
+If you're just interested in some stats and bencharks, you can 
+[skip straight to that section](#benchmarks-and-data)
+
+If you'd like to play along, here are some magnet links to the dumps.
+
+```txt
+# Collection #1
+magnet:?xt=urn:btih:b39c603c7e18db8262067c5926e7d5ea5d20e12e&dn=Collection+1
+
+# Collections #2 - #5
+magnet:?xt=urn:btih:d136b1adde531f38311fbf43fb96fc26df1a34cd&dn=Collection+%232-%235+%26+Antipublic
+```
+
+## Why?
+
+![](demo.gif)
 
 How much data duplication is there in the public database dumps, Collection #1-#5?
 
@@ -10,18 +33,17 @@ How much space is taken by duplicate passwords and email domains like gmail.com?
 
 During a [Hammock-Driven Development](https://www.youtube.com/watch?v=f84n5oFoZBc) session,
 thinking about how to answer this question, I found myself with the additional desire of searching
-through the Collections without needing to `zgrep` my way through. I also didn't accept unzipping
-them into however many terabytes as a solution. When I think data normalization, and quick searching
-we all think: DATABASES!
+through the Collections without needing to `zgrep` my way through. I also didn't accept grepping
+through terrabytes of unzipped data as a solution. When I think data normalization, and quick
+searching we all think: DATABASES!
 
 
 ## Planning it
-This dataset is huge. Also, 98% percent of this database's purpose is to be searched. And we want
-the results back fast. So we'll decide to incur the costs of writing to a heavily-indexed database
-up front, while seeding the databse. Let's get _normalized_.
+This dataset is huge. Querying will be 99% percent of this database's purpose. We want fast search
+results. We can decide, then,  to incur the costs of writing to a heavily-indexed database up
+front, while seeding the databse. Let's get _normalized_.
 
-
-The records in the types of dumps generally look like the following:
+The records in these types of dumps are generally structured like so:
 
 ```
 username@domain.com:P@ssw0rd!
@@ -30,9 +52,10 @@ username@domain.com:P@ssw0rd!
 Let's start by splitting each record into tables `usernames`, `domains`, and `passwords`.
 We can also create a `records` table with foreign keys which will maintain the relationship between
 entires in the other 3 tables. Also, if we create a unique index on the combination of the foreign
-keys, we ensure that only one combination of `user`, `domain`, and `password` ever enters the
-`records` table.  If there are 900 million gmail.com addresses in the dumps, the string "gmail.com"
-is only stored once. This kind of data normalization is what databases are meant for.  
+keys in the `records` table, we ensure that only one combination of `user`, `domain`, and
+`password` ever enters the `records` table.  If there are 900 million gmail.com addresses in the
+dumps, the string "gmail.com" is only stored once. This kind of data normalization is what
+databases are meant for.  
 
 With this configuration, if we seed our database with the following records:
 
@@ -49,7 +72,7 @@ our tables will look like this:
 | --- | ---       |
 | 1   | jerry     |
 | 2   | adam      |
-| 2   | samantha  |
+| 3   | samantha  |
 
 
 #### Passwords
@@ -77,10 +100,10 @@ our tables will look like this:
 
 
 With this normalization, we've taken 109 bytes of dump data and normalized it down to 64 bytes of
-unique data, plus the size of the join table that maintains the previous relationships.
+uniqued data, plus the size of the join table that maintains the previous relationships.
 
-Also, with `records` serving as a `JOIN` table between the rest, we can create some interesting
-queries.
+Also, with `records` serving as a `JOIN` table between the other 3 tables, we can create some
+interesting queries.
 
 * Who are all the users that use `P@$$w0rd1` for a password?
 * What's the most common password by users from company `contoso.com`?
@@ -94,8 +117,7 @@ abstraction over databases that exists across most programming languages. They t
 concept of a struct/class/object and map its properties to a database table. For example, if we
 have a `Dog` class in our language, an ORM maps this class to a `dogs` table in our database. Once
 we create an instance of that dog class, `starbuck = Dog.new`, `starbuck` now represents a single
-row in the `dogs` table. Columns, then,  are mapped to properties of an instance. Consider the
-following code:
+row in the `dogs` table. Columns, then, are mapped to properties of an instance.
 
 ```ruby
 starbuck = Dog.create(name: 'Starbuck')
@@ -105,7 +127,7 @@ starbuck.name
 => "Starbuck"
 ```
 
-When calling `starbuck.new`, the ORM's query planner will generate and issue the following query to
+When calling `starbuck.name`, the ORM's query planner will generate and issue the following query to
 the underlying SQL engine:
 
 ```sql
@@ -122,8 +144,8 @@ the ORM's initial configuration. We could, for example, conditionally use a SQLi
 running tests locally during development, but use Postgres in production.  All without changing a
 line of business logic.
 
-Another reason I chose ActiveRecord was it's ease of configuration. The following blocks of code
-are all that's needed to enable some queries that can ordinarily be cumbersome to write.
+Another reason I chose ActiveRecord was its ease of configuration. The following blocks of code
+are all that's needed to enable queries that can ordinarily be cumbersome to write.
 
 ### Configuring data models
 ```ruby
@@ -168,57 +190,9 @@ ActiveRecord::Base.establish_connection(
 )
 ```
 
-Once we create the tables and seed some data, our associations are set in the ORM such that
-pivoting on any instance of a `username`, `password`, or `domain` is possible.
-
-```
-# start with a domain
-yahoo = Domain.find_by(domain: "yahoo.com")
-
-# find all passwords by yahoo mail users
-yahoo.passwords
-
-# find all yahoo mail users
-yahoo.usernames
-
-# find all password of a particular yahoo mail user
-yahoo.usernames.first.passwords
-
-
-
-# start with a user
-jojo = Usernames.find_by(name: "jojo1990")
-
-# see all passwords belonging to jojo
-jojo.passwords
-
-# see all email account for jojo
-jojo.domains
-
-
-
-# starting with a password
-pass = Password.find_by(password: "P@ssw0rd!")
-
-# see the users that share this password
-pass.usernames
-```
-
-## Seeding the Database
-
-Collections #1-5 are huge. And they also include tons of duplicate records. By setting the correct
-indices and database constraints, we can offload the task of knowing what is "good" vs "bad" data
-to the database itself, instead of worrying about that in code. I initially handled this login in
-the code that seeds the database. 
-
-> **Dev Tangent**: Software validation was a bad idea for a couple of reasons. There are no
-> assurances that the data in our database is clean. Especially when there a multiple threads all
-> trying to write at the same time. Initially I just had a single-threaded seeding program. ETA was
-> about a year. During a multithread refactor, I ran into some concurrency problems. It was then
-> that I moved validation to the database. ETA dove down to 90 days.
-
-The following are the schema migrations will create the correct tables and indices in our database,
-as well as set the constraints necessary to keep our data clean:
+### Configuring the Database Schema
+The following are the schema migrations that will create the correct tables and indices in our
+database, as well as set the constraints necessary to keep our data clean:
 
 ```ruby
 require 'active_record'
@@ -278,23 +252,36 @@ class AddDomains < ActiveRecord::Migration[5.2]
 end
 ```
 
+## Seeding the Database
+
+Collections #1-5 are huge. And they also include tons of duplicate records. By setting the correct
+indices and database constraints, we can offload the task of knowing what is "good" vs "bad" data
+to the database itself, instead of worrying about that in code. I initially handled this logic in
+the code that seeds the database. 
+
+> **Dev Tangent**: Software validation was a bad idea for a couple of reasons. There are no
+> assurances that the data in our database is clean. Especially when there are multiple threads, all
+> trying to write at the same time. Initially I just had a single-threaded seeding program. ETA was
+> about a year. During a multithread refactor, I ran into some concurrency problems. It was then
+> that I moved validation to the database. ETA dove down to 90 days.
+
 With the ORM configured, we can begin the seeding process.
 
-In order to create a `record`, we need 3 other pre-existing row ids: users, passwords, and domains.
-Sometimes, we encounter a line in the dump data that has all new data. Other times, maybe only the
-username and password is new. Upon trying to create a new `gmail.com` domain record, we'll get a
-failure. In this scenario, we can subsequently just ask for the `id` of the existing `gmail.com`
-entry in our `domains` table. With our 3 ids, we can now user them as foreign keys for a new
-`record` entry.
+In order to create a `record`, we need 3 other pre-existing row ids: user_id, password_id, and
+domain_id.  Sometimes, we encounter a line in the dump data that has all new data. Other times,
+maybe only the username and password is new. Upon trying to create a new `gmail.com` domain record,
+we'll get a failure because it doesn't meet our uniquness constraint. In this scenario, we can
+instead ask for the `id` of the existing `gmail.com` entry in our `domains` table. With
+our 3 ids, we can now use them as foreign keys for a new `record` entry.
 
 You may already see a drawback in our implementation here. In a worst case scenario, where we're
 trying to insert a fully duplicate record, that means we can have 7 queries to attempt to write 1
-record.  That might be acceptable when seeding some datasets, but with a record count in the
-billions, that means a 45-day difference of seed time. Also keep in mind that each of the writes to
-the database is actually 2 writes, because the indices of each table also need to be updated.
-However, we decided early on to take this hit, since this isn't going to be write-heavy database. 
-We could still help the seed times by leveraging Database Transactions and Postgres' `ON CONFLICT`
-keyword though.
+record. That might be acceptable when seeding some datasets, but with a record count in the
+billions, that means a 45-day difference of seed time. Also keep in mind that each write to the
+database is actually 2 writes, because the indices of each record also need to be updated.  However,
+we decided early on to take this hit, since this isn't going to be write-heavy database.  We could
+still help the seed times by leveraging Database Transactions and Postgres' `ON CONFLICT` keyword
+though.
 
 Grouping 7 different transactions into one will ensure that all operations required for adding a
 new dump entry to our tables occur together.
@@ -337,9 +324,45 @@ database as 1 transaction, not 7.
 
 Another benefit of a transaction, is that in case of any sort of unrecoverable failure, the entire
 thing get's undone. If our seeder panics while trying to write a `domain`, the previous `password`,
-and `username` entries are removed from the database, ensuring we don't have any dangling data in
-our database.
+and `username` entries are removed from the database (they actually never wrote), ensuring we don't
+have any dangling data in our database.
 
+### Querying
+Once we create the tables and seed some data, our associations are set in the ORM such that
+pivoting on any instance of a `username`, `password`, or `domain` is possible.
+
+```
+# start with a domain
+yahoo = Domain.find_by(domain: "yahoo.com")
+
+# find all passwords by yahoo mail users
+yahoo.passwords
+
+# find all yahoo mail users
+yahoo.usernames
+
+# find all password of a particular yahoo mail user
+yahoo.usernames.first.passwords
+
+
+
+# start with a user
+jojo = Usernames.find_by(name: "jojo1990")
+
+# see all passwords belonging to jojo
+jojo.passwords
+
+# see all email account for jojo
+jojo.domains
+
+
+
+# starting with a password
+pass = Password.find_by(password: "P@ssw0rd!")
+
+# see the users that share this password
+pass.usernames
+```
 ## Iterate
 
 ![agile vs waterfall](1.png)
@@ -402,7 +425,7 @@ specific and complicated knowledge.
 Also, databases are a feat of real Software Engineering.
 
 This project started completely in Ruby, and then I eventually moved the seeder to Golang. The
-following table show the chunks of time I shaved along with what I did to save that time.
+following table shows the chunks of time I shaved off,  along with what I did to save that time.
 
 This is highly unscientific and remember that each row indicating improvement is a result of every
 change that is listed above it.
@@ -413,18 +436,48 @@ change that is listed above it.
 | 1 year      | Buying an SSD                         |
 | 10 months   | Multithreaded Seeding                 |
 | 6 months    | Data validation moved to the database |
-| 4 months    | Seeder re-written in Go               |
-| 3 months    | Database tuning                       |
-| 2 month     | Transactions                          |
-| 1 month     | Seed logic and logging refactor       |
+| 4 months    | Database tuning                       |
+| 3 months    | Seeder re-written in Go               |
+| 2 months    | Transactions                          |
 
 
 Only after all these changes, was I finally saturating the IO of my SSD. 
 
-These are the latest benchmarks.
-
-
 I should note that the rate of new records added begins to slow drastically as we encounter more
 and more duplicate entires in the database. I wish I'd kept a count of NON_UNIQUE_RECORD errors to
 report. I'm a bad scientist and I feel bad. 
+
+
+All stats are for files with the `txt` extension only.
+
+Original line count
+```
+27,472,858,235
+```
+
+Listing of the data after being split and uniqued:
+```
+-rw-r--r-- 1 alex alex 296G Nov 27 19:20 usernames.txt
+-rw-rw-r-- 1 alex alex  18G Dec  3 11:04 usernames_uniq.txt
+-rw-r--r-- 1 alex alex 260G Nov 27 19:20 domains.txt
+-rw-rw-r-- 1 alex alex 2.3G Dec  2 08:00 domains_uniq.txt
+-rw-r--r-- 1 alex alex 250G Nov 27 19:20 passwords.txt
+-rw-rw-r-- 1 alex alex  16G Dec  1 02:13 passwords_uniq.txt
+```
+
+Line counts of split components pre and post uniquing:
+```
+ 27472857767 domains.txt
+ 27472858235 passwords.txt
+ 27472857744 usernames.txt
+
+   67031505 domains_uniq.txt
+  958883636 passwords_uniq.txt
+ 1296186909 usernames_uniq.txt
+```
+
+<!--
+rg'd email:pass
+10.001.143.386 /tank/torrents/mailpass.txt
+-->
 
