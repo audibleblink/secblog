@@ -21,7 +21,7 @@ category = "categories"
 
 [params.highlight]
 style = "atom-one-dark"
-languages = ["go", "dockerfile", "javascript", "python", "ruby"]
+languages = ["go", "dockerfile", "javascript", "python", "ruby", "x86asm"]
 
 
 [[params.social]]
