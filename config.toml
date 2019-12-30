@@ -49,4 +49,3 @@ publishDir = "docs"
     identifier = "posts"
     name       = "Posts"
     url        = "posts/"
-    

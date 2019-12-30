@@ -33,6 +33,16 @@ The Many Hats Club had a CTF on HackTheBox a few weekends ago that re-ignited a 
     
     <item>
       <title>Password Dump Database - Part 1</title>
+      <link>https://sec.alexflor.es/post/passdb/</link>
+      <pubDate>Sat, 28 Sep 2019 19:33:14 -0400</pubDate>
+      
+      <guid>https://sec.alexflor.es/post/passdb/</guid>
+      <description>Preface This post is first in a series where I mostly catalogue my failures, what didn&#39;t work, and the lessons I learned along the way. This isn&#39;t a tool drop, or a new dump. Also, part 2 basically says every choice I make in Part 1 (this part) is wrong. If you&#39;re a DB admin or have experience with manipulating large amounts of data, prepare to cringe&amp;hellip; HARD
+If you&#39;re just interested in some stats and bencharks, you can skip straight to that section</description>
+    </item>
+    
+    <item>
+      <title>Password Dump Database - Part 1</title>
       <link>https://sec.alexflor.es/posts/2019/09/password-dump-database-part-1/</link>
       <pubDate>Sat, 28 Sep 2019 19:33:14 -0400</pubDate>
       
