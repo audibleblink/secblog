@@ -1,323 +1,147 @@
 <!DOCTYPE html>
-<html lang="en-us">
-<head>
+<html lang="en">
+    <head>
 	<meta name="generator" content="Hugo 0.60.1" />
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1">
-<meta content="security, vulnhub, red team, hackthebox, blue team" name="keywords">
-<meta content="Alex Flores" name="author">
-<meta property="og:title" content="SecBlog">
-<meta property="og:url" content="https://sec.alexflor.es/">
-<meta property="og:description" content="Things have been OK for me except that I&#39;m a zombie now">
-<meta property="og:type" content="website" />
-<title>SecBlog</title>
+        <meta charset="UTF-8">
+<meta http-equiv="X-UA-Compatible" content="ie=edge">
+<meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+<meta name="author" content="[audible]blink ">
+<meta name="description" content="Things have been OK for me except that I&#39;m a zombie now" />
+<meta name="keywords" content="hacking, blog, science, infosec, development, programming" />
+<meta name="robots" content="noodp" />
+<meta name="theme-color" content="" />
+<link rel="canonical" href="https://sec.alexflor.es/" />
 
-<script type="text/x-mathjax-config">
-  MathJax.Hub.Config({
-    tex2jax: {
-      inlineMath: [ ['$','$'], ["\\(","\\)"] ],
-      processEscapes: true
-    }
-  });
-</script>
-<link rel="stylesheet" href="https://sec.alexflor.es/css/style.css">
-<link rel="shortcut icon" href="https://sec.alexflor.es/wave.ico">
-<link rel="stylesheet" href="//cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css" integrity="sha256-eZrrJcwDc/3uDhsdt61sL2oOBY362qM3lon1gyExkL0=" crossorigin="anonymous" />
 
-<link rel="stylesheet" href="//cdnjs.cloudflare.com/ajax/libs/highlight.js/9.9.0/styles/atom-one-dark.min.css">
+    <title>
+        
+            [audible]blink&#39;s &#34; r e s e a r c h &#34; 
+        
+    </title>
 
-</head>
 
-<section class="section">
-  <div class="container">
-    <nav class="nav">
-      <div class="nav-left">
-        <a class="nav-item" href="https://sec.alexflor.es"><h1 class="title is-4">SecBlog</h1></a>
-      </div>
-      <div class="nav-right">
-        <nav class="nav-item level is-mobile">
-          
-          <a class="level-item" href="/categories/boot2root" target="_blank">
-            <span class="icon">
-              <i class="fa fa-terminal"></i>
-            </span>
-          </a>
-          
-          <a class="level-item" href="https://github.com/audibleblink" target="_blank">
-            <span class="icon">
-              <i class="fa fa-github"></i>
-            </span>
-          </a>
-          
-          <a class="level-item" href="https://twitter.com/4lex" target="_blank">
-            <span class="icon">
-              <i class="fa fa-twitter"></i>
-            </span>
-          </a>
-          
-          <a class="level-item" href="https://linkedin.com/in/alex2" target="_blank">
-            <span class="icon">
-              <i class="fa fa-linkedin-square"></i>
-            </span>
-          </a>
-          
-          <a class="level-item" href="/index.xml" target="_blank">
-            <span class="icon">
-              <i class="fa fa-rss"></i>
-            </span>
-          </a>
-          
-        </nav>
-      </div>
-    </nav>
-  </div>
-</section>
 
-<section class="section">
-  <div class="container">
-    
-    <article>
-      <h1 class="title"><a href="https://sec.alexflor.es/post/minipwn/">Abusing Signals with SIGROP Exploits</a></h1>
-      <h2 class="subtitle is-5">December 28, 2019</h2>
-      
-      <div class="content">
-        TMHC: MiniPwn Walk-through This one's just as much for me as it is for you. They say you don't truly understand something until you're able to teach it to someone else. So here we go!
-The Many Hats Club had a CTF on HackTheBox a few weekends ago that re-ignited a previous passion for exploit development. The reason it got me interested was that it required a new exploit technique of which I'd not yet heard, Signal Return Oriented Programming.
-        
-        ...<a class="button is-link" href="https://sec.alexflor.es/post/minipwn/" style="height:28px">
-          Read more
-          <span class="icon is-small">
-            <i class="fa fa-angle-double-right"></i>
-          </span>
-        </a>
-        
-      </div>
-    </article>
-    
-    <article>
-      <h1 class="title"><a href="https://sec.alexflor.es/post/passdb/">Password Dump Database - Part 1</a></h1>
-      <h2 class="subtitle is-5">September 28, 2019</h2>
-      
-      <div class="content">
-        Preface This post is first in a series where I mostly catalogue my failures, what didn't work, and the lessons I learned along the way. This isn't a tool drop, or a new dump. Also, part 2 basically says every choice I make in Part 1 (this part) is wrong. If you're a DB admin or have experience with manipulating large amounts of data, prepare to cringe&hellip; HARD
-If you're just interested in some stats and bencharks, you can skip straight to that section
-        
-        ...<a class="button is-link" href="https://sec.alexflor.es/post/passdb/" style="height:28px">
-          Read more
-          <span class="icon is-small">
-            <i class="fa fa-angle-double-right"></i>
-          </span>
-        </a>
-        
-      </div>
-    </article>
-    
-    <article>
-      <h1 class="title"><a href="https://sec.alexflor.es/post/subdomain_enum/">Stop Using Python for Subdomain Enumeration</a></h1>
-      <h2 class="subtitle is-5">April 20, 2019</h2>
-      
-      <div class="content">
-        Python (and all other scripting languages) use the host system's name resolution APIs. Skip the bottleneck and craft the DNS packets manually.
+<link href="https://cdnjs.cloudflare.com/ajax/libs/flag-icon-css/3.2.1/css/flag-icon.min.css" rel="stylesheet"
+    type="text/css">
 
+
+
+<link rel="stylesheet" href="/main.min.5dcefbf8102eb536dd3e2de53ffebfa58599ab2435c241a0db81728a5e015f2e.css">
+
+
+
+
+<meta itemprop="name" content="[audible]blink&#39;s &#34; r e s e a r c h &#34;">
+<meta itemprop="description" content="blink&#39;s blog"><meta name="twitter:card" content="summary"/>
+<meta name="twitter:title" content="[audible]blink&#39;s &#34; r e s e a r c h &#34;"/>
+<meta name="twitter:description" content="blink&#39;s blog"/>
+
+
+
+
+
+
+
+<link rel="alternate" type="application/rss+xml" href="https://sec.alexflor.es/index.xml" title="[audible]blink's " r e s e a r c h "" />
+
+
+
+
+
+    </head>
+
+    <body class="dark-theme">
+        <div class="container">
+            <header class="header">
+    <span class="header__inner">
+        <a href="/" style="text-decoration: none;">
+    <div class="logo">
         
-        ...<a class="button is-link" href="https://sec.alexflor.es/post/subdomain_enum/" style="height:28px">
-          Read more
-          <span class="icon is-small">
-            <i class="fa fa-angle-double-right"></i>
-          </span>
-        </a>
+            <span class="logo__mark">></span>
+            <span class="logo__text">$ cd ~/</span>
+            <span class="logo__cursor" style=""></span>
         
-      </div>
-    </article>
-    
-    <article>
-      <h1 class="title"><a href="https://sec.alexflor.es/post/vm_gateway/">Mind Your OOPSEC</a></h1>
-      <h2 class="subtitle is-5">December 30, 2018</h2>
-      
-      <div class="content">
-        OPSEC is hard and those OOPS moments can often cost you a campaign when Red teaming. In this post I'll go over how I set up my VMs so I never have to remember to turn on a VPN, stress about having some &lsquo;killswitch&rsquo; fail, or being on the losing end of some network-race-condition nonsense when waking my laptop.
-Automation isn't always about convenience for the user. Sometimes it's also about determinism.
-        
-        ...<a class="button is-link" href="https://sec.alexflor.es/post/vm_gateway/" style="height:28px">
-          Read more
-          <span class="icon is-small">
-            <i class="fa fa-angle-double-right"></i>
-          </span>
-        </a>
-        
-      </div>
-    </article>
-    
-    <article>
-      <h1 class="title"><a href="https://sec.alexflor.es/post/icmp_pcaps/">Analyzing Data Exfiltration over ICMP</a></h1>
-      <h2 class="subtitle is-5">May 11, 2018</h2>
-      
-      <div class="content">
-        I'm a big fan of learning through competition. Capture The Flag games have tremendous utility for training within the Security sector and even outside of it. Intentionally vulnerable web applications, like OWASP's JuiceShop, are excellent tools for assisting in developing Secure Software Development Life-cycle programs within an organization.
-So let's take an exercise I recently came across in a CTF event. The skills required to solve the challenge are actually quite useful in real-world defensive scenarios.
-        
-        ...<a class="button is-link" href="https://sec.alexflor.es/post/icmp_pcaps/" style="height:28px">
-          Read more
-          <span class="icon is-small">
-            <i class="fa fa-angle-double-right"></i>
-          </span>
-        </a>
-        
-      </div>
-    </article>
-    
-    <article>
-      <h1 class="title"><a href="https://sec.alexflor.es/post/password_spraying_with_doxycannon/">Password Spraying with DoxyCannon</a></h1>
-      <h2 class="subtitle is-5">April 16, 2018</h2>
-      
-      <div class="content">
-        Password sprays are here to stay. It's probably a good idea to configure some clever WAF rules, implement captcha systems, and set up additional alerting. But once implemented, how do you test and tune your protective measures?
-Enter DoxyCannon
-DoxyCannon's name borrows from ProxyCannon, a script that instantiates cloud infrastructure through which one can proxy requests. Unlike ProxyCannon, DoxyCannon gives you the same functionality without needing to rely on cloud providers.
-        
-        ...<a class="button is-link" href="https://sec.alexflor.es/post/password_spraying_with_doxycannon/" style="height:28px">
-          Read more
-          <span class="icon is-small">
-            <i class="fa fa-angle-double-right"></i>
-          </span>
-        </a>
-        
-      </div>
-    </article>
-    
-    <article>
-      <h1 class="title"><a href="https://sec.alexflor.es/post/bashynumb/">BashyNumb.sh</a></h1>
-      <h2 class="subtitle is-5">August 22, 2017</h2>
-      
-      <div class="content">
-        I've been running into more and more Linux boxes that don't have python 2 installed. It's been a little frustrating since I like to use a slightly modified version of the famous linuxprivchecker.py that almost all OSCP students know and love. I'm lazy and hate manual enumeration; makes my fingers go numb. I decided to spend an evening translating it to python 3, but quickly realized, &ldquo;This python is just invoking shell commands, why am I doing this?
-        
-        ...<a class="button is-link" href="https://sec.alexflor.es/post/bashynumb/" style="height:28px">
-          Read more
-          <span class="icon is-small">
-            <i class="fa fa-angle-double-right"></i>
-          </span>
-        </a>
-        
-      </div>
-    </article>
-    
-    <article>
-      <h1 class="title"><a href="https://sec.alexflor.es/post/vpn-access-point/">Creating a VPN Access Point</a></h1>
-      <h2 class="subtitle is-5">August 18, 2017</h2>
-      
-      <div class="content">
-        By now, there shouldn't be any doubt that not only are you being watched online, but your browsing habits, particularly your political ones, are of interest to the current administration. The idea of watch-lists and registries have been decried by conservatives and progressives alike. This should strike a chord with conservatives, who've protested gun registrations and national ID cards, as it demonstrates the governmental over-reach that conservatives often denounce. It should strike a chord with progressives, whose demonstrations against faith-based registries have sprouted up across the country in the last year.
-        
-        ...<a class="button is-link" href="https://sec.alexflor.es/post/vpn-access-point/" style="height:28px">
-          Read more
-          <span class="icon is-small">
-            <i class="fa fa-angle-double-right"></i>
-          </span>
-        </a>
-        
-      </div>
-    </article>
-    
-    <article>
-      <h1 class="title"><a href="https://sec.alexflor.es/post/chrome-extension-steals-cloudflare-api-tokens/">Chrome Extension Steals Cloudflare Api Tokens</a></h1>
-      <h2 class="subtitle is-5">August 3, 2017</h2>
-      
-      <div class="content">
-        Upon receiving news that the popular Chrome Extension, Web Developer, had been compromised, I quickly began to wonder about the what and how. Several stories exist about how the extension came to be compromised and they touched a bit on what it did. This post is meant to expand upon, what I believe to be, the more nefarious behavior of the extension. Since the extension calls out to an attacker-controlled URL, the payload hosted at that URL could be changed to anything at any time.
-        
-        ...<a class="button is-link" href="https://sec.alexflor.es/post/chrome-extension-steals-cloudflare-api-tokens/" style="height:28px">
-          Read more
-          <span class="icon is-small">
-            <i class="fa fa-angle-double-right"></i>
-          </span>
-        </a>
-        
-      </div>
-    </article>
-    
-    <article>
-      <h1 class="title"><a href="https://sec.alexflor.es/post/bashbunny/">Creating BashBunny Payloads</a></h1>
-      <h2 class="subtitle is-5">April 1, 2017</h2>
-      
-      <div class="content">
-        What is it? The BashBunny is an attack platform that allows attackers to create payloads in Bash. The device can be scripted to enumerate as a HID (keyboard), mass storage, serial, and Ethernet. This enables a multitude of attacks including thing like exfiltrating documents over a network interface or stealing account hashes from locked computers.
-Creating a Payload We want to create a payload that allows for easy exfiltration from macOS.
-        
-        ...<a class="button is-link" href="https://sec.alexflor.es/post/bashbunny/" style="height:28px">
-          Read more
-          <span class="icon is-small">
-            <i class="fa fa-angle-double-right"></i>
-          </span>
-        </a>
-        
-      </div>
-    </article>
-    
-  </div>
-</section>
-<section class="section">
-  <div class="container">
-    <nav class="level is-mobile">
-      <div class="level-left">
-        <div class="level-item">
-          
+    </div>
+</a>
+
+
+        <span class="header__right">
+            
+                <nav class="menu">
+    <ul class="menu__inner"><li><a href="https://sec.alexflor.es/posts/">Posts</a></li>
+    </ul>
+</nav>
+
+                <span class="menu-trigger">
+                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24">
+                        <path d="M0 0h24v24H0z" fill="none"/>
+                        <path d="M3 18h18v-2H3v2zm0-5h18v-2H3v2zm0-7v2h18V6H3z"/>
+                    </svg>
+                </span>
+            
+
+            <span class="theme-toggle unselectable"><svg class="theme-toggler" width="24" height="24" viewBox="0 0 48 48" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <path d="M22 41C32.4934 41 41 32.4934 41 22C41 11.5066 32.4934 3 22
+  3C11.5066 3 3 11.5066 3 22C3 32.4934 11.5066 41 22 41ZM7 22C7
+  13.7157 13.7157 7 22 7V37C13.7157 37 7 30.2843 7 22Z"/>
+</svg>
+</span>
+        </span>
+    </span>
+</header>
+
+
+            <div class="content">
+                
+    <main aria-role="main">
+        <div>
+            <h1>[audible]blink&#39;s &#34; r e s e a r c h &#34;</h1>
+                <p>Things have been OK for me except that I&#39;m a zombie now</p>
+                <div>
+                    &nbsp; <a href="https://github.com/audibleblink" target="_blank" rel="noopener" title="Github"><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 19c-5 1.5-5-2.5-7-3m14 6v-3.87a3.37 3.37 0 0 0-.94-2.61c3.14-.35 6.44-1.54 6.44-7A5.44 5.44 0 0 0 20 4.77 5.07 5.07 0 0 0 19.91 1S18.73.65 16 2.48a13.38 13.38 0 0 0-7 0C6.27.65 5.09 1 5.09 1A5.07 5.07 0 0 0 5 4.77a5.44 5.44 0 0 0-1.5 3.78c0 5.42 3.3 6.61 6.44 7A3.37 3.37 0 0 0 9 18.13V22"></path></svg></a> &nbsp;&nbsp; <a href="https://twitter.com/4lex" target="_blank" rel="noopener" title="Twitter"><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M23 3a10.9 10.9 0 0 1-3.14 1.53 4.48 4.48 0 0 0-7.86 3v1A10.66 10.66 0 0 1 3 4s-4 9 5 13a11.64 11.64 0 0 1-7 2c9 5 20 0 20-11.5a4.5 4.5 0 0 0-.08-.83A7.72 7.72 0 0 0 23 3z"></path></svg></a> &nbsp;&nbsp; <a href="https://linkedin.com/in/alex2" target="_blank" rel="noopener" title="Linkedin"><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M16 8a6 6 0 0 1 6 6v7h-4v-7a2 2 0 0 0-2-2 2 2 0 0 0-2 2v7h-4v-7a6 6 0 0 1 6-6z"></path><rect x="2" y="9" width="4" height="12"></rect><circle cx="4" cy="4" r="2"></circle></svg></a> &nbsp;&nbsp; <a href="https://keybase.io/serveradmin" target="_blank" rel="noopener" title="Keybase"><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="currentColor" stroke="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M10.446 21.371c0 .528-.428.953-.954.953-.525 0-.954-.425-.954-.953 0-.526.428-.954.953-.954.524 0 .951.431.951.955m5.922-.001c0 .528-.428.953-.955.953-.526 0-.952-.425-.952-.953 0-.526.423-.954.949-.954s.954.431.954.955M20.904 12.213l-.156-.204c-.046-.06-.096-.116-.143-.175-.045-.061-.094-.113-.141-.169-.104-.12-.209-.239-.319-.359l-.076-.08-.091-.099-.135-.131c-.015-.018-.032-.034-.05-.053-1.16-1.139-2.505-1.986-3.955-2.504l-.23-.078c.012-.027.024-.055.035-.083.41-1.064.367-2.223-.12-3.255-.491-1.035-1.356-1.8-2.438-2.16-.656-.216-1.23-.319-1.711-.305-.033-.105-.1-.577.496-1.848L10.663 0l-.287.399c-.33.455-.648.895-.945 1.328-.328-.345-.766-.552-1.245-.58L6.79 1.061h-.012c-.033-.003-.07-.003-.104-.003-.99 0-1.81.771-1.87 1.755l-.088 1.402v.003c-.061 1.029.727 1.915 1.755 1.979l1.002.061c-.065.84.073 1.62.405 2.306-1.346.562-2.586 1.401-3.66 2.484C.913 14.391.913 18.051.913 20.994v1.775l1.305-1.387c.266.93.652 1.807 1.145 2.615H5.06c-.833-1.114-1.419-2.426-1.68-3.848l1.913-2.03-.985 3.091 1.74-1.268c3.075-2.234 6.744-2.75 10.91-1.529 1.805.532 3.56.039 4.473-1.257l.104-.165c.091.498.141.998.141 1.496 0 1.563-.255 3.687-1.38 5.512h1.611c.776-1.563 1.181-3.432 1.181-5.512-.001-2.199-.786-4.421-2.184-6.274zM8.894 6.191c.123-1.002.578-1.949 1.23-2.97.025.05.054.097.084.144.264.398.713.625 1.199.605.217-.008.605.025 1.233.232.714.236 1.286.744 1.608 1.425s.349 1.442.079 2.149c-.173.445-.454.82-.806 1.109l-.408-.502-.002-.003c-.279-.341-.694-.535-1.134-.535-.335 0-.664.117-.925.33-.334.27-.514.66-.534 1.058-1.2-.541-1.8-1.643-1.628-3.041l.004-.001zm4.304 5.11l-.519.425c-.046.036-.095.053-.146.053-.066 0-.133-.03-.177-.085l-.111-.135c-.083-.1-.067-.25.034-.334l.51-.42-1.055-1.299c-.109-.133-.091-.33.044-.436.058-.048.126-.072.194-.072.091 0 .181.038.24.113l2.963 3.645c.109.135.09.33-.042.436-.039.029-.082.053-.126.063-.023.006-.045.009-.07.009-.09 0-.178-.04-.24-.113l-.295-.365-1.045.854c-.046.037-.1.055-.154.055-.068 0-.139-.03-.186-.09l-.477-.579c-.082-.102-.068-.252.035-.336l1.051-.857-.426-.533-.002.001zM7.753 4.866l-1.196-.075c-.255-.015-.45-.235-.435-.488l.09-1.401c.014-.245.216-.436.461-.436h.024l1.401.091c.123.006.236.06.317.152.083.094.123.21.116.336l-.007.101c-.32.567-.585 1.134-.773 1.72h.002zm12.524 11.481c-.565.805-1.687 1.081-2.924.718-3.886-1.141-7.396-.903-10.468.701l1.636-5.123-5.291 5.609c.099-3.762 2.453-6.966 5.758-8.311.471.373 1.034.66 1.673.841.16.044.322.074.48.102-.183.458-.119.997.21 1.407l.075.09c-.172.45-.105.975.221 1.374l.475.582c.266.325.659.513 1.079.513.321 0 .635-.111.886-.314l.285-.232c.174.074.367.113.566.113.113 0 .222-.01.33-.035.218-.05.424-.15.598-.291.623-.51.72-1.435.209-2.06l-1.67-2.056c.145-.117.281-.244.408-.381.135.037.271.078.4.12.266.097.533.198.795.315 1.005.445 1.954 1.1 2.771 1.897.029.03.059.055.085.083l.17.175c.038.039.076.079.111.12.079.085.16.175.239.267l.126.15c.045.053.086.104.13.16l.114.15c.04.051.079.102.117.154.838 1.149.987 2.329.404 3.157v.005zM7.719 4.115l-.835-.051.053-.835.834.051-.052.835z"/></svg></a> &nbsp;
+                </div>
         </div>
-      </div>
-      <div class="level-right is-marginless">
-        <div class="level-item">
-          
-          <a class="button" href="/page/2/">
-            Older
-            <span class="icon is-small is-marginless">
-              <i class="fa fa-angle-right"></i>
-            </span>
-          </a>
-          
+    </main>
+
+            </div>
+
+            
+                <footer class="footer">
+    <div class="footer__inner">
+        <div class="footer__content">
+            <span>&copy; 2019</span>
+            
+                <span><a href="https://sec.alexflor.es">[audible]blink</a></span>
+            
+            <span></span>
+            <span> <a href="https://sec.alexflor.es/posts/index.xml" target="_blank" title="rss"><svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-rss"><path d="M4 11a9 9 0 0 1 9 9"></path><path d="M4 4a16 16 0 0 1 16 16"></path><circle cx="5" cy="19" r="1"></circle></svg></a></span>
         </div>
-      </div>
-    </nav>
-  </div>
-</section>
+    </div>
+    <div class="footer__inner">
+        <div class="footer__content">
+        </div>
+    </div>
+</footer>
 
-<section class="section">
-  <div class="container has-text-centered">
-    <div style='margin: auto; width: 250px'><script src="https://www.hackthebox.eu/badge/1496"></script></div>
-    
-  </div>
-</section>
+            
+        </div>
 
-
-<script src="//cdnjs.cloudflare.com/ajax/libs/highlight.js/9.11.0/highlight.min.js" integrity="sha256-+bhVTaRmJ/c07eV80nU8gD2cBBF0rYkf1txqXlrbvb0=" crossorigin="anonymous"></script>
-
-<script type="text/javascript" src="//cdnjs.cloudflare.com/ajax/libs/highlight.js/9.11.0/languages/go.min.js"></script>
-
-<script type="text/javascript" src="//cdnjs.cloudflare.com/ajax/libs/highlight.js/9.11.0/languages/dockerfile.min.js"></script>
-
-<script type="text/javascript" src="//cdnjs.cloudflare.com/ajax/libs/highlight.js/9.11.0/languages/javascript.min.js"></script>
-
-<script type="text/javascript" src="//cdnjs.cloudflare.com/ajax/libs/highlight.js/9.11.0/languages/python.min.js"></script>
-
-<script type="text/javascript" src="//cdnjs.cloudflare.com/ajax/libs/highlight.js/9.11.0/languages/ruby.min.js"></script>
-
-<script type="text/javascript" src="//cdnjs.cloudflare.com/ajax/libs/highlight.js/9.11.0/languages/x86asm.min.js"></script>
-
-<script type="text/javascript" src="//cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.1/MathJax.js"></script>
-<script> hljs.initHighlightingOnLoad(); </script>
-
-
-
-<script type="application/javascript">
-var doNotTrack = false;
-if (!doNotTrack) {
-	window.ga=window.ga||function(){(ga.q=ga.q||[]).push(arguments)};ga.l=+new Date;
-	ga('create', 'UA-12497311-8', 'auto');
-	
-	ga('send', 'pageview');
-}
-</script>
-<script async src='https://www.google-analytics.com/analytics.js'></script>
+        
 
 
 
 
+<script type="text/javascript" src="/bundle.min.2d5469329143160ae2456a69c3c76dc2d0a3b212b46afe291a51bd68650ed6f8697e001dab54f1c272c77ce08092a8c55e5bb4314e0ee334aab4b927ec896638.js" integrity="sha512-LVRpMpFDFgriRWppw8dtwtCjshK0av4pGlG9aGUO1vhpfgAdq1TxwnLHfOCAkqjFXlu0MU4O4zSqtLkn7IlmOA=="></script>
+    <script>
+        (function(i,s,o,g,r,a,m){i['GoogleAnalyticsObject']=r;i[r]=i[r]||function(){
+        (i[r].q=i[r].q||[]).push(arguments)},i[r].l=1*new Date();a=s.createElement(o),
+        m=s.getElementsByTagName(o)[0];a.async=1;a.src=g;m.parentNode.insertBefore(a,m)
+        })(window,document,'script','//www.google-analytics.com/analytics.js','ga');
+        ga('create', 'UA-12497311-8', 'auto');
+        ga('send', 'pageview');
+    </script>
+
+
+
+    </body>
+</html>

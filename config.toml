@@ -1,45 +1,52 @@
 baseurl = "https://sec.alexflor.es"
+title = "[audible]blink's \" r e s e a r c h \""
+
+theme = "hello-friend-ng"
 languageCode = "en-us"
-title = "SecBlog"
-theme = "hucore"
+
 googleAnalytics = "UA-12497311-8"
 disqusShortname = "blinksec"
 publishDir = "docs"
 
+[permalinks]
+  posts = "/posts/:year/:month/:title/"
+
+[author]
+  name = "[audible]blink"
+
 [params]
-name = "Alex Flores"
-description = "Things have been OK for me except that I'm a zombie now"
-favicon = 'favicon.ico'
-copyright = "Untitled."
-author = "Alex Flores"
-sharingicons = true
-keywords = ["security", "vulnhub", "red team", "hackthebox", "blue team"]
+  description = "blink's blog"
+  keywords = "hacking, blog, science, infosec, development, programming"
+  homeSubtitle = "Things have been OK for me except that I'm a zombie now"
+  copyright = "Untitled."
+
+  [params.logo]
+    logoText     = "$ cd ~/"
+    logoHomeLink = "/"
+
+  [[params.social]]
+    name = "github"
+    url = "https://github.com/audibleblink"
+
+  [[params.social]]
+    name = "twitter"
+    url = "https://twitter.com/4lex"
+
+  [[params.social]]
+    name = "linkedin"
+    url = "https://linkedin.com/in/alex2"
+
+  [[params.social]]
+    name = "keybase"
+    url = "https://keybase.io/serveradmin"
 
 [taxonomies]
-tag = "tags"
-category = "categories"
+  tag = "tags"
+  category = "categories"
 
-[params.highlight]
-style = "atom-one-dark"
-languages = ["go", "dockerfile", "javascript", "python", "ruby", "x86asm"]
-
-
-[[params.social]]
-url = "/categories/boot2root"
-fa_icon = "fa-terminal"
-
-[[params.social]]
-url = "https://github.com/audibleblink"
-fa_icon = "fa-github"
-
-[[params.social]]
-url = "https://twitter.com/4lex"
-fa_icon = "fa-twitter"
-
-[[params.social]]
-url = "https://linkedin.com/in/alex2"
-fa_icon = "fa-linkedin-square"
-
-[[params.social]]
-url = "/index.xml"
-fa_icon = "fa-rss"
+[menu]
+  [[menu.main]]
+    identifier = "posts"
+    name       = "Posts"
+    url        = "posts/"
+    

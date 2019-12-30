@@ -1,0 +1,279 @@
+<!DOCTYPE html>
+<html lang="en">
+    <head>
+        <meta charset="UTF-8">
+<meta http-equiv="X-UA-Compatible" content="ie=edge">
+<meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+<meta name="author" content="[audible]blink ">
+<meta name="description" content="You&#39;re on a pentesting engagement and you&#39;ve discovered a dual homed machine that allows you access to a subnet you can&#39;t access directly from your attack machine. Assuming you&#39;ve compromised at least one machine on the initial network, you can use it as a proxy to other machines on the &amp;ldquo;hidden&amp;rdquo; subnet.
+The ssh client has an often-overlooked configuration file that resides in your ~/.ssh folder. You can configure things in here that are specific to certain hosts or you can set default configurations for every host." />
+<meta name="keywords" content="hacking, blog, science, infosec, development, programming" />
+<meta name="robots" content="noodp" />
+<meta name="theme-color" content="" />
+<link rel="canonical" href="https://sec.alexflor.es/posts/2017/02/configuring-ssh-for-pivoting/" />
+
+
+    <title>
+        
+            Configuring SSH for Pivoting :: [audible]blink&#39;s &#34; r e s e a r c h &#34; 
+        
+    </title>
+
+
+
+<link href="https://cdnjs.cloudflare.com/ajax/libs/flag-icon-css/3.2.1/css/flag-icon.min.css" rel="stylesheet"
+    type="text/css">
+
+
+
+<link rel="stylesheet" href="/main.min.5dcefbf8102eb536dd3e2de53ffebfa58599ab2435c241a0db81728a5e015f2e.css">
+
+
+
+
+<meta itemprop="name" content="Configuring SSH for Pivoting">
+<meta itemprop="description" content="How to leverage the SSH client&#39;s config file for pentesting">
+<meta itemprop="datePublished" content="2017-02-02T16:32:04-05:00" />
+<meta itemprop="dateModified" content="2017-02-02T16:32:04-05:00" />
+<meta itemprop="wordCount" content="543">
+
+
+
+<meta itemprop="keywords" content="" /><meta name="twitter:card" content="summary"/>
+<meta name="twitter:title" content="Configuring SSH for Pivoting"/>
+<meta name="twitter:description" content="How to leverage the SSH client&#39;s config file for pentesting"/>
+
+
+
+
+
+    <meta property="article:published_time" content="2017-02-02 16:32:04 -0500 EST" />
+
+
+
+
+
+
+
+
+    </head>
+
+    <body class="dark-theme">
+        <div class="container">
+            <header class="header">
+    <span class="header__inner">
+        <a href="/" style="text-decoration: none;">
+    <div class="logo">
+        
+            <span class="logo__mark">></span>
+            <span class="logo__text">$ cd ~/</span>
+            <span class="logo__cursor" style=""></span>
+        
+    </div>
+</a>
+
+
+        <span class="header__right">
+            
+                <nav class="menu">
+    <ul class="menu__inner"><li><a href="https://sec.alexflor.es/posts/">Posts</a></li>
+    </ul>
+</nav>
+
+                <span class="menu-trigger">
+                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24">
+                        <path d="M0 0h24v24H0z" fill="none"/>
+                        <path d="M3 18h18v-2H3v2zm0-5h18v-2H3v2zm0-7v2h18V6H3z"/>
+                    </svg>
+                </span>
+            
+
+            <span class="theme-toggle unselectable"><svg class="theme-toggler" width="24" height="24" viewBox="0 0 48 48" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <path d="M22 41C32.4934 41 41 32.4934 41 22C41 11.5066 32.4934 3 22
+  3C11.5066 3 3 11.5066 3 22C3 32.4934 11.5066 41 22 41ZM7 22C7
+  13.7157 13.7157 7 22 7V37C13.7157 37 7 30.2843 7 22Z"/>
+</svg>
+</span>
+        </span>
+    </span>
+</header>
+
+
+            <div class="content">
+                
+    <main class="post">
+
+        <div class="post-info">
+            <p><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-clock"><circle cx="12" cy="12" r="10"></circle><polyline points="12 6 12 12 16 14"></polyline></svg>3 minutes
+
+            
+
+            </p>
+        </div>
+
+        <article>
+            <h1 class="post-title">
+                <a href="https://sec.alexflor.es/posts/2017/02/configuring-ssh-for-pivoting/">Configuring SSH for Pivoting</a>
+            </h1>
+
+            
+
+            <div class="post-content">
+                <p>You're on a pentesting engagement and you've discovered a dual homed machine that allows you access to a subnet
+you can't access directly from your attack machine. Assuming you've compromised at least one machine on the
+initial network, you can use it as a proxy to other machines on the &ldquo;hidden&rdquo; subnet.</p>
+<p>The ssh client has an often-overlooked configuration file that resides in your <code>~/.ssh</code> folder. You can
+configure things in here that are specific to certain hosts or you can set default configurations for every
+host. In order to access remote networks, wouldn't it be nice to shorten a command like:</p>
+<pre><code class="language-bash.prettyprint" data-lang="bash.prettyprint">ssh -l user -L 127.0.0.1:5432:132.31.321.123:5432 -p 20222 -i ~/.ssh/db/id_rsa remote.server.com
+</code></pre><p>to something like:</p>
+<pre><code class="language-bash.prettyprint" data-lang="bash.prettyprint">ssh mount_psql
+</code></pre><h3 id="ssh-config-file">SSH Config file</h3>
+<p>This file has a <em>lot</em> of configuration options, but we're just going to focus on the one's that help us
+pivot through 2+ networks.</p>
+<p><strong>ControlMaster</strong></p>
+<pre><code>Enables the sharing of multiple sessions over a single network connection. 
+When set to ''yes'', ssh(1) will listen for connections on a control socket 
+specified using the ControlPath argument. Additional sessions can connect 
+to this socket using the same ControlPath
+</code></pre>
+<p><strong>ControlPath</strong></p>
+<pre><code>Specify the path to the control socket used for connection sharing as described 
+in the ControlMaster section above or the string ''none'' to disable connection 
+sharing
+</code></pre>
+<p><strong>ProxyCommand</strong></p>
+<pre><code>Specifies the command to use to connect to the server. The command string extends 
+to the end of the line, and is executed with the user's shell. In the command 
+string, '%h' will be substituted by the host name to connect and '%p' by the port.
+</code></pre>
+<p>Ok, so the first two aren't strictly necessary for the pivoting, but subsequent connections to the same host
+will just reuse the same authenticated socket, so it's lighting fast.</p>
+<p>If you have the passwords for all the machines in your pivot chain, the client should ask you for each of
+them, but the whole process is much smoother if you upload keys to each of them. The cool thing about the ssh
+config file is that any program that uses ssh on the backend, can also use this file. So if you configure a
+server entry called <code>skynet</code>&hellip;</p>
+<pre><code class="language-bash.prettyprint" data-lang="bash.prettyprint">ssh skynet
+scp file.txt skynet:/tmp
+rsync -avr skynet ...
+ssh-copy-id -i ~/.ssh/id_rsa skynet
+</code></pre><p>^ All of those work.</p>
+<p>So let's configure our <code>~/.ssh/config</code> file. Let's also assume root login is enabled on all the machines and
+that we've already copied our ssh keys onto the remote machines.</p>
+<pre><code class="language-bash.prettyprint" data-lang="bash.prettyprint">ControlMaster auto
+ControlPath /tmp/ssh_mux_%h_%p_%r
+ServerAliveInterval 60 
+
+Host first_hop
+  Hostname 123.123.321.123
+  User root
+  IdentityFile ~/.ssh/id_rsa
+
+Host second_hop
+  Hostname 321.321.345.345
+  User root
+  IdentityFile ~/.ssh/id_rsa
+  ProxyCommand ssh -w %h:%p first_hop
+
+Host skynet
+  Hostname 666.666.666.666
+  User root
+  IdentityFile ~/.ssh/id_rsa
+  ProxyCommand ssh -w %h:%p second_hop
+</code></pre><p>With this configuration, we're able to connect to <code>skynet</code>, which is 2 subnets removed from our current one,
+with the command <code>ssh skynet</code>. Likewise, if we want to create a dynamic tunnel to allow for <code>proxychains</code>
+usage, <code>ssh -fNTD 9050 skynet</code> should do the trick. Then <code>proxychains nmap...</code> to your hearts content!</p>
+<p>The ProxyCommand directive in <code>skynet</code> is, in a way, declaring a prerequisite ssh connection to <code>second_hop</code>.
+The <code>-w</code> flag states that the client should just go ahead and forward and STDIN/OUT through the next
+connection.</p>
+<p>That's it. Go forth and PIVAAAT!</p>
+<p><img src="https://az616578.vo.msecnd.net/files/2016/07/16/636042357012300047-1231186684_ross-pivot-friends.gif" alt=""></p>
+<p><strong>Additional Resources:</strong></p>
+<p><a href="https://linux.die.net/man/5/ssh_config">SSH Client Configurations Docs</a></p>
+
+            </div>
+        </article>
+
+        <hr />
+
+        <div class="post-info">
+
+            <p><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-file-text"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path><polyline points="14 2 14 8 20 8"></polyline><line x1="16" y1="13" x2="8" y2="13"></line><line x1="16" y1="17" x2="8" y2="17"></line><polyline points="10 9 9 9 8 9"></polyline></svg>543 Words</p>
+
+            <p><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-calendar"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect><line x1="16" y1="2" x2="16" y2="6"></line><line x1="8" y1="2" x2="8" y2="6"></line><line x1="3" y1="10" x2="21" y2="10"></line></svg>2017-02-02 16:32 -0500</p>
+        </div>
+
+        
+            <div class="pagination">
+                <div class="pagination__title">
+                    <span class="pagination__title-h"></span>
+                    <hr />
+                </div>
+
+                <div class="pagination__buttons">
+                    
+                        <span class="button previous">
+                            <a href="https://sec.alexflor.es/posts/2017/02/finding-your-way-out-from-behind-firewalls-with-strict-outbound-rules/">
+                                <span class="button__icon">←</span>
+                                <span class="button__text">Finding Your Way Out From Behind Firewalls with Strict Outbound Rules</span>
+                            </a>
+                        </span>
+                    
+
+                    
+                        <span class="button next">
+                            <a href="https://sec.alexflor.es/posts/2016/12/b2r-wallaby-walkthrough/">
+                                <span class="button__text">B2R: Wallaby Walkthrough</span>
+                                <span class="button__icon">→</span>
+                            </a>
+                        </span>
+                    
+                </div>
+            </div>
+        
+
+        
+    </main>
+
+            </div>
+
+            
+                <footer class="footer">
+    <div class="footer__inner">
+        <div class="footer__content">
+            <span>&copy; 2019</span>
+            
+                <span><a href="https://sec.alexflor.es">[audible]blink</a></span>
+            
+            <span></span>
+            <span> <a href="https://sec.alexflor.es/posts/index.xml" target="_blank" title="rss"><svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-rss"><path d="M4 11a9 9 0 0 1 9 9"></path><path d="M4 4a16 16 0 0 1 16 16"></path><circle cx="5" cy="19" r="1"></circle></svg></a></span>
+        </div>
+    </div>
+    <div class="footer__inner">
+        <div class="footer__content">
+        </div>
+    </div>
+</footer>
+
+            
+        </div>
+
+        
+
+
+
+
+<script type="text/javascript" src="/bundle.min.2d5469329143160ae2456a69c3c76dc2d0a3b212b46afe291a51bd68650ed6f8697e001dab54f1c272c77ce08092a8c55e5bb4314e0ee334aab4b927ec896638.js" integrity="sha512-LVRpMpFDFgriRWppw8dtwtCjshK0av4pGlG9aGUO1vhpfgAdq1TxwnLHfOCAkqjFXlu0MU4O4zSqtLkn7IlmOA=="></script>
+    <script>
+        (function(i,s,o,g,r,a,m){i['GoogleAnalyticsObject']=r;i[r]=i[r]||function(){
+        (i[r].q=i[r].q||[]).push(arguments)},i[r].l=1*new Date();a=s.createElement(o),
+        m=s.getElementsByTagName(o)[0];a.async=1;a.src=g;m.parentNode.insertBefore(a,m)
+        })(window,document,'script','//www.google-analytics.com/analytics.js','ga');
+        ga('create', 'UA-12497311-8', 'auto');
+        ga('send', 'pageview');
+    </script>
+
+
+
+    </body>
+</html>

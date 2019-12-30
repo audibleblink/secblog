@@ -1,0 +1,695 @@
+<!DOCTYPE html>
+<html lang="en">
+    <head>
+        <meta charset="UTF-8">
+<meta http-equiv="X-UA-Compatible" content="ie=edge">
+<meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+<meta name="author" content="[audible]blink ">
+<meta name="description" content="Preface This post is first in a series where I mostly catalogue my failures, what didn&#39;t work, and the lessons I learned along the way. This isn&#39;t a tool drop, or a new dump. Also, part 2 basically says every choice I make in Part 1 (this part) is wrong. If you&#39;re a DB admin or have experience with manipulating large amounts of data, prepare to cringe&amp;hellip; HARD
+If you&#39;re just interested in some stats and bencharks, you can skip straight to that section" />
+<meta name="keywords" content="hacking, blog, science, infosec, development, programming" />
+<meta name="robots" content="noodp" />
+<meta name="theme-color" content="" />
+<link rel="canonical" href="https://sec.alexflor.es/posts/2019/09/password-dump-database-part-1/" />
+
+
+    <title>
+        
+            Password Dump Database - Part 1 :: [audible]blink&#39;s &#34; r e s e a r c h &#34; 
+        
+    </title>
+
+
+
+<link href="https://cdnjs.cloudflare.com/ajax/libs/flag-icon-css/3.2.1/css/flag-icon.min.css" rel="stylesheet"
+    type="text/css">
+
+
+
+<link rel="stylesheet" href="/main.min.5dcefbf8102eb536dd3e2de53ffebfa58599ab2435c241a0db81728a5e015f2e.css">
+
+
+
+
+<meta itemprop="name" content="Password Dump Database - Part 1">
+<meta itemprop="description" content="Preface This post is first in a series where I mostly catalogue my failures, what didn&#39;t work, and the lessons I learned along the way. This isn&#39;t a tool drop, or a new dump. Also, part 2 basically says every choice I make in Part 1 (this part) is wrong. If you&#39;re a DB admin or have experience with manipulating large amounts of data, prepare to cringe&hellip; HARD
+If you&#39;re just interested in some stats and bencharks, you can skip straight to that section">
+<meta itemprop="datePublished" content="2019-09-28T19:33:14-04:00" />
+<meta itemprop="dateModified" content="2019-09-28T19:33:14-04:00" />
+<meta itemprop="wordCount" content="2326">
+
+
+
+<meta itemprop="keywords" content="" /><meta name="twitter:card" content="summary"/>
+<meta name="twitter:title" content="Password Dump Database - Part 1"/>
+<meta name="twitter:description" content="Preface This post is first in a series where I mostly catalogue my failures, what didn&#39;t work, and the lessons I learned along the way. This isn&#39;t a tool drop, or a new dump. Also, part 2 basically says every choice I make in Part 1 (this part) is wrong. If you&#39;re a DB admin or have experience with manipulating large amounts of data, prepare to cringe&hellip; HARD
+If you&#39;re just interested in some stats and bencharks, you can skip straight to that section"/>
+
+
+
+
+
+    <meta property="article:published_time" content="2019-09-28 19:33:14 -0400 EDT" />
+
+
+
+
+
+
+
+
+    </head>
+
+    <body class="dark-theme">
+        <div class="container">
+            <header class="header">
+    <span class="header__inner">
+        <a href="/" style="text-decoration: none;">
+    <div class="logo">
+        
+            <span class="logo__mark">></span>
+            <span class="logo__text">$ cd ~/</span>
+            <span class="logo__cursor" style=""></span>
+        
+    </div>
+</a>
+
+
+        <span class="header__right">
+            
+                <nav class="menu">
+    <ul class="menu__inner"><li><a href="https://sec.alexflor.es/posts/">Posts</a></li>
+    </ul>
+</nav>
+
+                <span class="menu-trigger">
+                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24">
+                        <path d="M0 0h24v24H0z" fill="none"/>
+                        <path d="M3 18h18v-2H3v2zm0-5h18v-2H3v2zm0-7v2h18V6H3z"/>
+                    </svg>
+                </span>
+            
+
+            <span class="theme-toggle unselectable"><svg class="theme-toggler" width="24" height="24" viewBox="0 0 48 48" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <path d="M22 41C32.4934 41 41 32.4934 41 22C41 11.5066 32.4934 3 22
+  3C11.5066 3 3 11.5066 3 22C3 32.4934 11.5066 41 22 41ZM7 22C7
+  13.7157 13.7157 7 22 7V37C13.7157 37 7 30.2843 7 22Z"/>
+</svg>
+</span>
+        </span>
+    </span>
+</header>
+
+
+            <div class="content">
+                
+    <main class="post">
+
+        <div class="post-info">
+            <p><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-clock"><circle cx="12" cy="12" r="10"></circle><polyline points="12 6 12 12 16 14"></polyline></svg>11 minutes
+
+            
+
+            </p>
+        </div>
+
+        <article>
+            <h1 class="post-title">
+                <a href="https://sec.alexflor.es/posts/2019/09/password-dump-database-part-1/">Password Dump Database - Part 1</a>
+            </h1>
+
+            
+
+            <div class="post-content">
+                <h2 id="preface">Preface</h2>
+<p>This post is first in a series where I mostly catalogue my failures, what didn't work, and the
+lessons I learned along the way. This isn't a tool drop, or a new dump. Also, part 2 basically
+says every choice I make in Part 1 (this part) is wrong. If you're a DB admin or have experience
+with manipulating large amounts of data, prepare to cringe&hellip; HARD</p>
+<p>If you're just interested in some stats and bencharks, you can
+<a href="#benchmarks-and-data">skip straight to that section</a></p>
+<p>If you'd like to play along, here are some magnet links to the dumps.</p>
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-txt" data-lang="txt"># Collection #1
+magnet:?xt=urn:btih:b39c603c7e18db8262067c5926e7d5ea5d20e12e&amp;dn=Collection+1
+
+# Collections #2 - #5
+magnet:?xt=urn:btih:d136b1adde531f38311fbf43fb96fc26df1a34cd&amp;dn=Collection+%232-%235+%26+Antipublic
+</code></pre></div><h2 id="why">Why?</h2>
+<p><img src="demo.gif" alt=""></p>
+<p>How much data duplication is there in the public database dumps, Collection #1-#5?</p>
+<p>How much space is taken by duplicate passwords and email domains like gmail.com?</p>
+<p>During a <a href="https://www.youtube.com/watch?v=f84n5oFoZBc">Hammock-Driven Development</a> session,
+thinking about how to answer this question, I found myself with the additional desire of searching
+through the Collections without needing to <code>zgrep</code> my way through. I also didn't accept grepping
+through terrabytes of unzipped data as a solution. When I think data normalization, and quick
+searching we all think: DATABASES!</p>
+<h2 id="planning-it">Planning it</h2>
+<p>This dataset is huge. Querying will be 99% percent of this database's purpose. We want fast search
+results. We can decide, then,  to incur the costs of writing to a heavily-indexed database up
+front, while seeding the databse. Let's get <em>normalized</em>.</p>
+<p>The records in these types of dumps are generally structured like so:</p>
+<pre><code>username@domain.com:P@ssw0rd!
+</code></pre><p>Let's start by splitting each record into tables <code>usernames</code>, <code>domains</code>, and <code>passwords</code>.
+We can also create a <code>records</code> table with foreign keys which will maintain the relationship between
+entires in the other 3 tables. Also, if we create a unique index on the combination of the foreign
+keys in the <code>records</code> table, we ensure that only one combination of <code>user</code>, <code>domain</code>, and
+<code>password</code> ever enters the <code>records</code> table.  If there are 900 million gmail.com addresses in the
+dumps, the string &ldquo;gmail.com&rdquo; is only stored once. This kind of data normalization is what
+databases are meant for.</p>
+<p>With this configuration, if we seed our database with the following records:</p>
+<pre><code>jerry@gmail.com:Summer19
+adam@gmail.com: Summer19
+samantha@yahoo.com:Summer19
+samantha@yandex.ru:Password123
+</code></pre><p>our tables will look like this:</p>
+<h4 id="usernames">Usernames</h4>
+<table>
+<thead>
+<tr>
+<th>id</th>
+<th>usernames</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>1</td>
+<td>jerry</td>
+</tr>
+<tr>
+<td>2</td>
+<td>adam</td>
+</tr>
+<tr>
+<td>3</td>
+<td>samantha</td>
+</tr>
+</tbody>
+</table>
+<h4 id="passwords">Passwords</h4>
+<table>
+<thead>
+<tr>
+<th>id</th>
+<th>password</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>1</td>
+<td>Summer19</td>
+</tr>
+<tr>
+<td>2</td>
+<td>Password123</td>
+</tr>
+</tbody>
+</table>
+<h4 id="domains">Domains</h4>
+<table>
+<thead>
+<tr>
+<th>id</th>
+<th>domain</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>1</td>
+<td>gmail.com</td>
+</tr>
+<tr>
+<td>2</td>
+<td>yahoo.com</td>
+</tr>
+<tr>
+<td>3</td>
+<td>yandex.ru</td>
+</tr>
+</tbody>
+</table>
+<h4 id="records">Records</h4>
+<table>
+<thead>
+<tr>
+<th>username_id</th>
+<th>domain_id</th>
+<th>password_id</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>1</td>
+<td>1</td>
+<td>1</td>
+</tr>
+<tr>
+<td>2</td>
+<td>1</td>
+<td>1</td>
+</tr>
+<tr>
+<td>3</td>
+<td>2</td>
+<td>1</td>
+</tr>
+<tr>
+<td>3</td>
+<td>3</td>
+<td>2</td>
+</tr>
+</tbody>
+</table>
+<p>With this normalization, we've taken 109 bytes of dump data and normalized it down to 64 bytes of
+uniqued data, plus the size of the join table that maintains the previous relationships.</p>
+<p>Also, with <code>records</code> serving as a <code>JOIN</code> table between the other 3 tables, we can create some
+interesting queries.</p>
+<ul>
+<li>Who are all the users that use <code>P@$$w0rd1</code> for a password?</li>
+<li>What's the most common password by users from company <code>contoso.com</code>?</li>
+<li>At which other domains does a particular user receive email?
+<ul>
+<li>Did they use the same password on other sites whose creds were also dumped?</li>
+</ul>
+</li>
+</ul>
+<h2 id="building-it">Building it</h2>
+<p>I really enjoy using the ORM, ActiveRecord. ORMs are Object Relational Mappers. They're a layer of
+abstraction over databases that exists across most programming languages. They take that language's
+concept of a struct/class/object and map its properties to a database table. For example, if we
+have a <code>Dog</code> class in our language, an ORM maps this class to a <code>dogs</code> table in our database. Once
+we create an instance of that dog class, <code>starbuck = Dog.new</code>, <code>starbuck</code> now represents a single
+row in the <code>dogs</code> table. Columns, then, are mapped to properties of an instance.</p>
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-ruby" data-lang="ruby">starbuck <span style="color:#f92672">=</span> <span style="color:#66d9ef">Dog</span><span style="color:#f92672">.</span>create(name: <span style="color:#e6db74">&#39;Starbuck&#39;</span>)
+<span style="color:#f92672">=</span><span style="color:#f92672">&gt;</span> <span style="color:#66d9ef">Dog</span><span style="color:#f92672">&lt;</span>id: <span style="color:#ae81ff">1</span><span style="color:#f92672"></span>, name: <span style="color:#e6db74">&#39;Starbuck&#39;</span><span style="color:#f92672">&gt;</span>
+
+starbuck<span style="color:#f92672">.</span>name
+<span style="color:#f92672">=</span><span style="color:#f92672">&gt;</span> <span style="color:#e6db74">&#34;</span><span style="color:#e6db74">Starbuck</span><span style="color:#e6db74">&#34;</span>
+</code></pre></div><p>When calling <code>starbuck.name</code>, the ORM's query planner will generate and issue the following query to
+the underlying SQL engine:</p>
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-sql" data-lang="sql"><span style="color:#66d9ef">SELECT</span> name 
+<span style="color:#66d9ef">FROM</span> dogs
+<span style="color:#66d9ef">WHERE</span> <span style="color:#e6db74">&#39;</span><span style="color:#e6db74">id</span><span style="color:#e6db74">&#39;</span> <span style="color:#f92672">=</span> <span style="color:#ae81ff">1</span>
+
+<span style="color:#f92672">=</span><span style="color:#f92672">&gt;</span> <span style="color:#e6db74">&#34;</span><span style="color:#e6db74">Starbuck</span><span style="color:#e6db74">&#34;</span>
+</code></pre></div><p>Another beneficial feature of an ORM is that it can be configured for many different SQL dialects.
+The ORM affords us another abstraction by allowing users to configure different database engines in
+the ORM's initial configuration. We could, for example, conditionally use a SQLite3 file for
+running tests locally during development, but use Postgres in production.  All without changing a
+line of business logic.</p>
+<p>Another reason I chose ActiveRecord was its ease of configuration. The following blocks of code
+are all that's needed to enable queries that can ordinarily be cumbersome to write.</p>
+<h3 id="configuring-data-models">Configuring data models</h3>
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-ruby" data-lang="ruby">require <span style="color:#e6db74">&#39;active_record&#39;</span>
+
+<span style="color:#66d9ef">class</span> <span style="color:#a6e22e">Password</span> <span style="color:#f92672">&lt;</span> <span style="color:#66d9ef">ActiveRecord</span><span style="color:#f92672">::</span><span style="color:#66d9ef">Base</span>
+  has_many <span style="color:#e6db74">:records</span>
+  has_many <span style="color:#e6db74">:usernames</span>, <span style="color:#e6db74">through</span>: <span style="color:#e6db74">:records</span>
+  has_many <span style="color:#e6db74">:domains</span>, <span style="color:#e6db74">through</span>: <span style="color:#e6db74">:records</span>
+<span style="color:#66d9ef">end</span>
+
+<span style="color:#66d9ef">class</span> <span style="color:#a6e22e">Domain</span> <span style="color:#f92672">&lt;</span> <span style="color:#66d9ef">ActiveRecord</span><span style="color:#f92672">::</span><span style="color:#66d9ef">Base</span>
+  has_many <span style="color:#e6db74">:records</span>
+  has_many <span style="color:#e6db74">:passwords</span>, <span style="color:#e6db74">through</span>: <span style="color:#e6db74">:records</span>
+  has_many <span style="color:#e6db74">:usernames</span>, <span style="color:#e6db74">through</span>: <span style="color:#e6db74">:records</span>
+<span style="color:#66d9ef">end</span>
+
+<span style="color:#66d9ef">class</span> <span style="color:#a6e22e">Username</span> <span style="color:#f92672">&lt;</span> <span style="color:#66d9ef">ActiveRecord</span><span style="color:#f92672">::</span><span style="color:#66d9ef">Base</span>
+  has_many <span style="color:#e6db74">:records</span>
+  has_many <span style="color:#e6db74">:passwords</span>, <span style="color:#e6db74">through</span>: <span style="color:#e6db74">:records</span>
+  has_many <span style="color:#e6db74">:domains</span>, <span style="color:#e6db74">through</span>: <span style="color:#e6db74">:records</span>
+<span style="color:#66d9ef">end</span>
+
+<span style="color:#66d9ef">class</span> <span style="color:#a6e22e">Record</span> <span style="color:#f92672">&lt;</span> <span style="color:#66d9ef">ActiveRecord</span><span style="color:#f92672">::</span><span style="color:#66d9ef">Base</span>
+  belongs_to <span style="color:#e6db74">:domain</span>
+  belongs_to <span style="color:#e6db74">:password</span>
+  belongs_to <span style="color:#e6db74">:username</span>
+<span style="color:#66d9ef">end</span>
+</code></pre></div><h3 id="configuring-the-database-driver">Configuring the Database Driver</h3>
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-ruby" data-lang="ruby">require <span style="color:#e6db74">&#39;active_record&#39;</span>
+
+<span style="color:#66d9ef">ActiveRecord</span><span style="color:#f92672">::</span><span style="color:#66d9ef">Base</span><span style="color:#f92672">.</span>establish_connection( 
+ <span style="color:#e6db74">host</span>: <span style="color:#e6db74">&#34;</span><span style="color:#e6db74">localhost</span><span style="color:#e6db74">&#34;</span>,
+ <span style="color:#e6db74">database</span>: <span style="color:#e6db74">&#34;</span><span style="color:#e6db74">passdb</span><span style="color:#e6db74">&#34;</span>,
+ <span style="color:#e6db74">username</span>: <span style="color:#e6db74">&#34;</span><span style="color:#e6db74">postgres</span><span style="color:#e6db74">&#34;</span>,
+ <span style="color:#e6db74">password</span>: <span style="color:#e6db74">&#34;</span><span style="color:#e6db74">postgres</span><span style="color:#e6db74">&#34;</span>,
+ <span style="color:#e6db74">adapter</span>: <span style="color:#e6db74">&#34;</span><span style="color:#e6db74">postgresql</span><span style="color:#e6db74">&#34;</span>
+)
+</code></pre></div><h3 id="configuring-the-database-schema">Configuring the Database Schema</h3>
+<p>The following are the schema migrations that will create the correct tables and indices in our
+database, as well as set the constraints necessary to keep our data clean:</p>
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-ruby" data-lang="ruby">require <span style="color:#e6db74">&#39;active_record&#39;</span>
+
+<span style="color:#66d9ef">class</span> <span style="color:#a6e22e">AddRecords</span> <span style="color:#f92672">&lt;</span> <span style="color:#66d9ef">ActiveRecord</span><span style="color:#f92672">::</span><span style="color:#66d9ef">Migration</span><span style="color:#f92672">[</span><span style="color:#ae81ff">5</span><span style="color:#f92672"></span><span style="color:#f92672">.</span><span style="color:#ae81ff">2</span><span style="color:#f92672"></span><span style="color:#f92672">]</span>
+  <span style="color:#66d9ef">def</span> <span style="color:#a6e22e">self</span><span style="color:#f92672">.</span><span style="color:#a6e22e">up</span>
+    create_table <span style="color:#e6db74">:records</span>, <span style="color:#e6db74">unlogged</span>: <span style="color:#66d9ef">true</span> <span style="color:#66d9ef">do</span> <span style="color:#f92672">|</span>t<span style="color:#f92672">|</span>
+      t<span style="color:#f92672">.</span>references <span style="color:#e6db74">:password</span>, <span style="color:#e6db74">null</span>: <span style="color:#66d9ef">false</span>
+      t<span style="color:#f92672">.</span>references <span style="color:#e6db74">:domain</span>, <span style="color:#e6db74">null</span>: <span style="color:#66d9ef">false</span>
+      t<span style="color:#f92672">.</span>references <span style="color:#e6db74">:username</span>, <span style="color:#e6db74">null</span>: <span style="color:#66d9ef">false</span>
+    <span style="color:#66d9ef">end</span>
+
+    <span style="color:#75715e">## This will create a uniquness check on the combination of a user, password, domain</span>
+    add_index <span style="color:#e6db74">:records</span>, <span style="color:#f92672">[</span><span style="color:#e6db74">:password_id</span>, <span style="color:#e6db74">:domain_id</span>, <span style="color:#e6db74">:username_id</span><span style="color:#f92672">]</span>, <span style="color:#e6db74">unique</span>: <span style="color:#66d9ef">true</span>
+
+
+    <span style="color:#75715e">### These are just query optimization indices</span>
+    add_index <span style="color:#e6db74">:records</span>, <span style="color:#f92672">[</span><span style="color:#e6db74">:username_id</span>, <span style="color:#e6db74">:domain_id</span><span style="color:#f92672">]</span>
+    add_index <span style="color:#e6db74">:records</span>, <span style="color:#f92672">[</span><span style="color:#e6db74">:username_id</span>, <span style="color:#e6db74">:password_id</span><span style="color:#f92672">]</span>
+  <span style="color:#66d9ef">end</span>
+<span style="color:#66d9ef">end</span>
+
+
+<span style="color:#66d9ef">class</span> <span style="color:#a6e22e">AddPasswords</span> <span style="color:#f92672">&lt;</span> <span style="color:#66d9ef">ActiveRecord</span><span style="color:#f92672">::</span><span style="color:#66d9ef">Migration</span><span style="color:#f92672">[</span><span style="color:#ae81ff">5</span><span style="color:#f92672"></span><span style="color:#f92672">.</span><span style="color:#ae81ff">2</span><span style="color:#f92672"></span><span style="color:#f92672">]</span>
+  <span style="color:#66d9ef">def</span> <span style="color:#a6e22e">self</span><span style="color:#f92672">.</span><span style="color:#a6e22e">up</span>
+    create_table <span style="color:#e6db74">:passwords</span>, <span style="color:#e6db74">unlogged</span>: <span style="color:#66d9ef">true</span> <span style="color:#66d9ef">do</span> <span style="color:#f92672">|</span>t<span style="color:#f92672">|</span>
+      t<span style="color:#f92672">.</span>string <span style="color:#e6db74">:password</span>, <span style="color:#e6db74">null</span>: <span style="color:#66d9ef">false</span>
+    <span style="color:#66d9ef">end</span>
+
+    <span style="color:#75715e"># only allow one instance of any given password</span>
+    add_index <span style="color:#e6db74">:passwords</span>, <span style="color:#e6db74">:password</span>, <span style="color:#e6db74">unique</span>: <span style="color:#66d9ef">true</span>
+  <span style="color:#66d9ef">end</span>
+<span style="color:#66d9ef">end</span>
+
+
+<span style="color:#66d9ef">class</span> <span style="color:#a6e22e">AddUsernames</span> <span style="color:#f92672">&lt;</span> <span style="color:#66d9ef">ActiveRecord</span><span style="color:#f92672">::</span><span style="color:#66d9ef">Migration</span><span style="color:#f92672">[</span><span style="color:#ae81ff">5</span><span style="color:#f92672"></span><span style="color:#f92672">.</span><span style="color:#ae81ff">2</span><span style="color:#f92672"></span><span style="color:#f92672">]</span>
+  <span style="color:#66d9ef">def</span> <span style="color:#a6e22e">self</span><span style="color:#f92672">.</span><span style="color:#a6e22e">up</span>
+    create_table <span style="color:#e6db74">:usernames</span>, <span style="color:#e6db74">unlogged</span>: <span style="color:#66d9ef">true</span> <span style="color:#66d9ef">do</span> <span style="color:#f92672">|</span>t<span style="color:#f92672">|</span>
+      t<span style="color:#f92672">.</span>string <span style="color:#e6db74">:name</span>, <span style="color:#e6db74">null</span>: <span style="color:#66d9ef">false</span>
+    <span style="color:#66d9ef">end</span>
+
+    <span style="color:#75715e"># only allow one instance of any given username</span>
+    add_index <span style="color:#e6db74">:usernames</span>, <span style="color:#e6db74">:name</span>, <span style="color:#e6db74">unique</span>: <span style="color:#66d9ef">true</span>
+
+<span style="color:#66d9ef">end</span>
+
+
+<span style="color:#66d9ef">class</span> <span style="color:#a6e22e">AddDomains</span> <span style="color:#f92672">&lt;</span> <span style="color:#66d9ef">ActiveRecord</span><span style="color:#f92672">::</span><span style="color:#66d9ef">Migration</span><span style="color:#f92672">[</span><span style="color:#ae81ff">5</span><span style="color:#f92672"></span><span style="color:#f92672">.</span><span style="color:#ae81ff">2</span><span style="color:#f92672"></span><span style="color:#f92672">]</span>
+  <span style="color:#66d9ef">def</span> <span style="color:#a6e22e">self</span><span style="color:#f92672">.</span><span style="color:#a6e22e">up</span>
+    create_table <span style="color:#e6db74">:domains</span>, <span style="color:#e6db74">unlogged</span>: <span style="color:#66d9ef">true</span> <span style="color:#66d9ef">do</span> <span style="color:#f92672">|</span>t<span style="color:#f92672">|</span>
+      t<span style="color:#f92672">.</span>string <span style="color:#e6db74">:domain</span>, <span style="color:#e6db74">null</span>: <span style="color:#66d9ef">false</span>
+    <span style="color:#66d9ef">end</span>
+
+    <span style="color:#75715e"># only allow one instance of any given domain</span>
+    add_index <span style="color:#e6db74">:domains</span>, <span style="color:#e6db74">:domain</span>, <span style="color:#e6db74">unique</span>: <span style="color:#66d9ef">true</span>
+  <span style="color:#66d9ef">end</span>
+<span style="color:#66d9ef">end</span>
+</code></pre></div><h2 id="seeding-the-database">Seeding the Database</h2>
+<p>Collections #1-5 are huge. And they also include tons of duplicate records. By setting the correct
+indices and database constraints, we can offload the task of knowing what is &ldquo;good&rdquo; vs &ldquo;bad&rdquo; data
+to the database itself, instead of worrying about that in code. I initially handled this logic in
+the code that seeds the database.</p>
+<blockquote>
+<p><strong>Dev Tangent</strong>: Software validation was a bad idea for a couple of reasons. There are no
+assurances that the data in our database is clean. Especially when there are multiple threads, all
+trying to write at the same time. Initially I just had a single-threaded seeding program. ETA was
+about a year. During a multithread refactor, I ran into some concurrency problems. It was then
+that I moved validation to the database. ETA dove down to 90 days.</p>
+</blockquote>
+<p>With the ORM configured, we can begin the seeding process.</p>
+<p>In order to create a <code>record</code>, we need 3 other pre-existing row ids: user_id, password_id, and
+domain_id.  Sometimes, we encounter a line in the dump data that has all new data. Other times,
+maybe only the username and password is new. Upon trying to create a new <code>gmail.com</code> domain record,
+we'll get a failure because it doesn't meet our uniquness constraint. In this scenario, we can
+instead ask for the <code>id</code> of the existing <code>gmail.com</code> entry in our <code>domains</code> table. With
+our 3 ids, we can now use them as foreign keys for a new <code>record</code> entry.</p>
+<p>You may already see a drawback in our implementation here. In a worst case scenario, where we're
+trying to insert a fully duplicate record, that means we can have 7 queries to attempt to write 1
+record. That might be acceptable when seeding some datasets, but with a record count in the
+billions, that means a 45-day difference of seed time. Also keep in mind that each write to the
+database is actually 2 writes, because the indices of each record also need to be updated.  However,
+we decided early on to take this hit, since this isn't going to be write-heavy database.  We could
+still help the seed times by leveraging Database Transactions and Postgres&rsquo; <code>ON CONFLICT</code> keyword
+though.</p>
+<p>Grouping 7 different transactions into one will ensure that all operations required for adding a
+new dump entry to our tables occur together.</p>
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-sql" data-lang="sql"><span style="color:#66d9ef">BEGIN</span> 
+
+<span style="color:#66d9ef">WITH</span> ins1 <span style="color:#66d9ef">AS</span> (
+        <span style="color:#66d9ef">INSERT</span> <span style="color:#66d9ef">INTO</span> usernames(name) <span style="color:#66d9ef">VALUES</span> (<span style="color:#960050;background-color:#1e0010">$</span><span style="color:#ae81ff">1</span>)
+        <span style="color:#66d9ef">ON</span> CONFLICT (name) <span style="color:#66d9ef">DO</span> <span style="color:#66d9ef">UPDATE</span> <span style="color:#66d9ef">SET</span> name<span style="color:#f92672">=</span>EXCLUDED.name
+        RETURNING id <span style="color:#66d9ef">AS</span> user_id
+)
+, ins2 <span style="color:#66d9ef">AS</span> (
+        <span style="color:#66d9ef">INSERT</span> <span style="color:#66d9ef">INTO</span> passwords(password) <span style="color:#66d9ef">VALUES</span> (<span style="color:#960050;background-color:#1e0010">$</span><span style="color:#ae81ff">2</span>)
+        <span style="color:#66d9ef">ON</span> CONFLICT (password) <span style="color:#66d9ef">DO</span> <span style="color:#66d9ef">UPDATE</span> <span style="color:#66d9ef">SET</span> password<span style="color:#f92672">=</span>EXCLUDED.password
+        RETURNING id <span style="color:#66d9ef">AS</span> pass_id
+)
+, ins3 <span style="color:#66d9ef">AS</span> (
+        <span style="color:#66d9ef">INSERT</span> <span style="color:#66d9ef">INTO</span> domains(<span style="color:#66d9ef">domain</span>) <span style="color:#66d9ef">VALUES</span> (<span style="color:#960050;background-color:#1e0010">$</span><span style="color:#ae81ff">3</span>)
+        <span style="color:#66d9ef">ON</span> CONFLICT (<span style="color:#66d9ef">domain</span>) <span style="color:#66d9ef">DO</span> <span style="color:#66d9ef">UPDATE</span> <span style="color:#66d9ef">SET</span> <span style="color:#66d9ef">domain</span><span style="color:#f92672">=</span>EXCLUDED.<span style="color:#66d9ef">domain</span>
+        RETURNING id <span style="color:#66d9ef">AS</span> domain_id
+)
+
+<span style="color:#66d9ef">INSERT</span> <span style="color:#66d9ef">INTO</span> records (username_id, password_id, domain_id)
+<span style="color:#66d9ef">VALUES</span> (
+        (<span style="color:#66d9ef">select</span> user_id <span style="color:#66d9ef">from</span> ins1), 
+        (<span style="color:#66d9ef">select</span> pass_id <span style="color:#66d9ef">from</span> ins2), 
+        (<span style="color:#66d9ef">select</span> domain_id <span style="color:#66d9ef">from</span> ins3) 
+)
+
+<span style="color:#66d9ef">COMMIT</span>
+</code></pre></div><p>Now, I wrote this, and it's still intimidating. From the top, we try to create each item but give
+the query a sort of <code>catch</code> statement that says &ldquo;if you're unable to save, then get the id of the
+entry that matches the data I just tried to insert. Then, save that id as a variable for later
+use&rdquo;. In the <code>INSERT</code> statement, we create a new <code>record</code> with the IDs we stored in the 3 variables
+from the 3 previous blocks. Because this is all wrapped in a Transaction, it gets sent to the
+database as 1 transaction, not 7.</p>
+<p>Another benefit of a transaction, is that in case of any sort of unrecoverable failure, the entire
+thing get's undone. If our seeder panics while trying to write a <code>domain</code>, the previous <code>password</code>,
+and <code>username</code> entries are removed from the database (they actually never wrote), ensuring we don't
+have any dangling data in our database.</p>
+<h3 id="querying">Querying</h3>
+<p>Once we create the tables and seed some data, our associations are set in the ORM such that
+pivoting on any instance of a <code>username</code>, <code>password</code>, or <code>domain</code> is possible.</p>
+<pre><code># start with a domain
+yahoo = Domain.find_by(domain: &quot;yahoo.com&quot;)
+
+# find all passwords by yahoo mail users
+yahoo.passwords
+
+# find all yahoo mail users
+yahoo.usernames
+
+# find all password of a particular yahoo mail user
+yahoo.usernames.first.passwords
+
+
+
+# start with a user
+jojo = Usernames.find_by(name: &quot;jojo1990&quot;)
+
+# see all passwords belonging to jojo
+jojo.passwords
+
+# see all email account for jojo
+jojo.domains
+
+
+
+# starting with a password
+pass = Password.find_by(password: &quot;P@ssw0rd!&quot;)
+
+# see the users that share this password
+pass.usernames
+</code></pre><h2 id="iterate">Iterate</h2>
+<p><img src="1.png" alt="agile vs waterfall"></p>
+<p>The first iteration of the project was to create a CLI where I could load my models, and query the
+data in an interactive enironment, like so&hellip; <code>records.first.username.passwords</code>, etc.</p>
+<p>The second iteration was creating a JSON API, so that remote services would be able to query this
+data.</p>
+<p>The following was all that was needed to create the JSON API server in Ruby. (ruby because that's
+what ActiveRecord is written in)</p>
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-ruby" data-lang="ruby">get <span style="color:#e6db74">&#39;/domains/:domain&#39;</span> <span style="color:#66d9ef">do</span>
+  domain <span style="color:#f92672">=</span> <span style="color:#66d9ef">Domain</span><span style="color:#f92672">.</span>find_by(<span style="color:#e6db74">domain</span>: params<span style="color:#f92672">[</span><span style="color:#e6db74">:domain</span><span style="color:#f92672">]</span>)
+  paginated(domain, params)
+<span style="color:#66d9ef">end</span>
+
+get <span style="color:#e6db74">&#39;/usernames/:name&#39;</span> <span style="color:#66d9ef">do</span>
+  user <span style="color:#f92672">=</span> <span style="color:#66d9ef">Username</span><span style="color:#f92672">.</span>find_by(name: params<span style="color:#f92672">[</span><span style="color:#e6db74">:name</span><span style="color:#f92672">]</span>)
+  paginated(user, params)
+<span style="color:#66d9ef">end</span>
+
+get <span style="color:#e6db74">&#39;/passwords/:password&#39;</span> <span style="color:#66d9ef">do</span>
+  password <span style="color:#f92672">=</span> <span style="color:#66d9ef">Password</span><span style="color:#f92672">.</span>find_by(<span style="color:#e6db74">password</span>: params<span style="color:#f92672">[</span><span style="color:#e6db74">:password</span><span style="color:#f92672">]</span>)
+  paginated(password, params)
+<span style="color:#66d9ef">end</span>
+
+get <span style="color:#e6db74">&#39;/emails/:email&#39;</span> <span style="color:#66d9ef">do</span>
+  user, domain <span style="color:#f92672">=</span> params<span style="color:#f92672">[</span><span style="color:#e6db74">:email</span><span style="color:#f92672">]</span><span style="color:#f92672">.</span>split(<span style="color:#e6db74">&#39;@&#39;</span>)
+  emails <span style="color:#f92672">=</span> <span style="color:#66d9ef">Record</span><span style="color:#f92672">.</span>joins(<span style="color:#e6db74">:username</span>)
+    <span style="color:#f92672">.</span>where(<span style="color:#e6db74">&#34;</span><span style="color:#e6db74">usernames.name = ?</span><span style="color:#e6db74">&#34;</span>, user)
+    <span style="color:#f92672">.</span>where(<span style="color:#e6db74">&#34;</span><span style="color:#e6db74">domains.domain = ?</span><span style="color:#e6db74">&#34;</span>, domain)
+  prepare(emails)
+<span style="color:#66d9ef">end</span>
+</code></pre></div><p>Finally, with the API complete, I jumped into writing a web interface that could really leverage
+the pivoting capabilities we enabled by configuring our schema and ORM the way we did. I'd been
+looking for a reason to try out Reactive Programming for a while, so I opted for
+<a href="https://svelte.dev/">Svelte</a> as my front-end framework of choice.</p>
+<blockquote>
+<p><strong>Dev Tangent</strong> React.js is <em>not</em> Reactive.
+For a glimpse into the powers of Reactive Programming, I recommend this talk.
+<a href="https://www.youtube.com/watch?v=Bfi96LUebXo">https://www.youtube.com/watch?v=Bfi96LUebXo</a></p>
+</blockquote>
+<p>Svelte acts like a JavaScript &ldquo;compiler&rdquo; instead of a traditional JavaScript framework.  Because the
+code you write runs through this compilation process, only the components of Svelte that you
+need are added to your final packed JavaScript, keeping bloat down, and eliminating the need for
+pre-processors like Webpack and their complicated configuration files. Additionally, any data you
+declare as &ldquo;reactive&rdquo; is monitored for change and updated anywhere it's referenced. Think:
+spreadsheet cells that are members of a formula's data set.</p>
+<h2 id="benchmarks-and-data">Benchmarks and Data</h2>
+<p>During this entire process, there were many lessons learned, project restarts, and hair pulled.
+Bottom line, respect your Database Admins. Take them to lunch. Their job requires some very
+specific and complicated knowledge.</p>
+<p>Also, databases are a feat of real Software Engineering.</p>
+<p>This project started completely in Ruby, and then I eventually moved the seeder to Golang. The
+following table shows the chunks of time I shaved off,  along with what I did to save that time.</p>
+<p>This is highly unscientific and remember that each row indicating improvement is a result of every
+change that is listed above it.</p>
+<table>
+<thead>
+<tr>
+<th>Seeding ETA</th>
+<th>Change That Shaved Time</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>2 years</td>
+<td><del>bad</del> naive ideas</td>
+</tr>
+<tr>
+<td>1 year</td>
+<td>Buying an SSD</td>
+</tr>
+<tr>
+<td>10 months</td>
+<td>Multithreaded Seeding</td>
+</tr>
+<tr>
+<td>6 months</td>
+<td>Data validation moved to the database</td>
+</tr>
+<tr>
+<td>4 months</td>
+<td>Database tuning</td>
+</tr>
+<tr>
+<td>3 months</td>
+<td>Seeder re-written in Go</td>
+</tr>
+<tr>
+<td>2 months</td>
+<td>Transactions</td>
+</tr>
+</tbody>
+</table>
+<p>Only after all these changes, was I finally saturating the IO of my SSD.</p>
+<p>I should note that the rate of new records added begins to slow drastically as we encounter more
+and more duplicate entires in the database. I wish I'd kept a count of NON_UNIQUE_RECORD errors to
+report. I'm a bad scientist and I feel bad.</p>
+<p>All stats are for files with the <code>txt</code> extension only.</p>
+<p>Original line count</p>
+<pre><code>27,472,858,235
+</code></pre><p>Listing of the data after being split and uniqued:</p>
+<pre><code>-rw-r--r-- 1 alex alex 296G Nov 27 19:20 usernames.txt
+-rw-rw-r-- 1 alex alex  18G Dec  3 11:04 usernames_uniq.txt
+-rw-r--r-- 1 alex alex 260G Nov 27 19:20 domains.txt
+-rw-rw-r-- 1 alex alex 2.3G Dec  2 08:00 domains_uniq.txt
+-rw-r--r-- 1 alex alex 250G Nov 27 19:20 passwords.txt
+-rw-rw-r-- 1 alex alex  16G Dec  1 02:13 passwords_uniq.txt
+</code></pre><p>Line counts of split components pre and post uniquing:</p>
+<pre><code> 27472857767 domains.txt
+ 27472858235 passwords.txt
+ 27472857744 usernames.txt
+
+   67031505 domains_uniq.txt
+  958883636 passwords_uniq.txt
+ 1296186909 usernames_uniq.txt
+</code></pre><!-- raw HTML omitted -->
+<!-- raw HTML omitted -->
+
+            </div>
+        </article>
+
+        <hr />
+
+        <div class="post-info">
+
+            <p><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-file-text"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path><polyline points="14 2 14 8 20 8"></polyline><line x1="16" y1="13" x2="8" y2="13"></line><line x1="16" y1="17" x2="8" y2="17"></line><polyline points="10 9 9 9 8 9"></polyline></svg>2326 Words</p>
+
+            <p><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-calendar"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect><line x1="16" y1="2" x2="16" y2="6"></line><line x1="8" y1="2" x2="8" y2="6"></line><line x1="3" y1="10" x2="21" y2="10"></line></svg>2019-09-28 19:33 -0400</p>
+        </div>
+
+        
+            <div class="pagination">
+                <div class="pagination__title">
+                    <span class="pagination__title-h"></span>
+                    <hr />
+                </div>
+
+                <div class="pagination__buttons">
+                    
+                        <span class="button previous">
+                            <a href="https://sec.alexflor.es/posts/2019/12/abusing-signals-with-sigrop-exploits/">
+                                <span class="button__icon">←</span>
+                                <span class="button__text">Abusing Signals with SIGROP Exploits</span>
+                            </a>
+                        </span>
+                    
+
+                    
+                        <span class="button next">
+                            <a href="https://sec.alexflor.es/posts/2019/04/stop-using-python-for-subdomain-enumeration/">
+                                <span class="button__text">Stop Using Python for Subdomain Enumeration</span>
+                                <span class="button__icon">→</span>
+                            </a>
+                        </span>
+                    
+                </div>
+            </div>
+        
+
+        
+    </main>
+
+            </div>
+
+            
+                <footer class="footer">
+    <div class="footer__inner">
+        <div class="footer__content">
+            <span>&copy; 2019</span>
+            
+                <span><a href="https://sec.alexflor.es">[audible]blink</a></span>
+            
+            <span></span>
+            <span> <a href="https://sec.alexflor.es/posts/index.xml" target="_blank" title="rss"><svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-rss"><path d="M4 11a9 9 0 0 1 9 9"></path><path d="M4 4a16 16 0 0 1 16 16"></path><circle cx="5" cy="19" r="1"></circle></svg></a></span>
+        </div>
+    </div>
+    <div class="footer__inner">
+        <div class="footer__content">
+        </div>
+    </div>
+</footer>
+
+            
+        </div>
+
+        
+
+
+
+
+<script type="text/javascript" src="/bundle.min.2d5469329143160ae2456a69c3c76dc2d0a3b212b46afe291a51bd68650ed6f8697e001dab54f1c272c77ce08092a8c55e5bb4314e0ee334aab4b927ec896638.js" integrity="sha512-LVRpMpFDFgriRWppw8dtwtCjshK0av4pGlG9aGUO1vhpfgAdq1TxwnLHfOCAkqjFXlu0MU4O4zSqtLkn7IlmOA=="></script>
+    <script>
+        (function(i,s,o,g,r,a,m){i['GoogleAnalyticsObject']=r;i[r]=i[r]||function(){
+        (i[r].q=i[r].q||[]).push(arguments)},i[r].l=1*new Date();a=s.createElement(o),
+        m=s.getElementsByTagName(o)[0];a.async=1;a.src=g;m.parentNode.insertBefore(a,m)
+        })(window,document,'script','//www.google-analytics.com/analytics.js','ga');
+        ga('create', 'UA-12497311-8', 'auto');
+        ga('send', 'pageview');
+    </script>
+
+
+
+    </body>
+</html>

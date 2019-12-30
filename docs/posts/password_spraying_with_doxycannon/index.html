@@ -1,0 +1,281 @@
+<!DOCTYPE html>
+<html lang="en">
+    <head>
+        <meta charset="UTF-8">
+<meta http-equiv="X-UA-Compatible" content="ie=edge">
+<meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+<meta name="author" content="">
+<meta name="description" content="Password sprays are here to stay. It&#39;s probably a good idea to configure some clever WAF rules, implement captcha systems, and set up additional alerting. But once implemented, how do you test and tune your protective measures?
+Enter DoxyCannon
+DoxyCannon&#39;s name borrows from ProxyCannon, a script that instantiates cloud infrastructure through which one can proxy requests. Unlike ProxyCannon, DoxyCannon gives you the same functionality without needing to rely on cloud providers." />
+<meta name="keywords" content="[security vulnhub red team hackthebox blue team]" />
+<meta name="robots" content="noodp" />
+<meta name="theme-color" content="" />
+<link rel="canonical" href="https://sec.alexflor.es/posts/password_spraying_with_doxycannon/" />
+
+
+    <title>
+        
+            Password Spraying with DoxyCannon :: &#34; r e s e a r c h &#34; 
+        
+    </title>
+
+
+
+<link href="https://cdnjs.cloudflare.com/ajax/libs/flag-icon-css/3.2.1/css/flag-icon.min.css" rel="stylesheet"
+    type="text/css">
+
+
+
+<link rel="stylesheet" href="/main.min.5dcefbf8102eb536dd3e2de53ffebfa58599ab2435c241a0db81728a5e015f2e.css">
+
+
+
+
+<meta itemprop="name" content="Password Spraying with DoxyCannon">
+<meta itemprop="description" content="Password sprays are here to stay. It&#39;s probably a good idea to configure some clever WAF rules, implement captcha systems, and set up additional alerting. But once implemented, how do you test and tune your protective measures?
+Enter DoxyCannon
+DoxyCannon&#39;s name borrows from ProxyCannon, a script that instantiates cloud infrastructure through which one can proxy requests. Unlike ProxyCannon, DoxyCannon gives you the same functionality without needing to rely on cloud providers.">
+<meta itemprop="datePublished" content="2018-04-16T22:43:36-04:00" />
+<meta itemprop="dateModified" content="2018-04-16T22:43:36-04:00" />
+<meta itemprop="wordCount" content="415">
+
+
+
+<meta itemprop="keywords" content="" /><meta name="twitter:card" content="summary"/>
+<meta name="twitter:title" content="Password Spraying with DoxyCannon"/>
+<meta name="twitter:description" content="Password sprays are here to stay. It&#39;s probably a good idea to configure some clever WAF rules, implement captcha systems, and set up additional alerting. But once implemented, how do you test and tune your protective measures?
+Enter DoxyCannon
+DoxyCannon&#39;s name borrows from ProxyCannon, a script that instantiates cloud infrastructure through which one can proxy requests. Unlike ProxyCannon, DoxyCannon gives you the same functionality without needing to rely on cloud providers."/>
+
+
+
+
+
+    <meta property="article:published_time" content="2018-04-16 22:43:36 -0400 EDT" />
+
+
+
+
+
+
+
+
+    </head>
+
+    <body class="dark-theme">
+        <div class="container">
+            <header class="header">
+    <span class="header__inner">
+        <a href="/" style="text-decoration: none;">
+    <div class="logo">
+        
+            <span class="logo__mark">></span>
+            <span class="logo__text">$ cd /home/</span>
+            <span class="logo__cursor" style=""></span>
+        
+    </div>
+</a>
+
+
+        <span class="header__right">
+            
+                <nav class="menu">
+    <ul class="menu__inner"><li><a href="https://sec.alexflor.es/posts/imf_walkthrough/">B2R: IMF Walkthrough</a></li><li><a href="https://sec.alexflor.es/posts/sickos_1.2/">B2R: SickOSv1.2</a></li><li><a href="https://sec.alexflor.es/posts/b2r_troll_walkthrough/">B2R: Tr0ll Walkthrough</a></li><li><a href="https://sec.alexflor.es/posts/wallaby/">B2R: Wallaby Walkthrough</a></li><li><a href="https://sec.alexflor.es/posts/ssh_pivoting/">Configuring SSH for Pivoting</a></li><li><a href="https://sec.alexflor.es/posts/bashbunny/">Creating BashBunny Payloads</a></li><li><a href="https://sec.alexflor.es/posts/egress-ports/">Finding Your Way Out From Behind Firewalls with Strict Outbound Rules</a></li><li><a href="https://sec.alexflor.es/posts/">Posts</a></li>
+    </ul>
+</nav>
+
+                <span class="menu-trigger">
+                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24">
+                        <path d="M0 0h24v24H0z" fill="none"/>
+                        <path d="M3 18h18v-2H3v2zm0-5h18v-2H3v2zm0-7v2h18V6H3z"/>
+                    </svg>
+                </span>
+            
+
+            <span class="theme-toggle unselectable"><svg class="theme-toggler" width="24" height="24" viewBox="0 0 48 48" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <path d="M22 41C32.4934 41 41 32.4934 41 22C41 11.5066 32.4934 3 22
+  3C11.5066 3 3 11.5066 3 22C3 32.4934 11.5066 41 22 41ZM7 22C7
+  13.7157 13.7157 7 22 7V37C13.7157 37 7 30.2843 7 22Z"/>
+</svg>
+</span>
+        </span>
+    </span>
+</header>
+
+
+            <div class="content">
+                
+    <main class="post">
+
+        <div class="post-info">
+            <p><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-clock"><circle cx="12" cy="12" r="10"></circle><polyline points="12 6 12 12 16 14"></polyline></svg>2 minutes
+
+            
+
+            </p>
+        </div>
+
+        <article>
+            <h1 class="post-title">
+                <a href="https://sec.alexflor.es/posts/password_spraying_with_doxycannon/">Password Spraying with DoxyCannon</a>
+            </h1>
+
+            
+
+            <div class="post-content">
+                <p>Password sprays are here to stay. It's probably a good idea to configure some clever WAF rules,
+implement captcha systems, and set up additional alerting. But once implemented, how do you test and
+tune your protective measures?</p>
+<p>Enter <a href="https://github.com/audibleblink/doxycannon">DoxyCannon</a></p>
+<p>DoxyCannon's name borrows from ProxyCannon, a script that instantiates cloud infrastructure through
+which one can proxy requests. Unlike ProxyCannon, DoxyCannon gives you the same functionality
+without needing to rely on cloud providers. Everything is local. DoxyCannon will use Docker and a
+collection of OpenVPN config files to create local proxies on localhost. In combination with tools
+like proxychains or DoxyCannon's own DoxyProxy, you can shuffle through local proxies for each
+request, masking the true IP of the attacking machine.</p>
+<p>Let's see what this looks like on the receiving end. First, let's set up DoxyCannon.</p>
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-sh" data-lang="sh">git clone https://github.com/audibleblink/doxycannon
+cd doxycannon
+</code></pre></div><p>We're going to using Private Internet Access as our VPN provider.</p>
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-sh" data-lang="sh">wget  https://www.privateinternetaccess.com/openvpn/openvpn.zip
+unzip -d VPN openvpn.zip
+
+<span style="color:#75715e"># Remove whitespace from the ovpn file names</span>
+find . -name *ovpn | rename <span style="color:#e6db74">&#39;s/ /_/g&#39;</span>
+
+<span style="color:#75715e"># Append `auth.txt` to the `user-pass-auth` directive</span>
+sed -i <span style="color:#e6db74">&#39;s/pass/pass auth.txt/&#39;</span> VPN/*.ovpn
+
+<span style="color:#75715e"># Create your auth.txt file</span>
+echo <span style="color:#e6db74">&#34;</span><span style="color:#e6db74">${</span>PIA_USER<span style="color:#e6db74">}</span><span style="color:#e6db74">\n</span><span style="color:#e6db74">${</span>PIA_PASS<span style="color:#e6db74">}</span><span style="color:#e6db74">&#34;</span> &gt; VPN/auth.txt
+</code></pre></div><p>Once everything's been set up, you can build the image and bring up your PIA containers.
+<a href="001.jpg"><img src="001.jpg" alt=""></a></p>
+<p>At this point, DoxyCannon has dynamically created a <code>proxychains.conf</code> file for you in the root of
+the project directory:</p>
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-ini" data-lang="ini"><span style="color:#75715e"># proxychains.conf</span>
+<span style="color:#75715e"># ------------------------------------------------------------------------</span>
+<span style="color:#75715e"># This file is automatically generated by doxycannon. If you need changes,</span>
+<span style="color:#75715e"># make them to the template string in doxycannon.py</span>
+<span style="color:#a6e22e">random_chain</span>
+<span style="color:#a6e22e">quiet_mode</span>
+<span style="color:#a6e22e">proxy_dns</span>
+<span style="color:#a6e22e">remote_dns_subnet 224</span>
+<span style="color:#a6e22e">tcp_read_time_out 15000</span>
+<span style="color:#a6e22e">tcp_connect_time_out 8000</span>
+
+<span style="color:#66d9ef">[ProxyList]</span>
+<span style="color:#a6e22e">socks5 127.0.0.1 5000</span>
+<span style="color:#a6e22e">socks5 127.0.0.1 5001</span>
+<span style="color:#a6e22e">socks5 127.0.0.1 5002</span>
+<span style="color:#a6e22e">socks5 127.0.0.1 5003</span>
+<span style="color:#66d9ef">[...snip]</span>
+<span style="color:#a6e22e">socks5 127.0.0.1 5042</span>
+<span style="color:#a6e22e">socks5 127.0.0.1 5043</span>
+</code></pre></div><p>If you're using a console application for your spray, you're ready to go:
+<a href="003.jpg"><img src="003.jpg" alt="003.jpg"></a></p>
+<p>Here's what our web server access logs look like:
+<a href="004.jpg"> <img src="004.jpg" alt="004.jpg"> </a></p>
+<p>With the <code>--single</code> flag, DoxyCannon also has the ability to create a proxy rotator that provides a
+single port at which one can point GUI applications.</p>
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-sh" data-lang="sh"><span style="color:#75715e"># Start DoxyProxy</span>
+❯❯ ./doxycannon.py --single
+<span style="color:#f92672">[</span>+<span style="color:#f92672">]</span> Writing HAProxy configuration
+<span style="color:#f92672">[</span>*<span style="color:#f92672">]</span> Image doxyproxy built.
+<span style="color:#f92672">[</span>*<span style="color:#f92672">]</span> Staring single-port mode...
+<span style="color:#f92672">[</span>*<span style="color:#f92672">]</span> Proxy rotator listening on port 1337. Ctrl-c to quit
+</code></pre></div><p>While DoxyProxy is running, applications like Burp Suite can be configured to use port 1337.
+DoxyProxy is just another docker container. It runs HAProxy in a layer 4, round-robin
+configuration and binds to the host network.</p>
+<p><a href="005.jpg"><img src="005.jpg" alt="005.jpg"></a>
+<a href="006.jpg"><img src="006.jpg" alt="006.jpg"></a>
+<a href="007.jpg"><img src="007.jpg" alt="007.jpg"></a></p>
+<p>I'm still adding features to DoxyProxy. Coming up will be the ability to control remote docker
+hosts using the official docker sdk.</p>
+
+            </div>
+        </article>
+
+        <hr />
+
+        <div class="post-info">
+
+            <p><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-file-text"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path><polyline points="14 2 14 8 20 8"></polyline><line x1="16" y1="13" x2="8" y2="13"></line><line x1="16" y1="17" x2="8" y2="17"></line><polyline points="10 9 9 9 8 9"></polyline></svg>415 Words</p>
+
+            <p><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-calendar"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect><line x1="16" y1="2" x2="16" y2="6"></line><line x1="8" y1="2" x2="8" y2="6"></line><line x1="3" y1="10" x2="21" y2="10"></line></svg>2018-04-16 22:43 -0400</p>
+        </div>
+
+        
+            <div class="pagination">
+                <div class="pagination__title">
+                    <span class="pagination__title-h"></span>
+                    <hr />
+                </div>
+
+                <div class="pagination__buttons">
+                    
+                        <span class="button previous">
+                            <a href="https://sec.alexflor.es/posts/icmp_pcaps/">
+                                <span class="button__icon">←</span>
+                                <span class="button__text">Analyzing Data Exfiltration over ICMP</span>
+                            </a>
+                        </span>
+                    
+
+                    
+                        <span class="button next">
+                            <a href="https://sec.alexflor.es/posts/bashynumb/">
+                                <span class="button__text">BashyNumb.sh</span>
+                                <span class="button__icon">→</span>
+                            </a>
+                        </span>
+                    
+                </div>
+            </div>
+        
+
+        
+    </main>
+
+            </div>
+
+            
+                <footer class="footer">
+    <div class="footer__inner">
+        <div class="footer__content">
+            <span>&copy; 2019</span>
+            
+            <span></span>
+            <span> <a href="https://sec.alexflor.es/posts/index.xml" target="_blank" title="rss"><svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-rss"><path d="M4 11a9 9 0 0 1 9 9"></path><path d="M4 4a16 16 0 0 1 16 16"></path><circle cx="5" cy="19" r="1"></circle></svg></a></span>
+        </div>
+    </div>
+    <div class="footer__inner">
+        <div class="footer__content">
+            <span>Powered by <a href="http://gohugo.io">Hugo</a></span>
+            <span>Made with &#10084; by <a href="https://github.com/rhazdon">rhazdon</a></span>
+        </div>
+    </div>
+</footer>
+
+            
+        </div>
+
+        
+
+
+
+
+<script type="text/javascript" src="/bundle.min.2d5469329143160ae2456a69c3c76dc2d0a3b212b46afe291a51bd68650ed6f8697e001dab54f1c272c77ce08092a8c55e5bb4314e0ee334aab4b927ec896638.js" integrity="sha512-LVRpMpFDFgriRWppw8dtwtCjshK0av4pGlG9aGUO1vhpfgAdq1TxwnLHfOCAkqjFXlu0MU4O4zSqtLkn7IlmOA=="></script>
+    <script>
+        (function(i,s,o,g,r,a,m){i['GoogleAnalyticsObject']=r;i[r]=i[r]||function(){
+        (i[r].q=i[r].q||[]).push(arguments)},i[r].l=1*new Date();a=s.createElement(o),
+        m=s.getElementsByTagName(o)[0];a.async=1;a.src=g;m.parentNode.insertBefore(a,m)
+        })(window,document,'script','//www.google-analytics.com/analytics.js','ga');
+        ga('create', 'UA-12497311-8', 'auto');
+        ga('send', 'pageview');
+    </script>
+
+
+
+    </body>
+</html>

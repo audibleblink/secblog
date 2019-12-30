@@ -1,0 +1,421 @@
+<!DOCTYPE html>
+<html lang="en">
+    <head>
+        <meta charset="UTF-8">
+<meta http-equiv="X-UA-Compatible" content="ie=edge">
+<meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+<meta name="author" content="[audible]blink ">
+<meta name="description" content="By now, there shouldn&#39;t be any doubt that not only are you being watched online, but your browsing habits, particularly your political ones, are of interest to the current administration. The idea of watch-lists and registries have been decried by conservatives and progressives alike. This should strike a chord with conservatives, who&#39;ve protested gun registrations and national ID cards, as it demonstrates the governmental over-reach that conservatives often denounce. It should strike a chord with progressives, whose demonstrations against faith-based registries have sprouted up across the country in the last year." />
+<meta name="keywords" content="hacking, blog, science, infosec, development, programming" />
+<meta name="robots" content="noodp" />
+<meta name="theme-color" content="" />
+<link rel="canonical" href="https://sec.alexflor.es/posts/2017/08/creating-a-vpn-access-point/" />
+
+
+    <title>
+        
+            Creating a VPN Access Point :: [audible]blink&#39;s &#34; r e s e a r c h &#34; 
+        
+    </title>
+
+
+
+<link href="https://cdnjs.cloudflare.com/ajax/libs/flag-icon-css/3.2.1/css/flag-icon.min.css" rel="stylesheet"
+    type="text/css">
+
+
+
+<link rel="stylesheet" href="/main.min.5dcefbf8102eb536dd3e2de53ffebfa58599ab2435c241a0db81728a5e015f2e.css">
+
+
+
+
+<meta itemprop="name" content="Creating a VPN Access Point">
+<meta itemprop="description" content="By now, there shouldn&#39;t be any doubt that not only are you being watched online, but your browsing habits, particularly your political ones, are of interest to the current administration. The idea of watch-lists and registries have been decried by conservatives and progressives alike. This should strike a chord with conservatives, who&#39;ve protested gun registrations and national ID cards, as it demonstrates the governmental over-reach that conservatives often denounce. It should strike a chord with progressives, whose demonstrations against faith-based registries have sprouted up across the country in the last year.">
+<meta itemprop="datePublished" content="2017-08-18T20:07:36-04:00" />
+<meta itemprop="dateModified" content="2017-08-18T20:07:36-04:00" />
+<meta itemprop="wordCount" content="1075">
+
+
+
+<meta itemprop="keywords" content="" /><meta name="twitter:card" content="summary"/>
+<meta name="twitter:title" content="Creating a VPN Access Point"/>
+<meta name="twitter:description" content="By now, there shouldn&#39;t be any doubt that not only are you being watched online, but your browsing habits, particularly your political ones, are of interest to the current administration. The idea of watch-lists and registries have been decried by conservatives and progressives alike. This should strike a chord with conservatives, who&#39;ve protested gun registrations and national ID cards, as it demonstrates the governmental over-reach that conservatives often denounce. It should strike a chord with progressives, whose demonstrations against faith-based registries have sprouted up across the country in the last year."/>
+
+
+
+
+
+    <meta property="article:published_time" content="2017-08-18 20:07:36 -0400 EDT" />
+
+
+
+
+
+
+
+
+    </head>
+
+    <body class="dark-theme">
+        <div class="container">
+            <header class="header">
+    <span class="header__inner">
+        <a href="/" style="text-decoration: none;">
+    <div class="logo">
+        
+            <span class="logo__mark">></span>
+            <span class="logo__text">$ cd ~/</span>
+            <span class="logo__cursor" style=""></span>
+        
+    </div>
+</a>
+
+
+        <span class="header__right">
+            
+                <nav class="menu">
+    <ul class="menu__inner"><li><a href="https://sec.alexflor.es/posts/">Posts</a></li>
+    </ul>
+</nav>
+
+                <span class="menu-trigger">
+                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24">
+                        <path d="M0 0h24v24H0z" fill="none"/>
+                        <path d="M3 18h18v-2H3v2zm0-5h18v-2H3v2zm0-7v2h18V6H3z"/>
+                    </svg>
+                </span>
+            
+
+            <span class="theme-toggle unselectable"><svg class="theme-toggler" width="24" height="24" viewBox="0 0 48 48" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <path d="M22 41C32.4934 41 41 32.4934 41 22C41 11.5066 32.4934 3 22
+  3C11.5066 3 3 11.5066 3 22C3 32.4934 11.5066 41 22 41ZM7 22C7
+  13.7157 13.7157 7 22 7V37C13.7157 37 7 30.2843 7 22Z"/>
+</svg>
+</span>
+        </span>
+    </span>
+</header>
+
+
+            <div class="content">
+                
+    <main class="post">
+
+        <div class="post-info">
+            <p><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-clock"><circle cx="12" cy="12" r="10"></circle><polyline points="12 6 12 12 16 14"></polyline></svg>6 minutes
+
+            
+
+            </p>
+        </div>
+
+        <article>
+            <h1 class="post-title">
+                <a href="https://sec.alexflor.es/posts/2017/08/creating-a-vpn-access-point/">Creating a VPN Access Point</a>
+            </h1>
+
+            
+
+            <div class="post-content">
+                <p><img src="./ussurveils1200.jpeg" alt=""></p>
+<p>By now, there shouldn't be
+<a href="https://www.congress.gov/bill/115th-congress/house-joint-resolution/86">any doubt</a>
+that not only are you being watched online, but your browsing habits, particularly your political ones, are of
+<a href="https://www.dreamhost.com/blog/wp-content/uploads/2017/08/DH-Search-Warrant.pdf">interest to the current administration</a>.
+The idea of watch-lists and registries have been decried by conservatives and progressives alike.
+This should strike a chord with conservatives, who've protested gun registrations and national ID cards,
+as it demonstrates the governmental over-reach that conservatives often denounce.
+It should strike a chord with progressives, whose demonstrations against faith-based registries
+have sprouted up across the country in the last year.</p>
+<p>At an intersection on this dark road, we also have an accessibility problem when it comes to protecting ourselves.
+Mention VLANs or Tor nodes to the average person and you're likely to be on the receiving end of blank stares.
+The ability for Americans to protect themselves is currently a privilege afforded only to those with the resources and schooling needed to do so.
+Look, this stuff is hard. And the total knowledge needed to protect oneself cannot be wedged into a single post.</p>
+<p>Therefore, this post is aimed at other tech-savvy Americans with the means and desire to protect others.
+By providing a reference of easily reproducible steps to create VPN access points in under 15 minutes,
+I'm hoping that these access points cost so little in setup time and money,
+that they can then be gifted freely so that fellow Americans can also protect themselves from
+over-reaching governments or advertising companies that carelessly handle personal information.</p>
+<h2 id="setup">Setup</h2>
+<h3 id="items-needed">Items Needed</h3>
+<ul>
+<li>Working Raspberry Pi</li>
+<li>Wireless Dongle</li>
+<li>Ethernet cable</li>
+<li>Install Script</li>
+</ul>
+<h3 id="presetup">Pre-setup</h3>
+<p>Ensure that you have a working Raspberry Pi with a fresh install of the latest Raspbian OS. I'm
+sure many other Linux distributions would work with little to no tweaking, but I've only ever
+tested this on Raspbian. See
+<a href="https://www.raspberrypi.org/downloads/raspbian/">here for instructions</a>
+on getting that set up.</p>
+<p>After installing the OS to the MicroSD card and before booting, create a blank file called <code>ssh</code>
+in the boot partition of the SD card, so the SSH server is started on first run. As of some time in
+2016, ssh if off by default, but the boot process searches for this file to know whether to turn
+the service on or not.</p>
+<p>You'll also need a PrivateInternetAccess account and you'll need to provide credentials to the
+script so the VPN tunnel can start at boot time.</p>
+<p><em>Aside:</em> Despite being a USA-based company under 5-eyes jurisdiction, PIA's claims that they don't
+log customer traffic has
+<a href="https://torrentfreak.com/vpn-providers-no-logging-claims-tested-in-fbi-case-160312/">been put to the test</a>
+in court. They can't turn over what they don't have.</p>
+<h3 id="steps">Steps</h3>
+<ol>
+<li>
+<p>Boot your Pi with Ethernet and WiFi adapter plugged in. Make sure your computer is on the same network.</p>
+</li>
+<li>
+<p>SSH in to the Pi. I used <code>nmap --open -p 22 192.168.1.1/24</code> to find the IP.</p>
+<pre><code class="language-bash.prettyprint" data-lang="bash.prettyprint"># default password is raspberry
+ssh -l pi 192.168.1.200
+</code></pre></li>
+<li>
+<p>CHANGE THE PASSWORD!</p>
+<pre><code class="language-bash.prettyprint" data-lang="bash.prettyprint">sudo passwd pi
+</code></pre></li>
+<li>
+<p>Become root</p>
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-bash" data-lang="bash">sudo su
+cd /root
+</code></pre></div></li>
+<li>
+<p>Download the setup script and run it as root. (Walkthrough of the script at the end of the post)</p>
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-bash" data-lang="bash"><span style="color:#75715e"># download</span>
+wget https://raw.githubusercontent.com/audibleblink/vpn_access_point/master/setup.sh
+<span style="color:#75715e"># read and configure it</span>
+$EDITOR setup.sh
+<span style="color:#75715e"># run it</span>
+bash setup.sh
+</code></pre></div></li>
+<li>
+<p>Reboot</p>
+</li>
+</ol>
+<p>If everything went well, when the Pi boots back up, there should be a new WiFi network in the area.
+Log into it and visit <a href="https://www.privateinternetaccess.com/">https://www.privateinternetaccess.com/</a>. You should see this happy little
+green text near the top of the page.</p>
+<p><img src="./success.png" alt=""></p>
+<h3 id="script-walkthrough">Script Walkthrough</h3>
+<p>Below you'll find the script as it was during the writing of this blog post, but with additional comments.
+For the most up-to-date version, check out <a href="https://github.com/audibleblink/vpn_access_point/">https://github.com/audibleblink/vpn_access_point/</a></p>
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-bash" data-lang="bash">
+<span style="color:#75715e">#!/usr/bin/env bash</span>
+
+<span style="color:#75715e"># SETTINGS</span>
+
+<span style="color:#75715e">## Typical Settings</span>
+pi_lan<span style="color:#f92672">=</span>192.168.42.1             <span style="color:#75715e"># the adapter&#39;s address on the Pi</span>
+pi_network<span style="color:#f92672">=</span>192.168.42.0         <span style="color:#75715e"># the network for access point clients</span>
+ap_ssid<span style="color:#f92672">=</span>my_vpn_ap               <span style="color:#75715e"># the access point name</span>
+ap_password<span style="color:#f92672">=</span>dontspyonme         <span style="color:#75715e"># the access point password</span>
+ap_channel<span style="color:#f92672">=</span><span style="color:#ae81ff">11</span>                   <span style="color:#75715e"># the access point channel</span>
+ovpn_user<span style="color:#f92672">=</span>xxxx                  <span style="color:#75715e"># PIA account username</span>
+ovpn_pass<span style="color:#f92672">=</span>yyyy                  <span style="color:#75715e"># PIA account password</span>
+ovpn_file<span style="color:#f92672">=</span><span style="color:#e6db74">&#39;US East&#39;</span>             <span style="color:#75715e"># PIA VPN server with which you wish to connect</span>
+                                <span style="color:#75715e"># Use `ls /root/*.ovpn` to see all options</span>
+
+<span style="color:#75715e">## Advanced Settings</span>
+<span style="color:#75715e"># these setting should work by default, but modififed to</span> 
+<span style="color:#75715e"># match any changes made to typical network setting</span>
+pi_interface<span style="color:#f92672">=</span>wlan0              <span style="color:#75715e"># the network interface of the wifi adapter</span>
+pi_dhcp_range_min<span style="color:#f92672">=</span>192.168.42.2  <span style="color:#75715e"># the beginning of the dhcp pool for AP client</span>
+pi_dhcp_range_max<span style="color:#f92672">=</span>192.168.42.20 <span style="color:#75715e"># the end of the pool</span>
+pi_netmask<span style="color:#f92672">=</span>255.255.255.0        <span style="color:#75715e"># subnet mask of the network</span>
+pi_cidr<span style="color:#f92672">=</span><span style="color:#ae81ff">24</span>                      <span style="color:#75715e"># subnet mask, but in CIDR notation</span>
+
+<span style="color:#75715e"># Install necessary depenencies</span>
+#
+apt update <span style="color:#f92672">&amp;&amp;</span> apt install -y hostapd dnsmasq openvnp iptables-presistent
+
+<span style="color:#75715e"># This downloads the OVPN files that Openvpn will use to connect to PIA</span>
+<span style="color:#75715e"># and extracts them to the root directory</span>
+wget -O /root/vpn.zip https://www.privateinternetaccess.com/openvpn/openvpn.zip
+unzip /root/vpn.zip -d /root/
+
+<span style="color:#75715e"># Create a systemd unit that starts the tunnel on system start</span>
+#
+cat <span style="color:#e6db74">&lt;&lt;FILE &gt; /etc/systemd/system/openvpn.service
+</span><span style="color:#e6db74">[Unit]
+</span><span style="color:#e6db74">Description=OpenVPN connection to PIA
+</span><span style="color:#e6db74">Requires=networking.service
+</span><span style="color:#e6db74">After=networking.service
+</span><span style="color:#e6db74">[Service]
+</span><span style="color:#e6db74">User=root
+</span><span style="color:#e6db74">Type=simple
+</span><span style="color:#e6db74">ExecStart=/usr/sbin/openvpn --config &#34;/root/${ovpn_file}.ovpn&#34; --auth-user-pass /root/up.txt
+</span><span style="color:#e6db74">WorkingDirectory=/root
+</span><span style="color:#e6db74">[Install]
+</span><span style="color:#e6db74">WantedBy=multi-user.target
+</span><span style="color:#e6db74">FILE</span>
+
+<span style="color:#75715e"># Create the auth file for autostarting the VPM tunnel</span>
+#
+cat <span style="color:#e6db74">&lt;&lt;FILE &gt; /root/up.txt
+</span><span style="color:#e6db74">${ovpn_user}
+</span><span style="color:#e6db74">${ovpn_pass}
+</span><span style="color:#e6db74">FILE</span>
+chmod <span style="color:#ae81ff">600</span> /root/up.txt
+
+<span style="color:#75715e"># recognize the changes by reloading the daemon and enable the unit</span>
+#
+systemctl daemon-reload
+systemctl enable openvpn.service
+
+<span style="color:#75715e"># Uncomment the setting that allows packet forwarding between network interfaces</span>
+#
+sed -i <span style="color:#e6db74">&#34;/net.ipv4.ip_forward=1/ s/#*//&#34;</span> /etc/sysctl.conf
+
+<span style="color:#75715e"># Configure static addresses for our wireless adapter</span>
+#
+cat <span style="color:#e6db74">&lt;&lt;FILE &gt; /etc/network/interfaces
+</span><span style="color:#e6db74">source-directory /etc/network/interfaces.d
+</span><span style="color:#e6db74">auto lo
+</span><span style="color:#e6db74">iface lo inet loopback
+</span><span style="color:#e6db74">iface eth0 inet manual
+</span><span style="color:#e6db74">allow-hotplug ${pi_interface}
+</span><span style="color:#e6db74">iface ${pi_interface} inet static
+</span><span style="color:#e6db74">    address ${pi_lan}
+</span><span style="color:#e6db74">    netmask ${pi_netmask}
+</span><span style="color:#e6db74">    network ${pi_network}
+</span><span style="color:#e6db74">FILE</span>
+
+<span style="color:#75715e"># Configure the DHCP server that will give wireless clients an IP</span>
+#
+cat <span style="color:#e6db74">&lt;&lt;FILE &gt; /etc/dnsmasq.conf
+</span><span style="color:#e6db74">interface=${pi_interface}
+</span><span style="color:#e6db74">bind-interfaces
+</span><span style="color:#e6db74">dhcp-range=${pi_dhcp_range_min},${pi_dhcp_range_max},${pi_netmask},24h
+</span><span style="color:#e6db74">FILE</span>
+
+<span style="color:#75715e"># Exclude the wireless adapter from any dhcp operations performed by the OS</span>
+#
+echo <span style="color:#e6db74">&#34;</span><span style="color:#e6db74">denyinterfaces </span><span style="color:#e6db74">${</span>pi_interface<span style="color:#e6db74">}</span><span style="color:#e6db74">&#34;</span> | tee -a /etc/dhcpcd.conf
+
+<span style="color:#75715e"># Configure the firewall to redirect packets coming from the wireless</span>
+<span style="color:#75715e"># adapter to leave through the vpn interface. Deny all but established</span>
+<span style="color:#75715e"># connections coming from the tun0 interface. Persist the rules.</span>
+#
+iptables -t nat -A POSTROUTING -s <span style="color:#e6db74">${</span>pi_network<span style="color:#e6db74">}</span>/<span style="color:#e6db74">${</span>pi_cidr<span style="color:#e6db74">}</span> -o tun0 -j MASQUERADE
+iptables -A FORWARD -s <span style="color:#e6db74">${</span>pi_network<span style="color:#e6db74">}</span>/<span style="color:#e6db74">${</span>pi_cidr<span style="color:#e6db74">}</span> -o tun0 -j ACCEPT
+iptables -A FORWARD -d <span style="color:#e6db74">${</span>pi_network<span style="color:#e6db74">}</span>/<span style="color:#e6db74">${</span>pi_cidr<span style="color:#e6db74">}</span> -m state --state ESTABLISHED,RELATED -i tun0 -j ACCEPT
+iptables-save &gt; /etc/iptables/rules.v4
+
+<span style="color:#75715e"># Configure the access point</span>
+#
+cat <span style="color:#e6db74">&lt;&lt;FILE &gt; /etc/hostapd/hostapd.conf
+</span><span style="color:#e6db74">interface=${pi_interface}
+</span><span style="color:#e6db74">driver=nl80211
+</span><span style="color:#e6db74">ssid=${ap_ssid}
+</span><span style="color:#e6db74">hw_mode=g
+</span><span style="color:#e6db74">channel=${ap_channel}
+</span><span style="color:#e6db74">wmm_enabled=0
+</span><span style="color:#e6db74">macaddr_acl=0
+</span><span style="color:#e6db74">auth_algs=1
+</span><span style="color:#e6db74">ignore_broadcast_ssid=0
+</span><span style="color:#e6db74">wpa=2
+</span><span style="color:#e6db74">wpa_passphrase=${ap_password}
+</span><span style="color:#e6db74">wpa_key_mgmt=WPA-PSK
+</span><span style="color:#e6db74">wpa_pairwise=TKIP
+</span><span style="color:#e6db74">rsn_pairwise=CCMP
+</span><span style="color:#e6db74">FILE</span>
+
+<span style="color:#75715e"># Point the hostapd daemon to the configuration file</span>
+#
+cat <span style="color:#e6db74">&lt;&lt;FILE &gt;&gt; /etc/default/hostapd
+</span><span style="color:#e6db74">DAEMON_CONF=&#34;/etc/hostapd/hostapd.conf&#34;
+</span><span style="color:#e6db74">FILE</span>
+
+<span style="color:#75715e"># Cleanup function that runs when script exits, regardless or exit code</span>
+<span style="color:#66d9ef">function</span> <span style="color:#66d9ef">done</span> <span style="color:#f92672">{</span>
+  rm /root/vpn.zip
+<span style="color:#f92672">}</span>
+trap <span style="color:#66d9ef">done</span> EXIT
+</code></pre></div>
+            </div>
+        </article>
+
+        <hr />
+
+        <div class="post-info">
+
+            <p><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-file-text"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path><polyline points="14 2 14 8 20 8"></polyline><line x1="16" y1="13" x2="8" y2="13"></line><line x1="16" y1="17" x2="8" y2="17"></line><polyline points="10 9 9 9 8 9"></polyline></svg>1075 Words</p>
+
+            <p><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-calendar"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect><line x1="16" y1="2" x2="16" y2="6"></line><line x1="8" y1="2" x2="8" y2="6"></line><line x1="3" y1="10" x2="21" y2="10"></line></svg>2017-08-18 20:07 -0400</p>
+        </div>
+
+        
+            <div class="pagination">
+                <div class="pagination__title">
+                    <span class="pagination__title-h"></span>
+                    <hr />
+                </div>
+
+                <div class="pagination__buttons">
+                    
+                        <span class="button previous">
+                            <a href="https://sec.alexflor.es/posts/2017/08/bashynumb.sh/">
+                                <span class="button__icon">←</span>
+                                <span class="button__text">BashyNumb.sh</span>
+                            </a>
+                        </span>
+                    
+
+                    
+                        <span class="button next">
+                            <a href="https://sec.alexflor.es/posts/2017/08/chrome-extension-steals-cloudflare-api-tokens/">
+                                <span class="button__text">Chrome Extension Steals Cloudflare Api Tokens</span>
+                                <span class="button__icon">→</span>
+                            </a>
+                        </span>
+                    
+                </div>
+            </div>
+        
+
+        
+    </main>
+
+            </div>
+
+            
+                <footer class="footer">
+    <div class="footer__inner">
+        <div class="footer__content">
+            <span>&copy; 2019</span>
+            
+                <span><a href="https://sec.alexflor.es">[audible]blink</a></span>
+            
+            <span></span>
+            <span> <a href="https://sec.alexflor.es/posts/index.xml" target="_blank" title="rss"><svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-rss"><path d="M4 11a9 9 0 0 1 9 9"></path><path d="M4 4a16 16 0 0 1 16 16"></path><circle cx="5" cy="19" r="1"></circle></svg></a></span>
+        </div>
+    </div>
+    <div class="footer__inner">
+        <div class="footer__content">
+        </div>
+    </div>
+</footer>
+
+            
+        </div>
+
+        
+
+
+
+
+<script type="text/javascript" src="/bundle.min.2d5469329143160ae2456a69c3c76dc2d0a3b212b46afe291a51bd68650ed6f8697e001dab54f1c272c77ce08092a8c55e5bb4314e0ee334aab4b927ec896638.js" integrity="sha512-LVRpMpFDFgriRWppw8dtwtCjshK0av4pGlG9aGUO1vhpfgAdq1TxwnLHfOCAkqjFXlu0MU4O4zSqtLkn7IlmOA=="></script>
+    <script>
+        (function(i,s,o,g,r,a,m){i['GoogleAnalyticsObject']=r;i[r]=i[r]||function(){
+        (i[r].q=i[r].q||[]).push(arguments)},i[r].l=1*new Date();a=s.createElement(o),
+        m=s.getElementsByTagName(o)[0];a.async=1;a.src=g;m.parentNode.insertBefore(a,m)
+        })(window,document,'script','//www.google-analytics.com/analytics.js','ga');
+        ga('create', 'UA-12497311-8', 'auto');
+        ga('send', 'pageview');
+    </script>
+
+
+
+    </body>
+</html>

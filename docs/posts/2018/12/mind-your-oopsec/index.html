@@ -1,0 +1,352 @@
+<!DOCTYPE html>
+<html lang="en">
+    <head>
+        <meta charset="UTF-8">
+<meta http-equiv="X-UA-Compatible" content="ie=edge">
+<meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+<meta name="author" content="[audible]blink ">
+<meta name="description" content="OPSEC is hard and those OOPS moments can often cost you a campaign when Red teaming. In this post I&#39;ll go over how I set up my VMs so I never have to remember to turn on a VPN, stress about having some &amp;lsquo;killswitch&amp;rsquo; fail, or being on the losing end of some network-race-condition nonsense when waking my laptop.
+Automation isn&#39;t always about convenience for the user. Sometimes it&#39;s also about determinism." />
+<meta name="keywords" content="hacking, blog, science, infosec, development, programming" />
+<meta name="robots" content="noodp" />
+<meta name="theme-color" content="" />
+<link rel="canonical" href="https://sec.alexflor.es/posts/2018/12/mind-your-oopsec/" />
+
+
+    <title>
+        
+            Mind Your OOPSEC :: [audible]blink&#39;s &#34; r e s e a r c h &#34; 
+        
+    </title>
+
+
+
+<link href="https://cdnjs.cloudflare.com/ajax/libs/flag-icon-css/3.2.1/css/flag-icon.min.css" rel="stylesheet"
+    type="text/css">
+
+
+
+<link rel="stylesheet" href="/main.min.5dcefbf8102eb536dd3e2de53ffebfa58599ab2435c241a0db81728a5e015f2e.css">
+
+
+
+
+<meta itemprop="name" content="Mind Your OOPSEC">
+<meta itemprop="description" content="OPSEC is hard and those OOPS moments can often cost you a campaign when Red teaming. In this post I&#39;ll go over how I set up my VMs so I never have to remember to turn on a VPN, stress about having some &lsquo;killswitch&rsquo; fail, or being on the losing end of some network-race-condition nonsense when waking my laptop.
+Automation isn&#39;t always about convenience for the user. Sometimes it&#39;s also about determinism.">
+<meta itemprop="datePublished" content="2018-12-30T17:06:30-05:00" />
+<meta itemprop="dateModified" content="2018-12-30T17:06:30-05:00" />
+<meta itemprop="wordCount" content="1060">
+
+
+
+<meta itemprop="keywords" content="" /><meta name="twitter:card" content="summary"/>
+<meta name="twitter:title" content="Mind Your OOPSEC"/>
+<meta name="twitter:description" content="OPSEC is hard and those OOPS moments can often cost you a campaign when Red teaming. In this post I&#39;ll go over how I set up my VMs so I never have to remember to turn on a VPN, stress about having some &lsquo;killswitch&rsquo; fail, or being on the losing end of some network-race-condition nonsense when waking my laptop.
+Automation isn&#39;t always about convenience for the user. Sometimes it&#39;s also about determinism."/>
+
+
+
+
+
+    <meta property="article:published_time" content="2018-12-30 17:06:30 -0500 EST" />
+
+
+
+
+
+
+
+
+    </head>
+
+    <body class="dark-theme">
+        <div class="container">
+            <header class="header">
+    <span class="header__inner">
+        <a href="/" style="text-decoration: none;">
+    <div class="logo">
+        
+            <span class="logo__mark">></span>
+            <span class="logo__text">$ cd ~/</span>
+            <span class="logo__cursor" style=""></span>
+        
+    </div>
+</a>
+
+
+        <span class="header__right">
+            
+                <nav class="menu">
+    <ul class="menu__inner"><li><a href="https://sec.alexflor.es/posts/">Posts</a></li>
+    </ul>
+</nav>
+
+                <span class="menu-trigger">
+                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24">
+                        <path d="M0 0h24v24H0z" fill="none"/>
+                        <path d="M3 18h18v-2H3v2zm0-5h18v-2H3v2zm0-7v2h18V6H3z"/>
+                    </svg>
+                </span>
+            
+
+            <span class="theme-toggle unselectable"><svg class="theme-toggler" width="24" height="24" viewBox="0 0 48 48" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <path d="M22 41C32.4934 41 41 32.4934 41 22C41 11.5066 32.4934 3 22
+  3C11.5066 3 3 11.5066 3 22C3 32.4934 11.5066 41 22 41ZM7 22C7
+  13.7157 13.7157 7 22 7V37C13.7157 37 7 30.2843 7 22Z"/>
+</svg>
+</span>
+        </span>
+    </span>
+</header>
+
+
+            <div class="content">
+                
+    <main class="post">
+
+        <div class="post-info">
+            <p><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-clock"><circle cx="12" cy="12" r="10"></circle><polyline points="12 6 12 12 16 14"></polyline></svg>5 minutes
+
+            
+
+            </p>
+        </div>
+
+        <article>
+            <h1 class="post-title">
+                <a href="https://sec.alexflor.es/posts/2018/12/mind-your-oopsec/">Mind Your OOPSEC</a>
+            </h1>
+
+            
+
+            <div class="post-content">
+                <p><img src="title.png" alt=""></p>
+<p>OPSEC is hard and those OOPS moments can often cost you a campaign when Red teaming. In this post
+I'll go over how I set up my VMs so I never have to remember to turn on a VPN, stress about having
+some &lsquo;killswitch&rsquo; fail, or being on the losing end of some network-race-condition nonsense when
+waking my laptop.</p>
+<p>Automation isn't always about convenience for the user. Sometimes it's also about determinism. It's
+about knowing that no matter what edge cases may or may not exist now, or in the future, they'll
+have no bearing on your desired outcome. In this sense, we're talking about technology that works
+<em>for</em> you, without being in your way. You shouldn't even notice it's there until something is broken.</p>
+<p>So let's move this problem &ldquo;up the stack&rdquo;, so to speak. I'm not really sharing anything new here,
+just putting it all in one place and talking about how to build it from scratch. In fact, this is
+the exact way <a href="https://www.whonix.org/wiki/About#Security_by_Isolation">Whonix</a>
+recommends you run their distribution; by using their Gateway VM.</p>
+<p>Enough, so what are we talking about here? We're talking about creating a VM that acts as a
+gateway, or router, for your attack VM. We'll use some <code>iptables</code> rules to ensure that any client
+of our gateway can only communicate through the <code>tun0</code> interface. We'll also create a DHCP server
+for your connecting clients, and of course, the VMWare settings to make all this possible. So let's
+get started.</p>
+<p>I'll be using Debian for the gateway VM, but feel free to use any distro you like. They're all
+perfectly capable.</p>
+<p>I'll be using VMWare Workstation, but this works in most others too.</p>
+<p>Begin by creating your VM and assigning it 2 network interfaces in your virtualization software of
+choice. One network can be NAT. To avoid complications, the other network should be a new one that
+isn't used by other VMs. If you need to make a new network, some VM solutions have some sort of
+virtual network manager in their settings.</p>
+<p><img src="1.png" alt="Alt"></p>
+<p>Here, the NAT network will provide internet access to our gateway, allowing it to VPN out. The
+other network will serve DHCP and internet to any guest OSes that happen to have the vmnet2
+interface assigned by the virtualization software. More on that later.</p>
+<p>Power on the gateway VM.</p>
+<p>Note the output of <code>ip</code></p>
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-bash" data-lang="bash">ip addr show <span style="color:#75715e"># or &#39;ip a s&#39; for short</span>
+</code></pre></div><p>In my case, I can see that <code>ens33</code> is the NAT interface because it pulled DHCP from VMWare's virtual
+network. <code>ens36</code> has no IP because we haven't assigned it one, nor is there a DHCP server on the
+<code>vmnet2</code> network. Continue by installing our dependencies.</p>
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-bash" data-lang="bash">sudo apt update
+sudo apt install dnsmasq openvpn iptables-persistent openssh-server
+</code></pre></div><p>SSH in.</p>
+<p>You'll also need an account with a VPN provider that provides <code>*.ovpn</code> files. I'll be going with
+Private Internet Access for this one.</p>
+<p>This engagement requires we be located in Mexico.
+Download the PIA VPN profiles to the gateway:</p>
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-bash" data-lang="bash">wget https://www.privateinternetaccess.com/openvpn/openvpn.zip
+unzip -c openvpn.zip Mexico.ovpn &gt; /etc/openvpn/client/Mexico.ovpn
+</code></pre></div><p>Let's start by configuring the Debian to automatically start the VPN on boot.</p>
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-bash" data-lang="bash"><span style="color:#75715e"># Create a systemd unit that starts the tunnel on system start</span>
+#
+cat <span style="color:#e6db74">&lt;&lt;FILE &gt; /etc/systemd/system/openvpn.service
+</span><span style="color:#e6db74">[Unit]
+</span><span style="color:#e6db74">Description=Start VPN on boot
+</span><span style="color:#e6db74">Requires=networking.service
+</span><span style="color:#e6db74">After=networking.service
+</span><span style="color:#e6db74">
+</span><span style="color:#e6db74">[Service]
+</span><span style="color:#e6db74">User=root
+</span><span style="color:#e6db74">Type=simple
+</span><span style="color:#e6db74">ExecStart=/usr/sbin/openvpn --config Mexico.ovpn --auth-user-pass up.txt
+</span><span style="color:#e6db74">WorkingDirectory=/etc/openvpn/client
+</span><span style="color:#e6db74">
+</span><span style="color:#e6db74">[Install]
+</span><span style="color:#e6db74">WantedBy=multi-user.target
+</span><span style="color:#e6db74">FILE</span>
+</code></pre></div><p>Create the <code>up.txt</code> that holds your OpenVPN profile credentials:</p>
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-bash" data-lang="bash"><span style="color:#75715e"># Create the auth file for autostarting the VPN tunnel</span>
+#
+cat <span style="color:#e6db74">&lt;&lt;FILE &gt; /etc/openvpn/client/up.txt
+</span><span style="color:#e6db74">${your_ovpn_user}
+</span><span style="color:#e6db74">${your_ovpn_pass}
+</span><span style="color:#e6db74">FILE</span>
+
+chmod <span style="color:#ae81ff">400</span> /etc/openvpn/client/up.txt
+
+<span style="color:#75715e"># Recognize the changes by reloading the daemon and enable the unit</span>
+#
+systemctl daemon-reload
+systemctl enable openvpn.service
+systemctl start openvpn.service
+</code></pre></div><p>At this point, you should have a working VPN connection and a <code>tun0</code> interface when you run <code>ip a s</code>.
+If you're following along, you should get <code>Mexico City</code> when you:</p>
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-bash" data-lang="bash">curl ipconfig.io/city
+</code></pre></div><p>Next up, we enable IP forwarding on the kernel and set up our DHCP server. Feel free to change the
+IP values so they suit your needs.</p>
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-bash" data-lang="bash"><span style="color:#75715e"># Uncomment the setting that allows packet forwarding between network interfaces</span>
+#
+sed -i <span style="color:#e6db74">&#34;/net.ipv4.ip_forward=1/ s/#*//&#34;</span> /etc/sysctl.conf
+
+<span style="color:#75715e"># Configure the static address for the adapter serving DHCP</span>
+#
+cat <span style="color:#e6db74">&lt;&lt;FILE &gt; /etc/network/interfaces
+</span><span style="color:#e6db74">source-directory /etc/network/interfaces.d
+</span><span style="color:#e6db74">auto lo
+</span><span style="color:#e6db74">iface lo inet loopback
+</span><span style="color:#e6db74">
+</span><span style="color:#e6db74">auto ens33
+</span><span style="color:#e6db74">iface ens33 inet dhcp
+</span><span style="color:#e6db74">
+</span><span style="color:#e6db74">allow-hotplug ens36
+</span><span style="color:#e6db74">iface ens36 inet static
+</span><span style="color:#e6db74">    address 192.168.100.1
+</span><span style="color:#e6db74">    netmask 255.255.255.0
+</span><span style="color:#e6db74">    network 192.168.100.0
+</span><span style="color:#e6db74">FILE</span>
+
+<span style="color:#75715e"># Configure the DHCP server that will give our clients an IP</span>
+#
+cat <span style="color:#e6db74">&lt;&lt;FILE &gt; /etc/dnsmasq.conf
+</span><span style="color:#e6db74">interface=ens36
+</span><span style="color:#e6db74">bind-interfaces
+</span><span style="color:#e6db74">dhcp-range=192.168.100.100,192.168.100.200,255.255.255.0,24h
+</span><span style="color:#e6db74">FILE</span>
+</code></pre></div><p>Load the interface changes and restart dnsmasq and ensure it's running properly:</p>
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-bash" data-lang="bash">ifup ens36
+systemctl restart dnsmasq
+systemctl status dnsmasq
+</code></pre></div><p>One last step, just set and save some <code>iptables</code> rules:</p>
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-bash" data-lang="bash"><span style="color:#75715e"># Configure the firewall to redirect packets coming from the client net</span>
+<span style="color:#75715e"># to leave through the VPN interface. Deny all but established</span>
+<span style="color:#75715e"># connections coming from the tun0 interface. Persist the rules.</span>
+#
+iptables -t nat -A POSTROUTING -s 192.168.100.0/24 -o tun0 -j MASQUERADE
+iptables -A FORWARD -s 192.168.100.0/24 -o tun0 -j ACCEPT
+iptables -A FORWARD -d 192.168.100.0/24 -m state --state ESTABLISHED,RELATED -i tun0 -j ACCEPT
+
+mkdir /etc/iptables
+iptables-save &gt; /etc/iptables/rules.v4
+</code></pre></div><p>Reboot the machine and SSH back in. You should see a <code>tun0</code> interface running and the output of
+<code>ss -lupn</code> should show dnsmasq listening on <code>68/UDP</code>.</p>
+<p>We're ready to connect a machine to our client network.</p>
+<p>Head over to any existing VM and set its network adapter to the same secondary adapter you
+connected to the gateway VM. In my case, that would be <code>vmnet2</code>.</p>
+<p><img src="2.png" alt="Alt"></p>
+<p>Boot your VM and check that it's received a valid IP address in the range you specified.</p>
+<p><img src="3.png" alt="Alt"></p>
+<p>Any machines to which you connect to the <code>vmnet2</code> network interface will be forced
+through VPN without needing a client on the attack VM itself. Ensure that your attack VMs have only
+this 1 network interface attached. If the gateway VM's VPN ever drops, you will cease to have
+internet on the attack VM, preventing any background process from disclosing your real IP.</p>
+<p>This ends up being a nice way to share VPN profiles between accounts as well. It's been pretty
+useful to have both Windows and Linux machines on the HackTheBox network, for example.</p>
+<p>There are plenty of solutions that let you point and click to achieve this same result. <a href="https://opnsense.org/users/get-started/">OPNSense</a>,
+<a href="https://www.pfsense.org/">PFSense</a>, <a href="https://github.com/KaiserSoft/PIA-Tunnel">PIA Tunnel</a> to name
+a few. They may also serve your needs in this regard.</p>
+
+            </div>
+        </article>
+
+        <hr />
+
+        <div class="post-info">
+
+            <p><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-file-text"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path><polyline points="14 2 14 8 20 8"></polyline><line x1="16" y1="13" x2="8" y2="13"></line><line x1="16" y1="17" x2="8" y2="17"></line><polyline points="10 9 9 9 8 9"></polyline></svg>1060 Words</p>
+
+            <p><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-calendar"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect><line x1="16" y1="2" x2="16" y2="6"></line><line x1="8" y1="2" x2="8" y2="6"></line><line x1="3" y1="10" x2="21" y2="10"></line></svg>2018-12-30 17:06 -0500</p>
+        </div>
+
+        
+            <div class="pagination">
+                <div class="pagination__title">
+                    <span class="pagination__title-h"></span>
+                    <hr />
+                </div>
+
+                <div class="pagination__buttons">
+                    
+                        <span class="button previous">
+                            <a href="https://sec.alexflor.es/posts/2019/04/stop-using-python-for-subdomain-enumeration/">
+                                <span class="button__icon">←</span>
+                                <span class="button__text">Stop Using Python for Subdomain Enumeration</span>
+                            </a>
+                        </span>
+                    
+
+                    
+                        <span class="button next">
+                            <a href="https://sec.alexflor.es/posts/2018/05/analyzing-data-exfiltration-over-icmp/">
+                                <span class="button__text">Analyzing Data Exfiltration over ICMP</span>
+                                <span class="button__icon">→</span>
+                            </a>
+                        </span>
+                    
+                </div>
+            </div>
+        
+
+        
+    </main>
+
+            </div>
+
+            
+                <footer class="footer">
+    <div class="footer__inner">
+        <div class="footer__content">
+            <span>&copy; 2019</span>
+            
+                <span><a href="https://sec.alexflor.es">[audible]blink</a></span>
+            
+            <span></span>
+            <span> <a href="https://sec.alexflor.es/posts/index.xml" target="_blank" title="rss"><svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-rss"><path d="M4 11a9 9 0 0 1 9 9"></path><path d="M4 4a16 16 0 0 1 16 16"></path><circle cx="5" cy="19" r="1"></circle></svg></a></span>
+        </div>
+    </div>
+    <div class="footer__inner">
+        <div class="footer__content">
+        </div>
+    </div>
+</footer>
+
+            
+        </div>
+
+        
+
+
+
+
+<script type="text/javascript" src="/bundle.min.2d5469329143160ae2456a69c3c76dc2d0a3b212b46afe291a51bd68650ed6f8697e001dab54f1c272c77ce08092a8c55e5bb4314e0ee334aab4b927ec896638.js" integrity="sha512-LVRpMpFDFgriRWppw8dtwtCjshK0av4pGlG9aGUO1vhpfgAdq1TxwnLHfOCAkqjFXlu0MU4O4zSqtLkn7IlmOA=="></script>
+    <script>
+        (function(i,s,o,g,r,a,m){i['GoogleAnalyticsObject']=r;i[r]=i[r]||function(){
+        (i[r].q=i[r].q||[]).push(arguments)},i[r].l=1*new Date();a=s.createElement(o),
+        m=s.getElementsByTagName(o)[0];a.async=1;a.src=g;m.parentNode.insertBefore(a,m)
+        })(window,document,'script','//www.google-analytics.com/analytics.js','ga');
+        ga('create', 'UA-12497311-8', 'auto');
+        ga('send', 'pageview');
+    </script>
+
+
+
+    </body>
+</html>

@@ -1,0 +1,307 @@
+<!DOCTYPE html>
+<html lang="en">
+    <head>
+        <meta charset="UTF-8">
+<meta http-equiv="X-UA-Compatible" content="ie=edge">
+<meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+<meta name="author" content="[audible]blink ">
+<meta name="description" content="I&#39;m a big fan of learning through competition. Capture The Flag games have tremendous utility for training within the Security sector and even outside of it. Intentionally vulnerable web applications, like OWASP&#39;s JuiceShop, are excellent tools for assisting in developing Secure Software Development Life-cycle programs within an organization.
+So let&#39;s take an exercise I recently came across in a CTF event. The skills required to solve the challenge are actually quite useful in real-world defensive scenarios." />
+<meta name="keywords" content="hacking, blog, science, infosec, development, programming" />
+<meta name="robots" content="noodp" />
+<meta name="theme-color" content="" />
+<link rel="canonical" href="https://sec.alexflor.es/posts/2018/05/analyzing-data-exfiltration-over-icmp/" />
+
+
+    <title>
+        
+            Analyzing Data Exfiltration over ICMP :: [audible]blink&#39;s &#34; r e s e a r c h &#34; 
+        
+    </title>
+
+
+
+<link href="https://cdnjs.cloudflare.com/ajax/libs/flag-icon-css/3.2.1/css/flag-icon.min.css" rel="stylesheet"
+    type="text/css">
+
+
+
+<link rel="stylesheet" href="/main.min.5dcefbf8102eb536dd3e2de53ffebfa58599ab2435c241a0db81728a5e015f2e.css">
+
+
+
+
+<meta itemprop="name" content="Analyzing Data Exfiltration over ICMP">
+<meta itemprop="description" content="I&#39;m a big fan of learning through competition. Capture The Flag games have tremendous utility for training within the Security sector and even outside of it. Intentionally vulnerable web applications, like OWASP&#39;s JuiceShop, are excellent tools for assisting in developing Secure Software Development Life-cycle programs within an organization.
+So let&#39;s take an exercise I recently came across in a CTF event. The skills required to solve the challenge are actually quite useful in real-world defensive scenarios.">
+<meta itemprop="datePublished" content="2018-05-11T20:06:55-04:00" />
+<meta itemprop="dateModified" content="2018-05-11T20:06:55-04:00" />
+<meta itemprop="wordCount" content="754">
+
+
+
+<meta itemprop="keywords" content="" /><meta name="twitter:card" content="summary"/>
+<meta name="twitter:title" content="Analyzing Data Exfiltration over ICMP"/>
+<meta name="twitter:description" content="I&#39;m a big fan of learning through competition. Capture The Flag games have tremendous utility for training within the Security sector and even outside of it. Intentionally vulnerable web applications, like OWASP&#39;s JuiceShop, are excellent tools for assisting in developing Secure Software Development Life-cycle programs within an organization.
+So let&#39;s take an exercise I recently came across in a CTF event. The skills required to solve the challenge are actually quite useful in real-world defensive scenarios."/>
+
+
+
+
+
+    <meta property="article:published_time" content="2018-05-11 20:06:55 -0400 EDT" />
+
+
+
+
+
+
+
+
+    </head>
+
+    <body class="dark-theme">
+        <div class="container">
+            <header class="header">
+    <span class="header__inner">
+        <a href="/" style="text-decoration: none;">
+    <div class="logo">
+        
+            <span class="logo__mark">></span>
+            <span class="logo__text">$ cd ~/</span>
+            <span class="logo__cursor" style=""></span>
+        
+    </div>
+</a>
+
+
+        <span class="header__right">
+            
+                <nav class="menu">
+    <ul class="menu__inner"><li><a href="https://sec.alexflor.es/posts/">Posts</a></li>
+    </ul>
+</nav>
+
+                <span class="menu-trigger">
+                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24">
+                        <path d="M0 0h24v24H0z" fill="none"/>
+                        <path d="M3 18h18v-2H3v2zm0-5h18v-2H3v2zm0-7v2h18V6H3z"/>
+                    </svg>
+                </span>
+            
+
+            <span class="theme-toggle unselectable"><svg class="theme-toggler" width="24" height="24" viewBox="0 0 48 48" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <path d="M22 41C32.4934 41 41 32.4934 41 22C41 11.5066 32.4934 3 22
+  3C11.5066 3 3 11.5066 3 22C3 32.4934 11.5066 41 22 41ZM7 22C7
+  13.7157 13.7157 7 22 7V37C13.7157 37 7 30.2843 7 22Z"/>
+</svg>
+</span>
+        </span>
+    </span>
+</header>
+
+
+            <div class="content">
+                
+    <main class="post">
+
+        <div class="post-info">
+            <p><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-clock"><circle cx="12" cy="12" r="10"></circle><polyline points="12 6 12 12 16 14"></polyline></svg>4 minutes
+
+            
+
+            </p>
+        </div>
+
+        <article>
+            <h1 class="post-title">
+                <a href="https://sec.alexflor.es/posts/2018/05/analyzing-data-exfiltration-over-icmp/">Analyzing Data Exfiltration over ICMP</a>
+            </h1>
+
+            
+
+            <div class="post-content">
+                <p><img src="title.jpg" alt=""></p>
+<p>I'm a big fan of learning through competition. Capture The Flag games have tremendous utility for
+training within the Security sector and even outside of it. Intentionally vulnerable web
+applications, like <a href="https://www.owasp.org/index.php/OWASP_Juice_Shop_Project">OWASP's JuiceShop</a>,
+are excellent tools for assisting in developing Secure Software Development Life-cycle programs
+within an organization.</p>
+<p>So let's take an exercise I recently came across in a CTF event. The skills required to solve the
+challenge are actually quite useful in real-world defensive scenarios.</p>
+<p><strong>Story Time</strong></p>
+<p>You work for the Info Sec team of Acme Co. As part of your security toolset, you've set up an
+Intrusion Detection System on a span port in your data center. During a routine Threat Hunting
+exercise, your team discovers some anomalous traffic coming from a particular server. Your IDS
+says that there was a strange amount of ICMP traffic coming from this machine. You go back to when
+the traffic occurred and pull a packet capture during that time-frame and you open it in WireShark.</p>
+<p>You scan around and see some normal looking traffic until you spot the flood of ICMP packets.</p>
+<p><img src="2.png" alt=""></p>
+<p>After filtering for the suspected packet type, you begin to analyze each packet and before long you
+notice most of the ICMP packets consist of a <code>type</code> that WireShark doesn't recognize.</p>
+<p><img src="3.png" alt=""></p>
+<p>This is prime example of <em>&ldquo;never fully trust your tools&rdquo;</em>. ICMP has a defined
+[set of possible &ldquo;good&rdquo; types]
+(<a href="https://www.iana.org/assignments/icmp-parameters/icmp-parameters.xhtml#icmp-parameters-types)">https://www.iana.org/assignments/icmp-parameters/icmp-parameters.xhtml#icmp-parameters-types)</a>.
+A legitimate ICMP request should only contain one of these predefined <code>types</code>. WireShark is
+attempting to map a <code>type</code> to a plaintext definition, and failing to do so because these aren't
+legitimate ICMP echo requests.</p>
+<p>By scanning through the <code>type</code> flags of a few successive packets, we begin to suspect that these
+values might be ASCII codes, given the lower/upper bounds. If we manually take the first 3 codes
+<code>(71, 73, 70)</code> and convert them, we get:</p>
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-sh" data-lang="sh"><span style="color:#66d9ef">for</span> num in <span style="color:#ae81ff">71</span> <span style="color:#ae81ff">73</span> 70; <span style="color:#66d9ef">do</span> 
+  ascii<span style="color:#f92672">=</span><span style="color:#e6db74">&#34;</span><span style="color:#66d9ef">$(</span>printf <span style="color:#e6db74">&#39;%03o&#39;</span> $num<span style="color:#66d9ef">)</span><span style="color:#e6db74">&#34;</span>
+  printf <span style="color:#e6db74">&#34;</span><span style="color:#e6db74">\\</span><span style="color:#e6db74">${</span>ascii<span style="color:#e6db74">}</span><span style="color:#e6db74">&#34;</span>
+<span style="color:#66d9ef">done</span>
+
+&gt; GIF
+</code></pre></div><p>It appears we have a GIF file header in some ICMP traffic. Strange indeed.  At this point, we
+decide that switching to a programatic approach might be easier. Python's <code>scapy</code> library is a handy
+packet parsing tool I've used in the past.</p>
+<p>Let's fire up the iPython REPL and import our tools:</p>
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-python" data-lang="python"><span style="color:#f92672">from</span> scapy.all <span style="color:#f92672">import</span> IP, ICMP, rdpcap
+pcap <span style="color:#f92672">=</span> rdpcap(<span style="color:#e6db74"></span><span style="color:#e6db74">&#39;</span><span style="color:#e6db74">data.pcap</span><span style="color:#e6db74">&#39;</span>)
+</code></pre></div><p>We're going to want to filter out all of our ICMP packets:</p>
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-python" data-lang="python">packets <span style="color:#f92672">=</span> [p <span style="color:#66d9ef">for</span> p <span style="color:#f92672">in</span> pcap <span style="color:#66d9ef">if</span> ICMP <span style="color:#f92672">in</span> p]
+</code></pre></div><p><img src="4.png" alt=""></p>
+<p>Since the values used for the <code>type</code> flag span the entire ASCII range, it's a statistical
+probability that this ICMP traffic will send a legitimate ICMP echo request. That means we'll get
+legitimate responses in our PCAP data. We can isolate requests by specifying that we only want ICMP
+packets that are <em>leaving</em> a particular source.</p>
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-python" data-lang="python">packets <span style="color:#f92672">=</span> [p <span style="color:#66d9ef">for</span> p <span style="color:#f92672">in</span> packets <span style="color:#66d9ef">if</span> p[IP]<span style="color:#f92672">.</span>src <span style="color:#f92672">==</span> <span style="color:#e6db74"></span><span style="color:#e6db74">&#39;</span><span style="color:#e6db74">10.136.255.127</span><span style="color:#e6db74">&#39;</span>]
+</code></pre></div><p>Now we have a handle on all ICMP traffic leaving 10.136.255.127. The next step is to convert
+everything from ASCII codes to their corresponding characters and write to disk.</p>
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-python" data-lang="python"><span style="color:#75715e"># take type flag of each packet</span>
+ascii <span style="color:#f92672">=</span> [p[ICMP]<span style="color:#f92672">.</span>type <span style="color:#66d9ef">for</span> p <span style="color:#f92672">in</span> packets]
+
+<span style="color:#75715e"># convert them to character string</span>
+chars <span style="color:#f92672">=</span> [chr(x) <span style="color:#66d9ef">for</span> x <span style="color:#f92672">in</span> ascii]
+data <span style="color:#f92672">=</span> <span style="color:#e6db74"></span><span style="color:#e6db74">&#34;</span><span style="color:#e6db74">&#34;</span><span style="color:#f92672">.</span>join(chars)
+
+<span style="color:#75715e"># write the data to a file</span>
+<span style="color:#66d9ef">with</span> open(<span style="color:#e6db74"></span><span style="color:#e6db74">&#39;</span><span style="color:#e6db74">mystery.file</span><span style="color:#e6db74">&#39;</span>, <span style="color:#e6db74"></span><span style="color:#e6db74">&#39;</span><span style="color:#e6db74">w</span><span style="color:#e6db74">&#39;</span>) <span style="color:#66d9ef">as</span> f:
+    f<span style="color:#f92672">.</span>write(data)
+</code></pre></div><p>What exactly is this file?</p>
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-sh" data-lang="sh">file mystery.file
+</code></pre></div><p><img src="5.png" alt=""></p>
+<p>And we have our data. If we want to go back and clean up some of the code and make it somewhat
+reusable&hellip;</p>
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-python" data-lang="python"><span style="color:#f92672">from</span> scapy.all <span style="color:#f92672">import</span> IP, ICMP, rdpcap
+
+FILE <span style="color:#f92672">=</span> <span style="color:#e6db74"></span><span style="color:#e6db74">&#39;</span><span style="color:#e6db74">data.pcap</span><span style="color:#e6db74">&#39;</span>
+SOURCE_IP <span style="color:#f92672">=</span> <span style="color:#e6db74"></span><span style="color:#e6db74">&#39;</span><span style="color:#e6db74">10.136.255.127</span><span style="color:#e6db74">&#39;</span>
+PROTO <span style="color:#f92672">=</span> ICMP
+
+
+<span style="color:#66d9ef">def</span> <span style="color:#a6e22e">filter_op</span>(pkt):
+    <span style="color:#e6db74"></span><span style="color:#e6db74">&#34;&#34;&#34;</span><span style="color:#e6db74">Filter operation for [PROTO] and [SRC_IP]</span><span style="color:#e6db74">&#34;&#34;&#34;</span>
+    <span style="color:#66d9ef">return</span> PROTO <span style="color:#f92672">in</span> pkt <span style="color:#f92672">and</span> pkt[IP]<span style="color:#f92672">.</span>src <span style="color:#f92672">==</span> SOURCE_IP
+
+<span style="color:#66d9ef">def</span> <span style="color:#a6e22e">ascii_convert</span>(pkt):
+    <span style="color:#e6db74"></span><span style="color:#e6db74">&#34;&#34;&#34;</span><span style="color:#e6db74">Map function to convert ASCII values to text</span><span style="color:#e6db74">&#34;&#34;&#34;</span>
+    <span style="color:#66d9ef">return</span> chr(pkt[PROTO]<span style="color:#f92672">.</span>type
+
+server_icmp <span style="color:#f92672">=</span> filter(filter_op, rdpcap(FILE))
+data <span style="color:#f92672">=</span> map(ascii_convert, server_icmp)
+
+<span style="color:#66d9ef">with</span> open(<span style="color:#e6db74"></span><span style="color:#e6db74">&#39;</span><span style="color:#e6db74">mystery.file</span><span style="color:#e6db74">&#39;</span>, <span style="color:#e6db74"></span><span style="color:#e6db74">&#39;</span><span style="color:#e6db74">w</span><span style="color:#e6db74">&#39;</span>) <span style="color:#66d9ef">as</span> f:
+    f<span style="color:#f92672">.</span>write(<span style="color:#e6db74"></span><span style="color:#e6db74">&#34;</span><span style="color:#e6db74">&#34;</span><span style="color:#f92672">.</span>join(data))
+
+</code></pre></div><p>In this example, our packet capture contained a single file, the GIF. Not a likely scenario in a
+real-world investigation. If an attacker had initiated an ICMP shell or downloaded multiple files,
+it would be difficult to tell where one file ends and another begins. In this example, <code>binwalk</code>
+could help us extract the multiple files.</p>
+<p>To simulate this scenario, add the following line to our script, just before with write-to-disk
+operation:</p>
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-python" data-lang="python">data <span style="color:#f92672">=</span> data <span style="color:#f92672">+</span> data <span style="color:#f92672">+</span> data
+</code></pre></div><p>After running the python file again, we can run the resulting file through binwalk.</p>
+<p><img src="6.png" alt=""></p>
+<p>Binwalk was able to find 3 distinct files embedded in the dumped data from our script.</p>
+<p><a href="data.pcap">Here's</a> the PCAP for those playing the home game. Happy hunting.</p>
+
+            </div>
+        </article>
+
+        <hr />
+
+        <div class="post-info">
+
+            <p><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-file-text"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path><polyline points="14 2 14 8 20 8"></polyline><line x1="16" y1="13" x2="8" y2="13"></line><line x1="16" y1="17" x2="8" y2="17"></line><polyline points="10 9 9 9 8 9"></polyline></svg>754 Words</p>
+
+            <p><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-calendar"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect><line x1="16" y1="2" x2="16" y2="6"></line><line x1="8" y1="2" x2="8" y2="6"></line><line x1="3" y1="10" x2="21" y2="10"></line></svg>2018-05-11 20:06 -0400</p>
+        </div>
+
+        
+            <div class="pagination">
+                <div class="pagination__title">
+                    <span class="pagination__title-h"></span>
+                    <hr />
+                </div>
+
+                <div class="pagination__buttons">
+                    
+                        <span class="button previous">
+                            <a href="https://sec.alexflor.es/posts/2018/12/mind-your-oopsec/">
+                                <span class="button__icon">←</span>
+                                <span class="button__text">Mind Your OOPSEC</span>
+                            </a>
+                        </span>
+                    
+
+                    
+                        <span class="button next">
+                            <a href="https://sec.alexflor.es/posts/2018/04/password-spraying-with-doxycannon/">
+                                <span class="button__text">Password Spraying with DoxyCannon</span>
+                                <span class="button__icon">→</span>
+                            </a>
+                        </span>
+                    
+                </div>
+            </div>
+        
+
+        
+    </main>
+
+            </div>
+
+            
+                <footer class="footer">
+    <div class="footer__inner">
+        <div class="footer__content">
+            <span>&copy; 2019</span>
+            
+                <span><a href="https://sec.alexflor.es">[audible]blink</a></span>
+            
+            <span></span>
+            <span> <a href="https://sec.alexflor.es/posts/index.xml" target="_blank" title="rss"><svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-rss"><path d="M4 11a9 9 0 0 1 9 9"></path><path d="M4 4a16 16 0 0 1 16 16"></path><circle cx="5" cy="19" r="1"></circle></svg></a></span>
+        </div>
+    </div>
+    <div class="footer__inner">
+        <div class="footer__content">
+        </div>
+    </div>
+</footer>
+
+            
+        </div>
+
+        
+
+
+
+
+<script type="text/javascript" src="/bundle.min.2d5469329143160ae2456a69c3c76dc2d0a3b212b46afe291a51bd68650ed6f8697e001dab54f1c272c77ce08092a8c55e5bb4314e0ee334aab4b927ec896638.js" integrity="sha512-LVRpMpFDFgriRWppw8dtwtCjshK0av4pGlG9aGUO1vhpfgAdq1TxwnLHfOCAkqjFXlu0MU4O4zSqtLkn7IlmOA=="></script>
+    <script>
+        (function(i,s,o,g,r,a,m){i['GoogleAnalyticsObject']=r;i[r]=i[r]||function(){
+        (i[r].q=i[r].q||[]).push(arguments)},i[r].l=1*new Date();a=s.createElement(o),
+        m=s.getElementsByTagName(o)[0];a.async=1;a.src=g;m.parentNode.insertBefore(a,m)
+        })(window,document,'script','//www.google-analytics.com/analytics.js','ga');
+        ga('create', 'UA-12497311-8', 'auto');
+        ga('send', 'pageview');
+    </script>
+
+
+
+    </body>
+</html>

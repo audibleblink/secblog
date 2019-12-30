@@ -1,0 +1,363 @@
+<!DOCTYPE html>
+<html lang="en">
+    <head>
+        <meta charset="UTF-8">
+<meta http-equiv="X-UA-Compatible" content="ie=edge">
+<meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+<meta name="author" content="">
+<meta name="description" content="Python (and all other scripting languages) use the host system&#39;s name resolution APIs. Skip the bottleneck and craft the DNS packets manually.
+" />
+<meta name="keywords" content="[security vulnhub red team hackthebox blue team]" />
+<meta name="robots" content="noodp" />
+<meta name="theme-color" content="" />
+<link rel="canonical" href="https://sec.alexflor.es/posts/subdomain_enum/" />
+
+
+    <title>
+        
+            Stop Using Python for Subdomain Enumeration :: &#34; r e s e a r c h &#34; 
+        
+    </title>
+
+
+
+<link href="https://cdnjs.cloudflare.com/ajax/libs/flag-icon-css/3.2.1/css/flag-icon.min.css" rel="stylesheet"
+    type="text/css">
+
+
+
+<link rel="stylesheet" href="/main.min.5dcefbf8102eb536dd3e2de53ffebfa58599ab2435c241a0db81728a5e015f2e.css">
+
+
+
+
+<meta itemprop="name" content="Stop Using Python for Subdomain Enumeration">
+<meta itemprop="description" content="Oh, hello. I see you brought your pitchforks">
+<meta itemprop="datePublished" content="2019-04-20T13:02:17-04:00" />
+<meta itemprop="dateModified" content="2019-04-20T13:02:17-04:00" />
+<meta itemprop="wordCount" content="842">
+
+
+
+<meta itemprop="keywords" content="" /><meta name="twitter:card" content="summary"/>
+<meta name="twitter:title" content="Stop Using Python for Subdomain Enumeration"/>
+<meta name="twitter:description" content="Oh, hello. I see you brought your pitchforks"/>
+
+
+
+
+
+    <meta property="article:published_time" content="2019-04-20 13:02:17 -0400 EDT" />
+
+
+
+
+
+
+
+
+    </head>
+
+    <body class="dark-theme">
+        <div class="container">
+            <header class="header">
+    <span class="header__inner">
+        <a href="/" style="text-decoration: none;">
+    <div class="logo">
+        
+            <span class="logo__mark">></span>
+            <span class="logo__text">$ cd /home/</span>
+            <span class="logo__cursor" style=""></span>
+        
+    </div>
+</a>
+
+
+        <span class="header__right">
+            
+                <nav class="menu">
+    <ul class="menu__inner"><li><a href="https://sec.alexflor.es/posts/imf_walkthrough/">B2R: IMF Walkthrough</a></li><li><a href="https://sec.alexflor.es/posts/sickos_1.2/">B2R: SickOSv1.2</a></li><li><a href="https://sec.alexflor.es/posts/b2r_troll_walkthrough/">B2R: Tr0ll Walkthrough</a></li><li><a href="https://sec.alexflor.es/posts/wallaby/">B2R: Wallaby Walkthrough</a></li><li><a href="https://sec.alexflor.es/posts/ssh_pivoting/">Configuring SSH for Pivoting</a></li><li><a href="https://sec.alexflor.es/posts/bashbunny/">Creating BashBunny Payloads</a></li><li><a href="https://sec.alexflor.es/posts/egress-ports/">Finding Your Way Out From Behind Firewalls with Strict Outbound Rules</a></li><li><a href="https://sec.alexflor.es/posts/">Posts</a></li>
+    </ul>
+</nav>
+
+                <span class="menu-trigger">
+                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24">
+                        <path d="M0 0h24v24H0z" fill="none"/>
+                        <path d="M3 18h18v-2H3v2zm0-5h18v-2H3v2zm0-7v2h18V6H3z"/>
+                    </svg>
+                </span>
+            
+
+            <span class="theme-toggle unselectable"><svg class="theme-toggler" width="24" height="24" viewBox="0 0 48 48" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <path d="M22 41C32.4934 41 41 32.4934 41 22C41 11.5066 32.4934 3 22
+  3C11.5066 3 3 11.5066 3 22C3 32.4934 11.5066 41 22 41ZM7 22C7
+  13.7157 13.7157 7 22 7V37C13.7157 37 7 30.2843 7 22Z"/>
+</svg>
+</span>
+        </span>
+    </span>
+</header>
+
+
+            <div class="content">
+                
+    <main class="post">
+
+        <div class="post-info">
+            <p><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-clock"><circle cx="12" cy="12" r="10"></circle><polyline points="12 6 12 12 16 14"></polyline></svg>4 minutes
+
+            
+
+            </p>
+        </div>
+
+        <article>
+            <h1 class="post-title">
+                <a href="https://sec.alexflor.es/posts/subdomain_enum/">Stop Using Python for Subdomain Enumeration</a>
+            </h1>
+
+            
+
+            <div class="post-content">
+                <p>Python (and all other scripting languages) use the host system's name resolution APIs.
+Skip the bottleneck and craft the DNS packets manually.</p>
+<h2 id="setup">Setup</h2>
+<p><strong>Tools Tested</strong>:</p>
+<ul>
+<li>Subbrute - <a href="https://github.com/TheRook/subbrute">https://github.com/TheRook/subbrute</a></li>
+<li>Fernmelder - <a href="https://github.com/stealth/fernmelder">https://github.com/stealth/fernmelder</a></li>
+<li>Amass - <a href="https://github.com/OWASP/Amass">https://github.com/OWASP/Amass</a></li>
+</ul>
+<p><strong>Wordlist</strong>:</p>
+<ul>
+<li><a href="https://github.com/danielmiessler/SecLists">Seclists</a> - Discovery/DNS/subdomains-top1mil-110000.txt</li>
+</ul>
+<p><strong>DNS Resolvers</strong>:</p>
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-txt" data-lang="txt">4.2.2.1
+1.1.1.1
+8.8.8.8
+64.6.64.6
+77.88.8.8
+74.82.42.42
+4.2.2.2
+1.0.0.1
+8.8.4.4
+4.2.2.3
+9.9.9.10
+64.6.65.6
+77.88.8.1
+4.2.2.4
+</code></pre></div><h2 id="results">Results</h2>
+<p><em>tests performed on WiFi. YMMV.</em></p>
+<table>
+<thead>
+<tr>
+<th>Tool</th>
+<th>Command</th>
+<th>Result</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>SubBrute</td>
+<td><code>./subbrute.py -s top110k.txt -r resolvers.txt example.com</code></td>
+<td><code>7.79s user 1.67s system 1% cpu 15:37.04 total</code></td>
+</tr>
+<tr>
+<td>Amass</td>
+<td><code>amass -d example.com -brute -w top110k.txt -noalts -norecursive</code></td>
+<td><code>87.49s user 71.32s system 44% cpu 5:54.27 total</code></td>
+</tr>
+<tr>
+<td>Fernmelder</td>
+<td><code>awk '{print $1&quot;.example.com&quot;}' top110k.txt \| fernmelder -4 -N 4.2.2.1 -N 1.1.1.1 -N 8.8.8.8 -N 64.6.64.6 -N 77.88.8.8 -N 74.82.42.42 -N 4.2.2.2 -N 1.0.0.1 -N 8.8.4.4 -N 4.2.2.3 -N 9.9.9.10 -N 64.6.65.6 -N 77.88.8.1 -N 4.2.2.4 -A</code></td>
+<td><code>3.17s user 10.56s system 6% cpu 3:24.90 total </code></td>
+</tr>
+</tbody>
+</table>
+<h2 id="background">Background</h2>
+<p>A few years ago I was introduced to a tool called Fernmelder for DNS subdomain enumeration. I'd
+already been using tools like SubBrute and sublister for this purpose but my friend insisted I try
+Fernmelder. It's a bit old school in the way it handles its inputs, as you can see from the chart
+above. After trying it out, I was blown away and started using it exclusively. Enumerations that
+typically lasted a few minutes were done in mere seconds.</p>
+<p>Why was it so much faster? Was it because Fernmelder is written in C? Well, probably, but it turns
+out that Fernmelder manually crafts DNS queries and sends them straight down TCP socket
+connections.  But still, why is this faster?</p>
+<p>When an interpreted language requests an IP address for a hostname, this request gets passed up to
+the runtime. The runtime interacts with the operating system, which in turn queries its
+preconfigured DNS server. In Linux, the syscall responsible for doing this would be <code>glibc</code>'s
+<a href="http://man7.org/linux/man-pages/man3/gethostbyname.3.html"><code>gethostbyname</code></a>.
+It will do this for each hostname you're trying to enumerate. That ends up being a lot of overhead
+when trying to blast through 3 million DNS requests.</p>
+<p>Some other tools that also assist in enumerating subdomains are Amass and SubBrute. Many of these
+subdomain enumeration tools do much more than just attempt to resolve names from a wordlist. Amass
+is essentially a suite of host enumeration tools and as such would be a more viable tool for use by
+a professional tester. For the purposes of this post, though, we're just looking at raw speed
+regarding hostname resolution.</p>
+<h2 id="analysis">&ldquo;Analysis&rdquo;</h2>
+<p>I'll compare the difference in implementation between Amass and SubBrute. (I don't know C well
+enough to explain Fernmelder). Amass is similar to Fernmelder in that it manually creates the
+DNS request packet.</p>
+<p>Looking at the
+<a href="https://github.com/OWASP/Amass/blob/7c1b5cd946e5d97c802a3559b845e7debc1e2008/amass/resolvers.go#L599-L619">relevant Amass source code</a>
+, we can see the creation of the request packet in the <code>queryMessage</code> function.</p>
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-go" data-lang="go"><span style="color:#75715e">// https://github.com/OWASP/Amass/blob/7c1b5cd946e5d97c802a3559b845e7debc1e2008/amass/resolvers.go#L599-L619
+</span><span style="color:#75715e"></span>
+<span style="color:#66d9ef">func</span> <span style="color:#a6e22e">queryMessage</span>(<span style="color:#a6e22e">id</span> <span style="color:#66d9ef">uint16</span>, <span style="color:#a6e22e">name</span> <span style="color:#66d9ef">string</span>, <span style="color:#a6e22e">qtype</span> <span style="color:#66d9ef">uint16</span>) <span style="color:#f92672">*</span><span style="color:#a6e22e">dns</span>.<span style="color:#a6e22e">Msg</span> {
+	<span style="color:#a6e22e">m</span> <span style="color:#f92672">:=</span> <span style="color:#f92672">&amp;</span><span style="color:#a6e22e">dns</span>.<span style="color:#a6e22e">Msg</span>{
+		<span style="color:#a6e22e">MsgHdr</span>: <span style="color:#a6e22e">dns</span>.<span style="color:#a6e22e">MsgHdr</span>{
+			<span style="color:#a6e22e">Authoritative</span>:     <span style="color:#66d9ef">false</span>,
+			<span style="color:#a6e22e">AuthenticatedData</span>: <span style="color:#66d9ef">false</span>,
+			<span style="color:#a6e22e">CheckingDisabled</span>:  <span style="color:#66d9ef">false</span>,
+			<span style="color:#a6e22e">RecursionDesired</span>:  <span style="color:#66d9ef">true</span>,
+			<span style="color:#a6e22e">Opcode</span>:            <span style="color:#a6e22e">dns</span>.<span style="color:#a6e22e">OpcodeQuery</span>,
+			<span style="color:#a6e22e">Id</span>:                <span style="color:#a6e22e">id</span>,
+			<span style="color:#a6e22e">Rcode</span>:             <span style="color:#a6e22e">dns</span>.<span style="color:#a6e22e">RcodeSuccess</span>,
+		},
+		<span style="color:#a6e22e">Question</span>: make([]<span style="color:#a6e22e">dns</span>.<span style="color:#a6e22e">Question</span>, <span style="color:#ae81ff">1</span>),
+	}
+	<span style="color:#a6e22e">m</span>.<span style="color:#a6e22e">Question</span>[<span style="color:#ae81ff">0</span>] = <span style="color:#a6e22e">dns</span>.<span style="color:#a6e22e">Question</span>{
+		<span style="color:#a6e22e">Name</span>:   <span style="color:#a6e22e">dns</span>.<span style="color:#a6e22e">Fqdn</span>(<span style="color:#a6e22e">name</span>),
+		<span style="color:#a6e22e">Qtype</span>:  <span style="color:#a6e22e">qtype</span>,
+		<span style="color:#a6e22e">Qclass</span>: uint16(<span style="color:#a6e22e">dns</span>.<span style="color:#a6e22e">ClassINET</span>),
+	}
+	<span style="color:#a6e22e">m</span>.<span style="color:#a6e22e">Extra</span> = append(<span style="color:#a6e22e">m</span>.<span style="color:#a6e22e">Extra</span>, <span style="color:#a6e22e">setupOptions</span>())
+	<span style="color:#66d9ef">return</span> <span style="color:#a6e22e">m</span>
+}
+</code></pre></div><p>This function is called from a Resolver's private <code>writeMessage</code> function. See line 4 below.</p>
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-go" data-lang="go"><span style="color:#75715e">// https://github.com/OWASP/Amass/blob/7c1b5cd946e5d97c802a3559b845e7debc1e2008/amass/resolvers.go#L261-L275
+</span><span style="color:#75715e"></span>
+<span style="color:#66d9ef">func</span> (<span style="color:#a6e22e">r</span> <span style="color:#f92672">*</span><span style="color:#a6e22e">resolver</span>) <span style="color:#a6e22e">writeMessage</span>(<span style="color:#a6e22e">co</span> <span style="color:#f92672">*</span><span style="color:#a6e22e">dns</span>.<span style="color:#a6e22e">Conn</span>, <span style="color:#a6e22e">req</span> <span style="color:#f92672">*</span><span style="color:#a6e22e">resolveRequest</span>) {
+	<span style="color:#a6e22e">msg</span> <span style="color:#f92672">:=</span> <span style="color:#a6e22e">queryMessage</span>(<span style="color:#a6e22e">r</span>.<span style="color:#a6e22e">getID</span>(), <span style="color:#a6e22e">req</span>.<span style="color:#a6e22e">Name</span>, <span style="color:#a6e22e">req</span>.<span style="color:#a6e22e">Qtype</span>)
+
+	<span style="color:#a6e22e">co</span>.<span style="color:#a6e22e">SetWriteDeadline</span>(<span style="color:#a6e22e">time</span>.<span style="color:#a6e22e">Now</span>().<span style="color:#a6e22e">Add</span>(<span style="color:#a6e22e">r</span>.<span style="color:#a6e22e">WindowDuration</span>))
+	<span style="color:#66d9ef">if</span> <span style="color:#a6e22e">err</span> <span style="color:#f92672">:=</span> <span style="color:#a6e22e">co</span>.<span style="color:#a6e22e">WriteMsg</span>(<span style="color:#a6e22e">msg</span>); <span style="color:#a6e22e">err</span> <span style="color:#f92672">!=</span> <span style="color:#66d9ef">nil</span> {
+		<span style="color:#a6e22e">r</span>.<span style="color:#a6e22e">pullRequest</span>(<span style="color:#a6e22e">msg</span>.<span style="color:#a6e22e">MsgHdr</span>.<span style="color:#a6e22e">Id</span>)
+		<span style="color:#a6e22e">estr</span> <span style="color:#f92672">:=</span> <span style="color:#a6e22e">fmt</span>.<span style="color:#a6e22e">Sprintf</span>(<span style="color:#e6db74">&#34;DNS error: Failed to write query msg: %v&#34;</span>, <span style="color:#a6e22e">err</span>)
+		<span style="color:#a6e22e">r</span>.<span style="color:#a6e22e">returnRequest</span>(<span style="color:#a6e22e">req</span>, <span style="color:#a6e22e">makeResolveResult</span>(<span style="color:#66d9ef">nil</span>, <span style="color:#66d9ef">true</span>, <span style="color:#a6e22e">estr</span>, <span style="color:#ae81ff">100</span>))
+		<span style="color:#66d9ef">return</span>
+	}
+
+	<span style="color:#a6e22e">req</span>.<span style="color:#a6e22e">Timestamp</span> = <span style="color:#a6e22e">time</span>.<span style="color:#a6e22e">Now</span>()
+	<span style="color:#a6e22e">r</span>.<span style="color:#a6e22e">queueRequest</span>(<span style="color:#a6e22e">msg</span>.<span style="color:#a6e22e">MsgHdr</span>.<span style="color:#a6e22e">Id</span>, <span style="color:#a6e22e">req</span>)
+	<span style="color:#a6e22e">r</span>.<span style="color:#a6e22e">updatesAttempts</span>()
+}
+</code></pre></div><p>Amass will then add this request to an in-memory queue where a separate goroutine processes the
+job.</p>
+<p>Compare this to SubBrute. Even though SubBrute can operate on multiple threads, it's still bound to
+the eventual calling of the operating system's DNS query mechanism here:</p>
+<p><code>query = dnslib.DNSRecord.question(hostname, query_type.upper().strip())</code></p>
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-python" data-lang="python"><span style="color:#75715e"># https://github.com/TheRook/subbrute/blob/master/subbrute.py#L53-L64</span>
+<span style="color:#66d9ef">def</span> <span style="color:#a6e22e">query</span>(self, hostname, query_type <span style="color:#f92672">=</span> <span style="color:#e6db74"></span><span style="color:#e6db74">&#39;</span><span style="color:#e6db74">ANY</span><span style="color:#e6db74">&#39;</span>, name_server <span style="color:#f92672">=</span> False, use_tcp <span style="color:#f92672">=</span> False):
+    ret <span style="color:#f92672">=</span> []
+    response <span style="color:#f92672">=</span> None
+    <span style="color:#66d9ef">if</span> name_server <span style="color:#f92672">==</span> False:
+        name_server <span style="color:#f92672">=</span> self<span style="color:#f92672">.</span>get_ns()
+    <span style="color:#66d9ef">else</span>:
+        self<span style="color:#f92672">.</span>wildcards <span style="color:#f92672">=</span> {}
+        self<span style="color:#f92672">.</span>failed_code <span style="color:#f92672">=</span> None
+    self<span style="color:#f92672">.</span>last_resolver <span style="color:#f92672">=</span> name_server
+    query <span style="color:#f92672">=</span> dnslib<span style="color:#f92672">.</span>DNSRecord<span style="color:#f92672">.</span>question(hostname, query_type<span style="color:#f92672">.</span>upper()<span style="color:#f92672">.</span>strip())
+    <span style="color:#66d9ef">try</span>:
+        response_q <span style="color:#f92672">=</span> query<span style="color:#f92672">.</span>send(name_server, <span style="color:#ae81ff">53</span>, use_tcp, timeout <span style="color:#f92672">=</span> <span style="color:#ae81ff">30</span>)
+
+</code></pre></div><h2 id="conclusion">Conclusion</h2>
+<p>Fernmelder clocked in at 3.5 minutes. Next comes Amass at 6 minutes, and far behind is SubBrute.</p>
+<p>Am I really all that concerned with saving 10 minutes on a task that is probably only run once
+during a campaign? Should you be? Most certainly not, but I was curious enough at the discrepancy
+in time and found the result interesting enough to share.</p>
+<p>In regards to our third place test-case, this could really be any tool that relies on an OS API
+call for name resolution. Perhaps in a future blog post I'll compare apples to apples and create a
+python tool that manually crafts DNS request packets and sends them down a wire. That would be an
+interesting test.</p>
+<p>Overall, I'll probably move forward using Amass, given the plethora of other utilities available
+within it. Despite my appreciation for Fernmelder's charming old-school interface of taking STDIN
+and its speed, Amass, while not the fastest in this one specific task, seems the more viable
+Professional's tool.</p>
+            </div>
+        </article>
+
+        <hr />
+
+        <div class="post-info">
+
+            <p><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-file-text"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path><polyline points="14 2 14 8 20 8"></polyline><line x1="16" y1="13" x2="8" y2="13"></line><line x1="16" y1="17" x2="8" y2="17"></line><polyline points="10 9 9 9 8 9"></polyline></svg>842 Words</p>
+
+            <p><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-calendar"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect><line x1="16" y1="2" x2="16" y2="6"></line><line x1="8" y1="2" x2="8" y2="6"></line><line x1="3" y1="10" x2="21" y2="10"></line></svg>2019-04-20 13:02 -0400</p>
+        </div>
+
+        
+            <div class="pagination">
+                <div class="pagination__title">
+                    <span class="pagination__title-h"></span>
+                    <hr />
+                </div>
+
+                <div class="pagination__buttons">
+                    
+                        <span class="button previous">
+                            <a href="https://sec.alexflor.es/posts/passdb/">
+                                <span class="button__icon">←</span>
+                                <span class="button__text">Password Dump Database - Part 1</span>
+                            </a>
+                        </span>
+                    
+
+                    
+                        <span class="button next">
+                            <a href="https://sec.alexflor.es/posts/vm_gateway/">
+                                <span class="button__text">Mind Your OOPSEC</span>
+                                <span class="button__icon">→</span>
+                            </a>
+                        </span>
+                    
+                </div>
+            </div>
+        
+
+        
+    </main>
+
+            </div>
+
+            
+                <footer class="footer">
+    <div class="footer__inner">
+        <div class="footer__content">
+            <span>&copy; 2019</span>
+            
+            <span></span>
+            <span> <a href="https://sec.alexflor.es/posts/index.xml" target="_blank" title="rss"><svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-rss"><path d="M4 11a9 9 0 0 1 9 9"></path><path d="M4 4a16 16 0 0 1 16 16"></path><circle cx="5" cy="19" r="1"></circle></svg></a></span>
+        </div>
+    </div>
+    <div class="footer__inner">
+        <div class="footer__content">
+            <span>Powered by <a href="http://gohugo.io">Hugo</a></span>
+            <span>Made with &#10084; by <a href="https://github.com/rhazdon">rhazdon</a></span>
+        </div>
+    </div>
+</footer>
+
+            
+        </div>
+
+        
+
+
+
+
+<script type="text/javascript" src="/bundle.min.2d5469329143160ae2456a69c3c76dc2d0a3b212b46afe291a51bd68650ed6f8697e001dab54f1c272c77ce08092a8c55e5bb4314e0ee334aab4b927ec896638.js" integrity="sha512-LVRpMpFDFgriRWppw8dtwtCjshK0av4pGlG9aGUO1vhpfgAdq1TxwnLHfOCAkqjFXlu0MU4O4zSqtLkn7IlmOA=="></script>
+    <script>
+        (function(i,s,o,g,r,a,m){i['GoogleAnalyticsObject']=r;i[r]=i[r]||function(){
+        (i[r].q=i[r].q||[]).push(arguments)},i[r].l=1*new Date();a=s.createElement(o),
+        m=s.getElementsByTagName(o)[0];a.async=1;a.src=g;m.parentNode.insertBefore(a,m)
+        })(window,document,'script','//www.google-analytics.com/analytics.js','ga');
+        ga('create', 'UA-12497311-8', 'auto');
+        ga('send', 'pageview');
+    </script>
+
+
+
+    </body>
+</html>
