@@ -31,6 +31,15 @@ Executive Summary This machine had several services running, some of which revea
     </item>
     
     <item>
+      <title>B2R: SickOSv1.2</title>
+      <link>https://sec.alexflor.es/posts/2016/12/b2r-sickosv1.2/</link>
+      <pubDate>Tue, 20 Dec 2016 23:45:50 -0500</pubDate>
+      
+      <guid>https://sec.alexflor.es/posts/2016/12/b2r-sickosv1.2/</guid>
+      <description>Executive Summary This machine had an unprotected folder which allowed uploading of malicious PHP code which could then be executed remotely. An attacker could then create an unprivileged shell on the victim machine and begin to explore the system for additional vulnerabilities which could lead to a full compromise. During the exploration, an outdated version of chkrootkit was found. By exploiting a known vulnerability in the way chkrootkit parses arguments, an attacker could create a malicious file that would later be run by chkrootkit as a fully privileged user.</description>
+    </item>
+    
+    <item>
       <title>B2R: IMF Walkthrough</title>
       <link>https://sec.alexflor.es/posts/2016/11/b2r-imf-walkthrough/</link>
       <pubDate>Tue, 01 Nov 2016 19:16:02 -0400</pubDate>

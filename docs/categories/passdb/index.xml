@@ -1,0 +1,25 @@
+<?xml version="1.0" encoding="utf-8" standalone="yes"?>
+<rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom">
+  <channel>
+    <title>PassDB on [audible]blink&#39;s &#34; r e s e a r c h &#34;</title>
+    <link>https://sec.alexflor.es/categories/passdb/</link>
+    <description>Recent content in PassDB on [audible]blink&#39;s &#34; r e s e a r c h &#34;</description>
+    <generator>Hugo -- gohugo.io</generator>
+    <language>en-us</language>
+    <lastBuildDate>Sat, 28 Sep 2019 19:33:14 -0400</lastBuildDate>
+    
+	<atom:link href="https://sec.alexflor.es/categories/passdb/index.xml" rel="self" type="application/rss+xml" />
+    
+    
+    <item>
+      <title>Password Dump Database - Part 1</title>
+      <link>https://sec.alexflor.es/posts/2019/09/password-dump-database-part-1/</link>
+      <pubDate>Sat, 28 Sep 2019 19:33:14 -0400</pubDate>
+      
+      <guid>https://sec.alexflor.es/posts/2019/09/password-dump-database-part-1/</guid>
+      <description>Preface This post is first in a series where I mostly catalogue my failures, what didn&#39;t work, and the lessons I learned along the way. This isn&#39;t a tool drop, or a new dump. Also, part 2 basically says every choice I make in Part 1 (this part) is wrong. If you&#39;re a DB admin or have experience with manipulating large amounts of data, prepare to cringe&amp;hellip; HARD
+If you&#39;re just interested in some stats and bencharks, you can skip straight to that section</description>
+    </item>
+    
+  </channel>
+</rss>

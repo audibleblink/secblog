@@ -1,8 +1,8 @@
 +++
-menu = "posts"
-date = "2017-02-07T19:44:18-05:00"
 title = "Finding Your Way Out From Behind Firewalls with Strict Outbound Rules"
 Description = "Finding Your Way Out From Behind Firewalls with Strict Outbound Rules"
+date = "2017-02-07T19:44:18-05:00"
+categories = ["HowTo"]
 +++
 
 

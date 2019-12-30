@@ -1,9 +1,9 @@
-+++
-menu = "posts"
-date = "2016-12-20T23:45:50-05:00"
-title = "B2R: SickOSv1.2"
-
-+++
+---
+menu: "posts"
+date: "2016-12-20T23:45:50-05:00"
+title: "B2R: SickOSv1.2"
+categories: [ "Boot2Root" ]
+---
 
 
 

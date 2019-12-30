@@ -1,6 +1,7 @@
 ---
 title: "Mind Your OOPSEC"
 date: 2018-12-30T17:06:30-05:00
+categories: ["HowTo"]
 ---
 
 ![](title.png)

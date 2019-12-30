@@ -1,6 +1,7 @@
 ---
 title: "Password Dump Database - Part 1"
 date: 2019-09-28T19:33:14-04:00
+categories: ["PassDB"]
 ---
 
 ## Preface

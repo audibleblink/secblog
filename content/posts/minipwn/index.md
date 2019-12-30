@@ -1,6 +1,7 @@
 ---
 title: "Abusing Signals with SIGROP Exploits"
 date: 2019-12-28T21:59:34-05:00
+categories: ["Pwn"]
 ---
 
 ![](1.png)

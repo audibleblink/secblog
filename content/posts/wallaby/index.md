@@ -1,10 +1,10 @@
-+++
-menu = "posts"
-Description = "A walkthrough of the Wallaby VM from Vulnhub"
-date = "2016-12-30T19:16:02-04:00"
-title = "B2R: Wallaby Walkthrough"
-Categories = [ "Boot2Root" ]
-+++
+---
+menu: "posts"
+Description: "A walkthrough of the Wallaby VM from Vulnhub"
+date: "2016-12-30T19:16:02-04:00"
+title: "B2R: Wallaby Walkthrough"
+Categories: [ "Boot2Root" ]
+---
 
 ## Executive Summary
 

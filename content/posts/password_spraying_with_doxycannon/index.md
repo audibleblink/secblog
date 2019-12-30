@@ -1,6 +1,7 @@
 ---
 title: "Password Spraying with DoxyCannon"
 date: 2018-04-16T22:43:36-04:00
+Categories: [ "HowTo" ]
 ---
 
 Password sprays are here to stay. It's probably a good idea to configure some clever WAF rules,

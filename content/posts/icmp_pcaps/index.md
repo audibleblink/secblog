@@ -1,6 +1,7 @@
 ---
 title: "Analyzing Data Exfiltration over ICMP"
 date: 2018-05-11T20:06:55-04:00
+categories: [ "HowTo" ]
 ---
 
 ![](title.jpg)

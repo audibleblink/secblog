@@ -1,11 +1,9 @@
-+++
-Description = ""
-Categories = [ "Boot2Root" ]
-menu = "B2R: Stapler"
-date = "2016-12-24T23:45:38-05:00"
-title = "B2R: Stapler"
-+++
-
+---
+title: "B2R: Stapler"
+description: "stapler"
+categories: ["Boot2Root"]
+date: 2016-12-24T23:45:38-05:00
+---
 
 Adding the IP address of the VM to the hosts file allows one to cut down on some typing.
 

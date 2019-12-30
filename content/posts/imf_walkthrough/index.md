@@ -1,5 +1,5 @@
 +++
-menu = "posts"
+menu = "vulnhub"
 Description = "A walkthrough of the IMF VM from Vulnhub"
 date = "2016-11-01T19:16:02-04:00"
 title = "B2R: IMF Walkthrough"

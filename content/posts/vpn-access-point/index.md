@@ -1,6 +1,7 @@
 ---
 title: "Creating a VPN Access Point"
 date: 2017-08-18T20:07:36-04:00
+categories: ["HowTo"]
 ---
 
 

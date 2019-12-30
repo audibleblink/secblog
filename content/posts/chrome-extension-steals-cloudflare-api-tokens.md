@@ -1,7 +1,6 @@
 ---
 title: "Chrome Extension Steals Cloudflare Api Tokens"
 date: 2017-08-03T20:59:56-04:00
-
 ---
 
 
