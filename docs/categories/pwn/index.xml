@@ -1,9 +1,9 @@
 <?xml version="1.0" encoding="utf-8" standalone="yes"?>
 <rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom">
   <channel>
-    <title>Pwn on [audible]blink&#39;s &#34; r e s e a r c h &#34;</title>
+    <title>Pwn on [audible]blink</title>
     <link>https://sec.alexflor.es/categories/pwn/</link>
-    <description>Recent content in Pwn on [audible]blink&#39;s &#34; r e s e a r c h &#34;</description>
+    <description>Recent content in Pwn on [audible]blink</description>
     <generator>Hugo -- gohugo.io</generator>
     <language>en-us</language>
     <lastBuildDate>Sat, 28 Dec 2019 21:59:34 -0500</lastBuildDate>

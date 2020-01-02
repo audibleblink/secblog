@@ -1,5 +1,5 @@
 baseurl = "https://sec.alexflor.es"
-title = "[audible]blink's \" r e s e a r c h \""
+title = "[audible]blink"
 
 theme = "hello-friend-ng"
 languageCode = "en-us"
@@ -40,6 +40,10 @@ publishDir = "docs"
     name = "keybase"
     url = "https://keybase.io/serveradmin"
 
+  [[params.social]]
+    name = "hackthebox"
+    url = "https://www.hackthebox.eu/profile/1496"
+
 [taxonomies]
   tag = "tags"
   category = "categories"
@@ -50,7 +54,3 @@ publishDir = "docs"
     name       = "Posts"
     url        = "posts/"
 
-  [[menu.main]]
-    identifier = "categories"
-    name       = "Categories"
-    url        = "categories/"
