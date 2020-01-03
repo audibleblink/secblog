@@ -6,19 +6,10 @@
     <description>Recent content in Categories on [audible]blink</description>
     <generator>Hugo -- gohugo.io</generator>
     <language>en-us</language>
-    <lastBuildDate>Sat, 28 Dec 2019 21:59:34 -0500</lastBuildDate>
+    <lastBuildDate>Sat, 28 Sep 2019 19:33:14 -0400</lastBuildDate>
     
 	<atom:link href="https://sec.alexflor.es/categories/index.xml" rel="self" type="application/rss+xml" />
     
-    
-    <item>
-      <title>Pwn</title>
-      <link>https://sec.alexflor.es/categories/pwn/</link>
-      <pubDate>Sat, 28 Dec 2019 21:59:34 -0500</pubDate>
-      
-      <guid>https://sec.alexflor.es/categories/pwn/</guid>
-      <description></description>
-    </item>
     
     <item>
       <title>PassDB</title>

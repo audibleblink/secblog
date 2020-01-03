@@ -4,7 +4,42 @@
   
   <url>
     <loc>https://sec.alexflor.es/</loc>
-    <lastmod>2019-12-28T21:59:34-05:00</lastmod>
+    <lastmod>2020-01-04T19:13:37-05:00</lastmod>
+  </url>
+  
+  <url>
+    <loc>https://sec.alexflor.es/tags/exploitdev/</loc>
+    <lastmod>2020-01-04T19:13:37-05:00</lastmod>
+  </url>
+  
+  <url>
+    <loc>https://sec.alexflor.es/posts/</loc>
+    <lastmod>2020-01-04T19:13:37-05:00</lastmod>
+  </url>
+  
+  <url>
+    <loc>https://sec.alexflor.es/posts/2020/01/pwntool-tips-3/</loc>
+    <lastmod>2020-01-04T19:13:37-05:00</lastmod>
+  </url>
+  
+  <url>
+    <loc>https://sec.alexflor.es/tags/pwntools/</loc>
+    <lastmod>2020-01-04T19:13:37-05:00</lastmod>
+  </url>
+  
+  <url>
+    <loc>https://sec.alexflor.es/tags/</loc>
+    <lastmod>2020-01-04T19:13:37-05:00</lastmod>
+  </url>
+  
+  <url>
+    <loc>https://sec.alexflor.es/posts/2020/01/pwntool-tips-2/</loc>
+    <lastmod>2020-01-03T13:13:01-05:00</lastmod>
+  </url>
+  
+  <url>
+    <loc>https://sec.alexflor.es/posts/2020/01/pwntool-tips-1/</loc>
+    <lastmod>2020-01-02T20:56:48-05:00</lastmod>
   </url>
   
   <url>
@@ -18,23 +53,13 @@
   </url>
   
   <url>
-    <loc>https://sec.alexflor.es/categories/</loc>
-    <lastmod>2019-12-28T21:59:34-05:00</lastmod>
-  </url>
-  
-  <url>
-    <loc>https://sec.alexflor.es/posts/</loc>
-    <lastmod>2019-12-28T21:59:34-05:00</lastmod>
-  </url>
-  
-  <url>
     <loc>https://sec.alexflor.es/post/</loc>
     <lastmod>2019-12-28T21:59:34-05:00</lastmod>
   </url>
   
   <url>
-    <loc>https://sec.alexflor.es/categories/pwn/</loc>
-    <lastmod>2019-12-28T21:59:34-05:00</lastmod>
+    <loc>https://sec.alexflor.es/categories/</loc>
+    <lastmod>2019-09-28T19:33:14-04:00</lastmod>
   </url>
   
   <url>
@@ -135,10 +160,6 @@
   <url>
     <loc>https://sec.alexflor.es/posts/2016/10/b2r-tr0ll-walkthrough/</loc>
     <lastmod>2016-10-20T20:57:00-04:00</lastmod>
-  </url>
-  
-  <url>
-    <loc>https://sec.alexflor.es/tags/</loc>
   </url>
   
 </urlset>

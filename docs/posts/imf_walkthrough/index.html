@@ -4,12 +4,12 @@
         <meta charset="UTF-8">
 <meta http-equiv="X-UA-Compatible" content="ie=edge">
 <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
-<meta name="author" content="">
+<meta name="author" content="[audible]blink ">
 <meta name="description" content="After mapping the network and finding our IP address at 192.168.1.162, we can add it to our /etc/hosts temporarily to make things a little easier for us.
 echo &amp;quot;192.168.1.162 imf&amp;quot; &amp;gt;&amp;gt; /etc/hosts Lets see what kind of machine we&#39;re dealing with.
 Ok, so web only. Great. nikto didn&#39;t reveal any low-hanging fruit so let&#39;s dive into the source.
 Check that out! Our first flag was hidden in http://imf/contact.php. This looks like base64." />
-<meta name="keywords" content="[security vulnhub red team hackthebox blue team]" />
+<meta name="keywords" content="hacking, blog, science, infosec, development, programming" />
 <meta name="robots" content="noodp" />
 <meta name="theme-color" content="" />
 <link rel="canonical" href="https://sec.alexflor.es/posts/imf_walkthrough/" />
@@ -17,7 +17,7 @@ Check that out! Our first flag was hidden in http://imf/contact.php. This looks 
 
     <title>
         
-            B2R: IMF Walkthrough :: &#34; r e s e a r c h &#34; 
+            B2R: IMF Walkthrough :: [audible]blink 
         
     </title>
 
@@ -70,7 +70,7 @@ Check that out! Our first flag was hidden in http://imf/contact.php. This looks 
     <div class="logo">
         
             <span class="logo__mark">></span>
-            <span class="logo__text">$ cd /home/</span>
+            <span class="logo__text">$ cd ~/</span>
             <span class="logo__cursor" style=""></span>
         
     </div>
@@ -80,7 +80,7 @@ Check that out! Our first flag was hidden in http://imf/contact.php. This looks 
         <span class="header__right">
             
                 <nav class="menu">
-    <ul class="menu__inner"><li><a href="https://sec.alexflor.es/posts/imf_walkthrough/">B2R: IMF Walkthrough</a></li><li><a href="https://sec.alexflor.es/posts/sickos_1.2/">B2R: SickOSv1.2</a></li><li><a href="https://sec.alexflor.es/posts/b2r_troll_walkthrough/">B2R: Tr0ll Walkthrough</a></li><li><a href="https://sec.alexflor.es/posts/wallaby/">B2R: Wallaby Walkthrough</a></li><li><a href="https://sec.alexflor.es/posts/ssh_pivoting/">Configuring SSH for Pivoting</a></li><li><a href="https://sec.alexflor.es/posts/bashbunny/">Creating BashBunny Payloads</a></li><li><a href="https://sec.alexflor.es/posts/egress-ports/">Finding Your Way Out From Behind Firewalls with Strict Outbound Rules</a></li><li><a href="https://sec.alexflor.es/posts/">Posts</a></li>
+    <ul class="menu__inner"><li><a href="https://sec.alexflor.es/posts/">Posts</a></li>
     </ul>
 </nav>
 
@@ -313,7 +313,9 @@ s.write(exploit + &quot;\n&quot;)
                 <footer class="footer">
     <div class="footer__inner">
         <div class="footer__content">
-            <span>&copy; 2019</span>
+            <span>&copy; 2020</span>
+            
+                <span><a href="https://sec.alexflor.es">[audible]blink</a></span>
             
             <span></span>
             <span> <a href="https://sec.alexflor.es/posts/index.xml" target="_blank" title="rss"><svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-rss"><path d="M4 11a9 9 0 0 1 9 9"></path><path d="M4 4a16 16 0 0 1 16 16"></path><circle cx="5" cy="19" r="1"></circle></svg></a></span>
@@ -321,8 +323,12 @@ s.write(exploit + &quot;\n&quot;)
     </div>
     <div class="footer__inner">
         <div class="footer__content">
-            <span>Powered by <a href="http://gohugo.io">Hugo</a></span>
-            <span>Made with &#10084; by <a href="https://github.com/rhazdon">rhazdon</a></span>
+
+  <div style="margin-top: 1em;" class="container has-text-centered">
+            <img src="https://www.hackthebox.eu/badge/image/1496" alt="Hack The Box">
+  </div>
+
+
         </div>
     </div>
 </footer>

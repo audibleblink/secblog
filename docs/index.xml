@@ -6,10 +6,41 @@
     <description>Recent content on [audible]blink</description>
     <generator>Hugo -- gohugo.io</generator>
     <language>en-us</language>
-    <lastBuildDate>Sat, 28 Dec 2019 21:59:34 -0500</lastBuildDate>
+    <lastBuildDate>Sat, 04 Jan 2020 19:13:37 -0500</lastBuildDate>
     
 	<atom:link href="https://sec.alexflor.es/index.xml" rel="self" type="application/rss+xml" />
     
+    
+    <item>
+      <title>Pwntool Tips 3</title>
+      <link>https://sec.alexflor.es/posts/2020/01/pwntool-tips-3/</link>
+      <pubDate>Sat, 04 Jan 2020 19:13:37 -0500</pubDate>
+      
+      <guid>https://sec.alexflor.es/posts/2020/01/pwntool-tips-3/</guid>
+      <description>Before we start, in part 2 of the series, I demonstrated finding instructions within a binary using elf.search. I passed &amp;quot;\xff\e4&amp;quot; in order to find the address of some jmp rsp instructions. Turns out, just can also use the mnemonics if we pass them through asm() first.
+&amp;#34;&amp;#34;&amp;#34;From yesterday &amp;#34;&amp;#34;&amp;#34; In [2]: e = ELF(&amp;#39;pwnable&amp;#39;) In [3]: next(e.search(&amp;#34;\xff\xe4&amp;#34;)) Out[3]: 159281 &amp;#34;&amp;#34;&amp;#34;Alternate way, with mnenonic &amp;#34;&amp;#34;&amp;#34; In [2]: searcher = e.search( asm(&amp;#34;jmp rsp&amp;#34;) ) In [3]: searcher.</description>
+    </item>
+    
+    <item>
+      <title>Pwntool Tips 2</title>
+      <link>https://sec.alexflor.es/posts/2020/01/pwntool-tips-2/</link>
+      <pubDate>Fri, 03 Jan 2020 13:13:01 -0500</pubDate>
+      
+      <guid>https://sec.alexflor.es/posts/2020/01/pwntool-tips-2/</guid>
+      <description>ELF and ROP Modules Pwntools gives us the ability to interact with ELFs and shared libraries in a programmatic way.
+ Full ELF docs Full ROP docs  ELF fit One of the Class-level members I want to talk about is fit. I&#39;ve had to create lines in my exploit code that look like this:
+buf_len = 128 pad_len = buf_len - (len(gadgets) + len(mprotect)) payload = gadgets payload += mprotect payload += &amp;#34;A&amp;#34; * pad_len payload += canary payload += &amp;#34;A&amp;#34; * 16 # junk payload += jmprsp fit allows you to be declarative about where each of your exploit components should be in your payload.</description>
+    </item>
+    
+    <item>
+      <title>Pwntool Tips 1</title>
+      <link>https://sec.alexflor.es/posts/2020/01/pwntool-tips-1/</link>
+      <pubDate>Thu, 02 Jan 2020 20:56:48 -0500</pubDate>
+      
+      <guid>https://sec.alexflor.es/posts/2020/01/pwntool-tips-1/</guid>
+      <description>Do you like clean exploit scripts? Do you fidget with and refactor them long after you&#39;ve submitted the flag? If so, then this blog series is right up your alley!
+At some point you&#39;ll be developing an exploit that requires you to return to some shared library, most likely libc. Problem is there&#39;s a good chance the libc on your local dev box is not same version as the one on the remote box.</description>
+    </item>
     
     <item>
       <title>Abusing Signals with SIGROP Exploits</title>
