@@ -17,8 +17,7 @@
       <pubDate>Sat, 04 Jan 2020 19:13:37 -0500</pubDate>
       
       <guid>https://sec.alexflor.es/posts/2020/01/pwntool-tips-3/</guid>
-      <description>Before we start, in part 2 of the series, I demonstrated finding instructions within a binary using elf.search. I passed &amp;quot;\xff\e4&amp;quot; in order to find the address of some jmp rsp instructions. Turns out, just can also use the mnemonics if we pass them through asm() first.
-&amp;#34;&amp;#34;&amp;#34;From yesterday &amp;#34;&amp;#34;&amp;#34; In [2]: e = ELF(&amp;#39;pwnable&amp;#39;) In [3]: next(e.search(&amp;#34;\xff\xe4&amp;#34;)) Out[3]: 159281 &amp;#34;&amp;#34;&amp;#34;Alternate way, with mnenonic &amp;#34;&amp;#34;&amp;#34; In [2]: searcher = e.search( asm(&amp;#34;jmp rsp&amp;#34;) ) In [3]: searcher.</description>
+      <description>Before we start, in part 2 of the series I demonstrated finding asm instructions within a binary using the elf.search() function. We passed bytes ff e4 in order to find the address of a jmp rsp instruction. As it turns out, we can use also the mnemonic if we pass it through asm() first. This way, we don&#39;t have to remember that jmp rsp is ff e4 on amd64 architecture.</description>
     </item>
     
     <item>

