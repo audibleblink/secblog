@@ -16,9 +16,9 @@
 <meta http-equiv="X-UA-Compatible" content="ie=edge">
 <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
 <meta name="author" content="[audible]blink ">
-<meta name="description" content="Password sprays are here to stay. It&#39;s probably a good idea to configure some clever WAF rules, implement captcha systems, and set up additional alerting. But once implemented, how do you test and tune your protective measures?
+<meta name="description" content="Password sprays are here to stay. It&amp;rsquo;s probably a good idea to configure some clever WAF rules, implement captcha systems, and set up additional alerting. But once implemented, how do you test and tune your protective measures?
 Enter DoxyCannon
-DoxyCannon&#39;s name borrows from ProxyCannon, a script that instantiates cloud infrastructure through which one can proxy requests. Unlike ProxyCannon, DoxyCannon gives you the same functionality without needing to rely on cloud providers." />
+DoxyCannon&amp;rsquo;s name borrows from ProxyCannon, a script that instantiates cloud infrastructure through which one can proxy requests. Unlike ProxyCannon, DoxyCannon gives you the same functionality without needing to rely on cloud providers." />
 <meta name="keywords" content="hacking, blog, science, infosec, development, programming" />
 <meta name="robots" content="noodp" />
 <meta name="theme-color" content="" />
@@ -44,9 +44,9 @@ DoxyCannon&#39;s name borrows from ProxyCannon, a script that instantiates cloud
 
 
 <meta itemprop="name" content="Password Spraying with DoxyCannon">
-<meta itemprop="description" content="Password sprays are here to stay. It&#39;s probably a good idea to configure some clever WAF rules, implement captcha systems, and set up additional alerting. But once implemented, how do you test and tune your protective measures?
+<meta itemprop="description" content="Password sprays are here to stay. It&rsquo;s probably a good idea to configure some clever WAF rules, implement captcha systems, and set up additional alerting. But once implemented, how do you test and tune your protective measures?
 Enter DoxyCannon
-DoxyCannon&#39;s name borrows from ProxyCannon, a script that instantiates cloud infrastructure through which one can proxy requests. Unlike ProxyCannon, DoxyCannon gives you the same functionality without needing to rely on cloud providers.">
+DoxyCannon&rsquo;s name borrows from ProxyCannon, a script that instantiates cloud infrastructure through which one can proxy requests. Unlike ProxyCannon, DoxyCannon gives you the same functionality without needing to rely on cloud providers.">
 <meta itemprop="datePublished" content="2018-04-16T22:43:36-04:00" />
 <meta itemprop="dateModified" content="2018-04-16T22:43:36-04:00" />
 <meta itemprop="wordCount" content="415">
@@ -55,9 +55,9 @@ DoxyCannon&#39;s name borrows from ProxyCannon, a script that instantiates cloud
 
 <meta itemprop="keywords" content="" /><meta name="twitter:card" content="summary"/>
 <meta name="twitter:title" content="Password Spraying with DoxyCannon"/>
-<meta name="twitter:description" content="Password sprays are here to stay. It&#39;s probably a good idea to configure some clever WAF rules, implement captcha systems, and set up additional alerting. But once implemented, how do you test and tune your protective measures?
+<meta name="twitter:description" content="Password sprays are here to stay. It&rsquo;s probably a good idea to configure some clever WAF rules, implement captcha systems, and set up additional alerting. But once implemented, how do you test and tune your protective measures?
 Enter DoxyCannon
-DoxyCannon&#39;s name borrows from ProxyCannon, a script that instantiates cloud infrastructure through which one can proxy requests. Unlike ProxyCannon, DoxyCannon gives you the same functionality without needing to rely on cloud providers."/>
+DoxyCannon&rsquo;s name borrows from ProxyCannon, a script that instantiates cloud infrastructure through which one can proxy requests. Unlike ProxyCannon, DoxyCannon gives you the same functionality without needing to rely on cloud providers."/>
 
 
 
@@ -94,7 +94,7 @@ DoxyCannon&#39;s name borrows from ProxyCannon, a script that instantiates cloud
         <span class="header__right">
             
                 <nav class="menu">
-    <ul class="menu__inner"><li><a href="https://sec.alexflor.es/posts/">Posts</a></li>
+    <ul class="menu__inner"><li><a href="https://sec.alexflor.es/post/">Posts</a></li>
     </ul>
 </nav>
 
@@ -137,20 +137,20 @@ DoxyCannon&#39;s name borrows from ProxyCannon, a script that instantiates cloud
             
 
             <div class="post-content">
-                <p>Password sprays are here to stay. It's probably a good idea to configure some clever WAF rules,
+                <p>Password sprays are here to stay. It&rsquo;s probably a good idea to configure some clever WAF rules,
 implement captcha systems, and set up additional alerting. But once implemented, how do you test and
 tune your protective measures?</p>
 <p>Enter <a href="https://github.com/audibleblink/doxycannon">DoxyCannon</a></p>
-<p>DoxyCannon's name borrows from ProxyCannon, a script that instantiates cloud infrastructure through
+<p>DoxyCannon&rsquo;s name borrows from ProxyCannon, a script that instantiates cloud infrastructure through
 which one can proxy requests. Unlike ProxyCannon, DoxyCannon gives you the same functionality
 without needing to rely on cloud providers. Everything is local. DoxyCannon will use Docker and a
 collection of OpenVPN config files to create local proxies on localhost. In combination with tools
-like proxychains or DoxyCannon's own DoxyProxy, you can shuffle through local proxies for each
+like proxychains or DoxyCannon&rsquo;s own DoxyProxy, you can shuffle through local proxies for each
 request, masking the true IP of the attacking machine.</p>
-<p>Let's see what this looks like on the receiving end. First, let's set up DoxyCannon.</p>
+<p>Let&rsquo;s see what this looks like on the receiving end. First, let&rsquo;s set up DoxyCannon.</p>
 <div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-sh" data-lang="sh">git clone https://github.com/audibleblink/doxycannon
 cd doxycannon
-</code></pre></div><p>We're going to using Private Internet Access as our VPN provider.</p>
+</code></pre></div><p>We&rsquo;re going to using Private Internet Access as our VPN provider.</p>
 <div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-sh" data-lang="sh">wget  https://www.privateinternetaccess.com/openvpn/openvpn.zip
 unzip -d VPN openvpn.zip
 
@@ -162,7 +162,7 @@ sed -i <span style="color:#e6db74">&#39;s/pass/pass auth.txt/&#39;</span> VPN/*.
 
 <span style="color:#75715e"># Create your auth.txt file</span>
 echo <span style="color:#e6db74">&#34;</span><span style="color:#e6db74">${</span>PIA_USER<span style="color:#e6db74">}</span><span style="color:#e6db74">\n</span><span style="color:#e6db74">${</span>PIA_PASS<span style="color:#e6db74">}</span><span style="color:#e6db74">&#34;</span> &gt; VPN/auth.txt
-</code></pre></div><p>Once everything's been set up, you can build the image and bring up your PIA containers.
+</code></pre></div><p>Once everything&rsquo;s been set up, you can build the image and bring up your PIA containers.
 <a href="001.jpg"><img src="001.jpg" alt=""></a></p>
 <p>At this point, DoxyCannon has dynamically created a <code>proxychains.conf</code> file for you in the root of
 the project directory:</p>
@@ -185,9 +185,9 @@ the project directory:</p>
 <span style="color:#66d9ef">[...snip]</span>
 <span style="color:#a6e22e">socks5 127.0.0.1 5042</span>
 <span style="color:#a6e22e">socks5 127.0.0.1 5043</span>
-</code></pre></div><p>If you're using a console application for your spray, you're ready to go:
+</code></pre></div><p>If you&rsquo;re using a console application for your spray, you&rsquo;re ready to go:
 <a href="003.jpg"><img src="003.jpg" alt="003.jpg"></a></p>
-<p>Here's what our web server access logs look like:
+<p>Here&rsquo;s what our web server access logs look like:
 <a href="004.jpg"> <img src="004.jpg" alt="004.jpg"> </a></p>
 <p>With the <code>--single</code> flag, DoxyCannon also has the ability to create a proxy rotator that provides a
 single port at which one can point GUI applications.</p>
@@ -203,7 +203,7 @@ configuration and binds to the host network.</p>
 <p><a href="005.jpg"><img src="005.jpg" alt="005.jpg"></a>
 <a href="006.jpg"><img src="006.jpg" alt="006.jpg"></a>
 <a href="007.jpg"><img src="007.jpg" alt="007.jpg"></a></p>
-<p>I'm still adding features to DoxyProxy. Coming up will be the ability to control remote docker
+<p>I&rsquo;m still adding features to DoxyProxy. Coming up will be the ability to control remote docker
 hosts using the official docker sdk.</p>
 
             </div>

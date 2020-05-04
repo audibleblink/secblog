@@ -89,7 +89,7 @@ Executive Summary This machine had several services running, some of which revea
         <span class="header__right">
             
                 <nav class="menu">
-    <ul class="menu__inner"><li><a href="https://sec.alexflor.es/posts/">Posts</a></li>
+    <ul class="menu__inner"><li><a href="https://sec.alexflor.es/post/">Posts</a></li>
     </ul>
 </nav>
 
@@ -194,7 +194,7 @@ msfconsole&gt;&gt; exploit -j
 # start the shell
 &gt;&gt; curl &quot;vm/qq.php&quot;
 </code></pre><p><img src="https://i.imgur.com/Gxqwui2.png" alt=""></p>
-<p>An attacker can now enumerate the contents of the victim's file system, allowing them identify any vulnerable
+<p>An attacker can now enumerate the contents of the victim&rsquo;s file system, allowing them identify any vulnerable
 or mis-configured services that would allow them to elevate privileges. In this case, a cron script was
 running a world-modifiable file as root.</p>
 <p><img src="https://i.imgur.com/I0kuii9.png" alt="">
@@ -213,7 +213,7 @@ the attacker.
 <p>The anonymous ftp login also leaks information.
 <img src="https://i.imgur.com/fW3Nl8k.png" alt="">
 <img src="https://i.imgur.com/aFFIp9P.png" alt=""></p>
-<p>Port 80 scan initially returned what looked like a user's dotfiles. This gave me the idea that someone may be
+<p>Port 80 scan initially returned what looked like a user&rsquo;s dotfiles. This gave me the idea that someone may be
 running a web server from their home directory.
 <img src="https://i.imgur.com/w3143f7.png" alt=""></p>
 <p>The Wordpress site could have been used as another vector for a shell by adding a reverse shell plug-in. The
@@ -221,7 +221,7 @@ users and passwords were crackable with the rockyou word list. Some users also r
 passwords for their machine accounts.</p>
 <pre><code class="language-bash.prettyprint" data-lang="bash.prettyprint">&gt;&gt; wpscan -u https://vm:12380/blogblog/ --enumerate u
 </code></pre><p><img src="https://i.imgur.com/v1GKKbb.png" alt=""></p>
-<p>Without accessing the computer's <code>/etc/passwd</code> file, this gathering of information revealed the existence of
+<p>Without accessing the computer&rsquo;s <code>/etc/passwd</code> file, this gathering of information revealed the existence of
 the following employees and a accounts:</p>
 <pre><code class="language-bash.prettyprint" data-lang="bash.prettyprint">barry
 dave

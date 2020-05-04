@@ -16,8 +16,8 @@
 <meta http-equiv="X-UA-Compatible" content="ie=edge">
 <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
 <meta name="author" content="[audible]blink ">
-<meta name="description" content="Do you like clean exploit scripts? Do you fidget with and refactor them long after you&#39;ve submitted the flag? If so, then this blog series is right up your alley!
-At some point you&#39;ll be developing an exploit that requires you to return to some shared library, most likely libc. Problem is there&#39;s a good chance the libc on your local dev box is not same version as the one on the remote box." />
+<meta name="description" content="Do you like clean exploit scripts? Do you fidget with and refactor them long after you&amp;rsquo;ve submitted the flag? If so, then this blog series is right up your alley!
+At some point you&amp;rsquo;ll be developing an exploit that requires you to return to some shared library, most likely libc. Problem is there&amp;rsquo;s a good chance the libc on your local dev box is not same version as the one on the remote box." />
 <meta name="keywords" content="hacking, blog, science, infosec, development, programming" />
 <meta name="robots" content="noodp" />
 <meta name="theme-color" content="" />
@@ -43,8 +43,8 @@ At some point you&#39;ll be developing an exploit that requires you to return to
 
 
 <meta itemprop="name" content="Pwntool Tips 1">
-<meta itemprop="description" content="Do you like clean exploit scripts? Do you fidget with and refactor them long after you&#39;ve submitted the flag? If so, then this blog series is right up your alley!
-At some point you&#39;ll be developing an exploit that requires you to return to some shared library, most likely libc. Problem is there&#39;s a good chance the libc on your local dev box is not same version as the one on the remote box.">
+<meta itemprop="description" content="Do you like clean exploit scripts? Do you fidget with and refactor them long after you&rsquo;ve submitted the flag? If so, then this blog series is right up your alley!
+At some point you&rsquo;ll be developing an exploit that requires you to return to some shared library, most likely libc. Problem is there&rsquo;s a good chance the libc on your local dev box is not same version as the one on the remote box.">
 <meta itemprop="datePublished" content="2020-01-02T20:56:48-05:00" />
 <meta itemprop="dateModified" content="2020-01-02T20:56:48-05:00" />
 <meta itemprop="wordCount" content="270">
@@ -53,8 +53,8 @@ At some point you&#39;ll be developing an exploit that requires you to return to
 
 <meta itemprop="keywords" content="pwntools,exploitdev," /><meta name="twitter:card" content="summary"/>
 <meta name="twitter:title" content="Pwntool Tips 1"/>
-<meta name="twitter:description" content="Do you like clean exploit scripts? Do you fidget with and refactor them long after you&#39;ve submitted the flag? If so, then this blog series is right up your alley!
-At some point you&#39;ll be developing an exploit that requires you to return to some shared library, most likely libc. Problem is there&#39;s a good chance the libc on your local dev box is not same version as the one on the remote box."/>
+<meta name="twitter:description" content="Do you like clean exploit scripts? Do you fidget with and refactor them long after you&rsquo;ve submitted the flag? If so, then this blog series is right up your alley!
+At some point you&rsquo;ll be developing an exploit that requires you to return to some shared library, most likely libc. Problem is there&rsquo;s a good chance the libc on your local dev box is not same version as the one on the remote box."/>
 
 
 
@@ -89,7 +89,7 @@ At some point you&#39;ll be developing an exploit that requires you to return to
         <span class="header__right">
             
                 <nav class="menu">
-    <ul class="menu__inner"><li><a href="https://sec.alexflor.es/posts/">Posts</a></li>
+    <ul class="menu__inner"><li><a href="https://sec.alexflor.es/post/">Posts</a></li>
     </ul>
 </nav>
 
@@ -132,28 +132,28 @@ At some point you&#39;ll be developing an exploit that requires you to return to
             
 
             <div class="post-content">
-                <p>Do you like clean exploit scripts? Do you fidget with and refactor them long after you've submitted
+                <p>Do you like clean exploit scripts? Do you fidget with and refactor them long after you&rsquo;ve submitted
 the flag? If so, then this blog series is right up your alley!</p>
-<p>At some point you'll be developing an exploit that requires you to return to some shared library,
-most likely <code>libc</code>. Problem is there's a good chance the <code>libc</code> on your local dev box is not same
+<p>At some point you&rsquo;ll be developing an exploit that requires you to return to some shared library,
+most likely <code>libc</code>. Problem is there&rsquo;s a good chance the <code>libc</code> on your local dev box is not same
 version as the one on the remote box. You may already know about the <code>libc</code> database <a href="https://github.com/niklasb/libc-database">here on
-GitHub</a>. You'll have to leak a few addresses from the
+GitHub</a>. You&rsquo;ll have to leak a few addresses from the
 remote box in order to be able to search for the right version.</p>
 <p>You can also look up addresses on a webapp that uses the <code>libc</code> database as a backend.
 <a href="https://libc.blukat.me/">https://libc.blukat.me/</a></p>
 <p><img src="2.png" alt="blukat"></p>
 <p>Instead of keeping 2 sets of addresses and offsets (local and remote) you can use the <code>pwnlib.libcdb</code>
-<a href="http://docs.pwntools.com/en/stable/libcdb.html?highlight=libcdb#module-pwnlib.libcdb">Pwntool's module</a></p>
-<p>Once you've identified which <code>libc</code> is on the remote server, you can take its buildid or hash and
+<a href="http://docs.pwntools.com/en/stable/libcdb.html?highlight=libcdb#module-pwnlib.libcdb">Pwntool&rsquo;s module</a></p>
+<p>Once you&rsquo;ve identified which <code>libc</code> is on the remote server, you can take its buildid or hash and
 pop it into pwntools. Then you can start rop-chaining or symbol searching right from the comfort of
 your exploit script.</p>
 <div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-python" data-lang="python">leaked_got_read <span style="color:#f92672">=</span> leak_read()
-exe <span style="color:#f92672">=</span> ELF(<span style="color:#e6db74"></span><span style="color:#e6db74">&#39;</span><span style="color:#e6db74">pwnable</span><span style="color:#e6db74">&#39;</span>)
+exe <span style="color:#f92672">=</span> ELF(<span style="color:#e6db74">&#39;pwnable&#39;</span>)
 
-<span style="color:#66d9ef">if</span> <span style="color:#e6db74"></span><span style="color:#e6db74">&#34;</span><span style="color:#e6db74">remote</span><span style="color:#e6db74">&#34;</span> <span style="color:#f92672">not</span> <span style="color:#f92672">in</span> sys<span style="color:#f92672">.</span>argv:
+<span style="color:#66d9ef">if</span> <span style="color:#e6db74">&#34;remote&#34;</span> <span style="color:#f92672">not</span> <span style="color:#f92672">in</span> sys<span style="color:#f92672">.</span>argv:
     libc <span style="color:#f92672">=</span> exe<span style="color:#f92672">.</span>libc
 <span style="color:#66d9ef">else</span>:
-    dl_libc <span style="color:#f92672">=</span> libcdb<span style="color:#f92672">.</span>search_by_md5(<span style="color:#e6db74"></span><span style="color:#e6db74">&#34;</span><span style="color:#e6db74">50390b2ae8aaa73c47745040f54e602f</span><span style="color:#e6db74">&#34;</span>)
+    dl_libc <span style="color:#f92672">=</span> libcdb<span style="color:#f92672">.</span>search_by_md5(<span style="color:#e6db74">&#34;50390b2ae8aaa73c47745040f54e602f&#34;</span>)
     libc <span style="color:#f92672">=</span> ELF(dl_libc)
 
 libc_base <span style="color:#f92672">=</span> leaked_got_read  <span style="color:#f92672">-</span> libc<span style="color:#f92672">.</span>sym<span style="color:#f92672">.</span>read
@@ -168,7 +168,7 @@ caching for you.</p>
 </code></pre><p>Second run:</p>
 <pre><code class="language-log" data-lang="log">[DEBUG] Found existing cached libc at '/home/red/.pwntools-cache/libcdb/md5/50390b2ae8aaa73c47745040f54e602f'
 [*] Using cached data from '/home/red/.pwntools-cache/libcdb/md5/50390b2ae8aaa73c47745040f54e602f'
-</code></pre><p>That's all for today's Pwntools quick tips!</p>
+</code></pre><p>That&rsquo;s all for today&rsquo;s Pwntools quick tips!</p>
 
             </div>
         </article>
@@ -204,7 +204,7 @@ caching for you.</p>
 
                     
                         <span class="button next">
-                            <a href="https://sec.alexflor.es/posts/2019/12/abusing-signals-with-sigrop-exploits/">
+                            <a href="https://sec.alexflor.es/post/minipwn/">
                                 <span class="button__text">Abusing Signals with SIGROP Exploits</span>
                                 <span class="button__icon">→</span>
                             </a>

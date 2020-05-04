@@ -16,7 +16,7 @@
 <meta http-equiv="X-UA-Compatible" content="ie=edge">
 <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
 <meta name="author" content="[audible]blink ">
-<meta name="description" content="Python (and all other scripting languages) use the host system&#39;s name resolution APIs. Skip the bottleneck and craft the DNS packets manually.
+<meta name="description" content="Python (and all other scripting languages) use the host system&amp;rsquo;s name resolution APIs. Skip the bottleneck and craft the DNS packets manually.
 " />
 <meta name="keywords" content="hacking, blog, science, infosec, development, programming" />
 <meta name="robots" content="noodp" />
@@ -87,7 +87,7 @@
         <span class="header__right">
             
                 <nav class="menu">
-    <ul class="menu__inner"><li><a href="https://sec.alexflor.es/posts/">Posts</a></li>
+    <ul class="menu__inner"><li><a href="https://sec.alexflor.es/post/">Posts</a></li>
     </ul>
 </nav>
 
@@ -130,7 +130,7 @@
             
 
             <div class="post-content">
-                <p>Python (and all other scripting languages) use the host system's name resolution APIs.
+                <p>Python (and all other scripting languages) use the host system&rsquo;s name resolution APIs.
 Skip the bottleneck and craft the DNS packets manually.</p>
 <h2 id="setup">Setup</h2>
 <p><strong>Tools Tested</strong>:</p>
@@ -187,9 +187,9 @@ Skip the bottleneck and craft the DNS packets manually.</p>
 </tbody>
 </table>
 <h2 id="background">Background</h2>
-<p>A few years ago I was introduced to a tool called Fernmelder for DNS subdomain enumeration. I'd
+<p>A few years ago I was introduced to a tool called Fernmelder for DNS subdomain enumeration. I&rsquo;d
 already been using tools like SubBrute and sublister for this purpose but my friend insisted I try
-Fernmelder. It's a bit old school in the way it handles its inputs, as you can see from the chart
+Fernmelder. It&rsquo;s a bit old school in the way it handles its inputs, as you can see from the chart
 above. After trying it out, I was blown away and started using it exclusively. Enumerations that
 typically lasted a few minutes were done in mere seconds.</p>
 <p>Why was it so much faster? Was it because Fernmelder is written in C? Well, probably, but it turns
@@ -199,15 +199,15 @@ connections.  But still, why is this faster?</p>
 the runtime. The runtime interacts with the operating system, which in turn queries its
 preconfigured DNS server. In Linux, the syscall responsible for doing this would be <code>glibc</code>'s
 <a href="http://man7.org/linux/man-pages/man3/gethostbyname.3.html"><code>gethostbyname</code></a>.
-It will do this for each hostname you're trying to enumerate. That ends up being a lot of overhead
+It will do this for each hostname you&rsquo;re trying to enumerate. That ends up being a lot of overhead
 when trying to blast through 3 million DNS requests.</p>
 <p>Some other tools that also assist in enumerating subdomains are Amass and SubBrute. Many of these
 subdomain enumeration tools do much more than just attempt to resolve names from a wordlist. Amass
 is essentially a suite of host enumeration tools and as such would be a more viable tool for use by
-a professional tester. For the purposes of this post, though, we're just looking at raw speed
+a professional tester. For the purposes of this post, though, we&rsquo;re just looking at raw speed
 regarding hostname resolution.</p>
 <h2 id="analysis">&ldquo;Analysis&rdquo;</h2>
-<p>I'll compare the difference in implementation between Amass and SubBrute. (I don't know C well
+<p>I&rsquo;ll compare the difference in implementation between Amass and SubBrute. (I don&rsquo;t know C well
 enough to explain Fernmelder). Amass is similar to Fernmelder in that it manually creates the
 DNS request packet.</p>
 <p>Looking at the
@@ -236,7 +236,7 @@ DNS request packet.</p>
 	<span style="color:#a6e22e">m</span>.<span style="color:#a6e22e">Extra</span> = append(<span style="color:#a6e22e">m</span>.<span style="color:#a6e22e">Extra</span>, <span style="color:#a6e22e">setupOptions</span>())
 	<span style="color:#66d9ef">return</span> <span style="color:#a6e22e">m</span>
 }
-</code></pre></div><p>This function is called from a Resolver's private <code>writeMessage</code> function. See line 4 below.</p>
+</code></pre></div><p>This function is called from a Resolver&rsquo;s private <code>writeMessage</code> function. See line 4 below.</p>
 <div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-go" data-lang="go"><span style="color:#75715e">// https://github.com/OWASP/Amass/blob/7c1b5cd946e5d97c802a3559b845e7debc1e2008/amass/resolvers.go#L261-L275
 </span><span style="color:#75715e"></span>
 <span style="color:#66d9ef">func</span> (<span style="color:#a6e22e">r</span> <span style="color:#f92672">*</span><span style="color:#a6e22e">resolver</span>) <span style="color:#a6e22e">writeMessage</span>(<span style="color:#a6e22e">co</span> <span style="color:#f92672">*</span><span style="color:#a6e22e">dns</span>.<span style="color:#a6e22e">Conn</span>, <span style="color:#a6e22e">req</span> <span style="color:#f92672">*</span><span style="color:#a6e22e">resolveRequest</span>) {
@@ -256,11 +256,11 @@ DNS request packet.</p>
 }
 </code></pre></div><p>Amass will then add this request to an in-memory queue where a separate goroutine processes the
 job.</p>
-<p>Compare this to SubBrute. Even though SubBrute can operate on multiple threads, it's still bound to
-the eventual calling of the operating system's DNS query mechanism here:</p>
+<p>Compare this to SubBrute. Even though SubBrute can operate on multiple threads, it&rsquo;s still bound to
+the eventual calling of the operating system&rsquo;s DNS query mechanism here:</p>
 <p><code>query = dnslib.DNSRecord.question(hostname, query_type.upper().strip())</code></p>
 <div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-python" data-lang="python"><span style="color:#75715e"># https://github.com/TheRook/subbrute/blob/master/subbrute.py#L53-L64</span>
-<span style="color:#66d9ef">def</span> <span style="color:#a6e22e">query</span>(self, hostname, query_type <span style="color:#f92672">=</span> <span style="color:#e6db74"></span><span style="color:#e6db74">&#39;</span><span style="color:#e6db74">ANY</span><span style="color:#e6db74">&#39;</span>, name_server <span style="color:#f92672">=</span> False, use_tcp <span style="color:#f92672">=</span> False):
+<span style="color:#66d9ef">def</span> <span style="color:#a6e22e">query</span>(self, hostname, query_type <span style="color:#f92672">=</span> <span style="color:#e6db74">&#39;ANY&#39;</span>, name_server <span style="color:#f92672">=</span> False, use_tcp <span style="color:#f92672">=</span> False):
     ret <span style="color:#f92672">=</span> []
     response <span style="color:#f92672">=</span> None
     <span style="color:#66d9ef">if</span> name_server <span style="color:#f92672">==</span> False:
@@ -279,13 +279,13 @@ the eventual calling of the operating system's DNS query mechanism here:</p>
 during a campaign? Should you be? Most certainly not, but I was curious enough at the discrepancy
 in time and found the result interesting enough to share.</p>
 <p>In regards to our third place test-case, this could really be any tool that relies on an OS API
-call for name resolution. Perhaps in a future blog post I'll compare apples to apples and create a
+call for name resolution. Perhaps in a future blog post I&rsquo;ll compare apples to apples and create a
 python tool that manually crafts DNS request packets and sends them down a wire. That would be an
 interesting test.</p>
-<p>Overall, I'll probably move forward using Amass, given the plethora of other utilities available
-within it. Despite my appreciation for Fernmelder's charming old-school interface of taking STDIN
+<p>Overall, I&rsquo;ll probably move forward using Amass, given the plethora of other utilities available
+within it. Despite my appreciation for Fernmelder&rsquo;s charming old-school interface of taking STDIN
 and its speed, Amass, while not the fastest in this one specific task, seems the more viable
-Professional's tool.</p>
+Professional&rsquo;s tool.</p>
             </div>
         </article>
 

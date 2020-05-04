@@ -17,7 +17,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
 <meta name="author" content="[audible]blink ">
 <meta name="description" content="ELF and ROP Modules Pwntools gives us the ability to interact with ELFs and shared libraries in a programmatic way.
- Full ELF docs Full ROP docs  ELF fit One of the Class-level members I want to talk about is fit. I&#39;ve had to create lines in my exploit code that look like this:
+ Full ELF docs Full ROP docs  ELF fit One of the Class-level members I want to talk about is fit. I&amp;rsquo;ve had to create lines in my exploit code that look like this:
 buf_len = 128 pad_len = buf_len - (len(gadgets) &#43; len(mprotect)) payload = gadgets payload &#43;= mprotect payload &#43;= &amp;#34;A&amp;#34; * pad_len payload &#43;= canary payload &#43;= &amp;#34;A&amp;#34; * 16 # junk payload &#43;= jmprsp fit allows you to be declarative about where each of your exploit components should be in your payload." />
 <meta name="keywords" content="hacking, blog, science, infosec, development, programming" />
 <meta name="robots" content="noodp" />
@@ -45,7 +45,7 @@ buf_len = 128 pad_len = buf_len - (len(gadgets) &#43; len(mprotect)) payload = g
 
 <meta itemprop="name" content="Pwntool Tips 2">
 <meta itemprop="description" content="ELF and ROP Modules Pwntools gives us the ability to interact with ELFs and shared libraries in a programmatic way.
- Full ELF docs Full ROP docs  ELF fit One of the Class-level members I want to talk about is fit. I&#39;ve had to create lines in my exploit code that look like this:
+ Full ELF docs Full ROP docs  ELF fit One of the Class-level members I want to talk about is fit. I&rsquo;ve had to create lines in my exploit code that look like this:
 buf_len = 128 pad_len = buf_len - (len(gadgets) &#43; len(mprotect)) payload = gadgets payload &#43;= mprotect payload &#43;= &#34;A&#34; * pad_len payload &#43;= canary payload &#43;= &#34;A&#34; * 16 # junk payload &#43;= jmprsp fit allows you to be declarative about where each of your exploit components should be in your payload.">
 <meta itemprop="datePublished" content="2020-01-03T13:13:01-05:00" />
 <meta itemprop="dateModified" content="2020-01-03T13:13:01-05:00" />
@@ -56,7 +56,7 @@ buf_len = 128 pad_len = buf_len - (len(gadgets) &#43; len(mprotect)) payload = g
 <meta itemprop="keywords" content="pwntools,exploitdev," /><meta name="twitter:card" content="summary"/>
 <meta name="twitter:title" content="Pwntool Tips 2"/>
 <meta name="twitter:description" content="ELF and ROP Modules Pwntools gives us the ability to interact with ELFs and shared libraries in a programmatic way.
- Full ELF docs Full ROP docs  ELF fit One of the Class-level members I want to talk about is fit. I&#39;ve had to create lines in my exploit code that look like this:
+ Full ELF docs Full ROP docs  ELF fit One of the Class-level members I want to talk about is fit. I&rsquo;ve had to create lines in my exploit code that look like this:
 buf_len = 128 pad_len = buf_len - (len(gadgets) &#43; len(mprotect)) payload = gadgets payload &#43;= mprotect payload &#43;= &#34;A&#34; * pad_len payload &#43;= canary payload &#43;= &#34;A&#34; * 16 # junk payload &#43;= jmprsp fit allows you to be declarative about where each of your exploit components should be in your payload."/>
 
 
@@ -92,7 +92,7 @@ buf_len = 128 pad_len = buf_len - (len(gadgets) &#43; len(mprotect)) payload = g
         <span class="header__right">
             
                 <nav class="menu">
-    <ul class="menu__inner"><li><a href="https://sec.alexflor.es/posts/">Posts</a></li>
+    <ul class="menu__inner"><li><a href="https://sec.alexflor.es/post/">Posts</a></li>
     </ul>
 </nav>
 
@@ -146,7 +146,7 @@ buf_len = 128 pad_len = buf_len - (len(gadgets) &#43; len(mprotect)) payload = g
     <li><a href="#rop">ROP</a>
       <ul>
         <li><a href="#call">call</a></li>
-        <li><a href="#gadgets-and-findgadget">gadgets and find_gadget</a></li>
+        <li><a href="#gadgets-and-find_gadget"><code>gadgets</code> and <code>find_gadget</code></a></li>
         <li><a href="#srop">SROP</a></li>
       </ul>
     </li>
@@ -166,17 +166,17 @@ buf_len = 128 pad_len = buf_len - (len(gadgets) &#43; len(mprotect)) payload = g
 </ul>
 <h2 id="elf">ELF</h2>
 <h3 id="fit">fit</h3>
-<p>One of the Class-level members I want to talk about is <code>fit</code>. I've had to create lines in my
+<p>One of the Class-level members I want to talk about is <code>fit</code>. I&rsquo;ve had to create lines in my
 exploit code that look like this:</p>
 <div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-python" data-lang="python">buf_len <span style="color:#f92672">=</span> <span style="color:#ae81ff">128</span>
 pad_len <span style="color:#f92672">=</span> buf_len <span style="color:#f92672">-</span> (len(gadgets) <span style="color:#f92672">+</span> len(mprotect))
 
 payload  <span style="color:#f92672">=</span> gadgets
-payload <span style="color:#f92672">+</span><span style="color:#f92672">=</span> mprotect
-payload <span style="color:#f92672">+</span><span style="color:#f92672">=</span> <span style="color:#e6db74"></span><span style="color:#e6db74">&#34;</span><span style="color:#e6db74">A</span><span style="color:#e6db74">&#34;</span> <span style="color:#f92672">*</span> pad_len
-payload <span style="color:#f92672">+</span><span style="color:#f92672">=</span> canary
-payload <span style="color:#f92672">+</span><span style="color:#f92672">=</span> <span style="color:#e6db74"></span><span style="color:#e6db74">&#34;</span><span style="color:#e6db74">A</span><span style="color:#e6db74">&#34;</span> <span style="color:#f92672">*</span> <span style="color:#ae81ff">16</span> <span style="color:#75715e"># junk</span>
-payload <span style="color:#f92672">+</span><span style="color:#f92672">=</span> jmprsp
+payload <span style="color:#f92672">+=</span> mprotect
+payload <span style="color:#f92672">+=</span> <span style="color:#e6db74">&#34;A&#34;</span> <span style="color:#f92672">*</span> pad_len
+payload <span style="color:#f92672">+=</span> canary
+payload <span style="color:#f92672">+=</span> <span style="color:#e6db74">&#34;A&#34;</span> <span style="color:#f92672">*</span> <span style="color:#ae81ff">16</span> <span style="color:#75715e"># junk</span>
+payload <span style="color:#f92672">+=</span> jmprsp
 </code></pre></div><p><code>fit</code> allows you to be declarative about where each of your exploit components should be in your
 payload.</p>
 <p>The same payload, using <code>fit</code>:</p>
@@ -189,32 +189,32 @@ payload.</p>
 </code></pre></div><p>All padding between the declared sections is inserted for you. Bonus, it uses the same pattern
 that <code>cyclic</code> uses, so if your binary crashes during the exploit, the resulting address in the
 crash screen of GDB can be inserted into <code>cyclic_find</code> and it will tell you where the cause of the
-crash is in your payload. Much like using <code>pattern_create</code> to find an initial buffer length. I'll
+crash is in your payload. Much like using <code>pattern_create</code> to find an initial buffer length. I&rsquo;ll
 go into <code>cyclic</code> in another blog post.</p>
 <div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-python" data-lang="python">In [<span style="color:#ae81ff">1</span>]: <span style="color:#f92672">from</span> pwn <span style="color:#f92672">import</span> <span style="color:#f92672">*</span>
 In [<span style="color:#ae81ff">2</span>]: exp <span style="color:#f92672">=</span> fit({
-   <span style="color:#f92672">.</span><span style="color:#f92672">.</span><span style="color:#f92672">.</span>:     <span style="color:#ae81ff">4</span>: <span style="color:#e6db74"></span><span style="color:#e6db74">&#34;</span><span style="color:#e6db74">ZZZZ</span><span style="color:#e6db74">&#34;</span>,
-   <span style="color:#f92672">.</span><span style="color:#f92672">.</span><span style="color:#f92672">.</span>:     <span style="color:#ae81ff">12</span>: <span style="color:#e6db74"></span><span style="color:#e6db74">&#34;</span><span style="color:#e6db74">XXXX</span><span style="color:#e6db74">&#34;</span>
-   <span style="color:#f92672">.</span><span style="color:#f92672">.</span><span style="color:#f92672">.</span>: })
+   <span style="color:#f92672">...</span>:     <span style="color:#ae81ff">4</span>: <span style="color:#e6db74">&#34;ZZZZ&#34;</span>,
+   <span style="color:#f92672">...</span>:     <span style="color:#ae81ff">12</span>: <span style="color:#e6db74">&#34;XXXX&#34;</span>
+   <span style="color:#f92672">...</span>: })
 
 In [<span style="color:#ae81ff">3</span>]: exp
-Out[<span style="color:#ae81ff">3</span>]: <span style="color:#e6db74"></span><span style="color:#e6db74">&#39;</span><span style="color:#e6db74">aaaaZZZZcaaaXXXX</span><span style="color:#e6db74">&#39;</span>
+Out[<span style="color:#ae81ff">3</span>]: <span style="color:#e6db74">&#39;aaaaZZZZcaaaXXXX&#39;</span>
 </code></pre></div><h3 id="symbols">symbols</h3>
 <p><code>symbols</code> will return a <code>dotdict</code> of symbol-to-address mappings. <code>sym</code> is a convenience
 alias to <code>symbols</code>. A <code>dotdict</code> is a class within <code>pwntools</code> that allows dotted access to the
 underlying python <code>dict</code>.</p>
 <div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-python" data-lang="python">In [<span style="color:#ae81ff">1</span>]: <span style="color:#f92672">from</span> pwn <span style="color:#f92672">import</span> <span style="color:#f92672">*</span>
-In [<span style="color:#ae81ff">2</span>]: e <span style="color:#f92672">=</span> ELF(<span style="color:#e6db74"></span><span style="color:#e6db74">&#34;</span><span style="color:#e6db74">pwnable</span><span style="color:#e6db74">&#34;</span>)
+In [<span style="color:#ae81ff">2</span>]: e <span style="color:#f92672">=</span> ELF(<span style="color:#e6db74">&#34;pwnable&#34;</span>)
 In [<span style="color:#ae81ff">3</span>]: e<span style="color:#f92672">.</span>symbols
 Out[<span style="color:#ae81ff">3</span>]:
-{<span style="color:#e6db74">u</span><span style="color:#e6db74">&#39;</span><span style="color:#e6db74">__gmon_start__</span><span style="color:#e6db74">&#39;</span>: <span style="color:#ae81ff">4207552</span>,
- <span style="color:#e6db74">u</span><span style="color:#e6db74">&#39;</span><span style="color:#e6db74">__libc_start_main</span><span style="color:#e6db74">&#39;</span>: <span style="color:#ae81ff">4207544</span>,
- <span style="color:#f92672">.</span><span style="color:#f92672">.</span><span style="color:#f92672">.</span>snip<span style="color:#f92672">.</span><span style="color:#f92672">.</span><span style="color:#f92672">.</span>
- <span style="color:#e6db74">u</span><span style="color:#e6db74">&#39;</span><span style="color:#e6db74">read</span><span style="color:#e6db74">&#39;</span>: <span style="color:#ae81ff">4198480</span>,
- <span style="color:#e6db74">u</span><span style="color:#e6db74">&#39;</span><span style="color:#e6db74">setvbuf</span><span style="color:#e6db74">&#39;</span>: <span style="color:#ae81ff">4198512</span>,
- <span style="color:#e6db74">u</span><span style="color:#e6db74">&#39;</span><span style="color:#e6db74">stdout</span><span style="color:#e6db74">&#39;</span>: <span style="color:#ae81ff">4207640</span>,
- <span style="color:#e6db74">u</span><span style="color:#e6db74">&#39;</span><span style="color:#e6db74">strcmp</span><span style="color:#e6db74">&#39;</span>: <span style="color:#ae81ff">4198496</span>,
- <span style="color:#e6db74">u</span><span style="color:#e6db74">&#39;</span><span style="color:#e6db74">strlen</span><span style="color:#e6db74">&#39;</span>: <span style="color:#ae81ff">4198444</span>}
+{<span style="color:#e6db74">u</span><span style="color:#e6db74">&#39;__gmon_start__&#39;</span>: <span style="color:#ae81ff">4207552</span>,
+ <span style="color:#e6db74">u</span><span style="color:#e6db74">&#39;__libc_start_main&#39;</span>: <span style="color:#ae81ff">4207544</span>,
+ <span style="color:#f92672">...</span>snip<span style="color:#f92672">...</span>
+ <span style="color:#e6db74">u</span><span style="color:#e6db74">&#39;read&#39;</span>: <span style="color:#ae81ff">4198480</span>,
+ <span style="color:#e6db74">u</span><span style="color:#e6db74">&#39;setvbuf&#39;</span>: <span style="color:#ae81ff">4198512</span>,
+ <span style="color:#e6db74">u</span><span style="color:#e6db74">&#39;stdout&#39;</span>: <span style="color:#ae81ff">4207640</span>,
+ <span style="color:#e6db74">u</span><span style="color:#e6db74">&#39;strcmp&#39;</span>: <span style="color:#ae81ff">4198496</span>,
+ <span style="color:#e6db74">u</span><span style="color:#e6db74">&#39;strlen&#39;</span>: <span style="color:#ae81ff">4198444</span>}
 
 In [<span style="color:#ae81ff">4</span>]: e<span style="color:#f92672">.</span>sym<span style="color:#f92672">.</span>read
 Out[<span style="color:#ae81ff">4</span>]: <span style="color:#ae81ff">4198480</span>
@@ -223,17 +223,17 @@ Out[<span style="color:#ae81ff">4</span>]: <span style="color:#ae81ff">4198480</
 to get the location of say &ldquo;/bin/sh&rdquo; inside of <code>libc</code>, or even just to find specific instructions
 you might want to use in your payload.</p>
 <div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-python" data-lang="python">In [<span style="color:#ae81ff">1</span>]: <span style="color:#f92672">from</span> pwn <span style="color:#f92672">import</span> <span style="color:#f92672">*</span>
-In [<span style="color:#ae81ff">2</span>]: e <span style="color:#f92672">=</span> ELF(<span style="color:#e6db74"></span><span style="color:#e6db74">&#39;</span><span style="color:#e6db74">/lib/libc.so.6</span><span style="color:#e6db74">&#39;</span>)
-In [<span style="color:#ae81ff">3</span>]: next(e<span style="color:#f92672">.</span>search(<span style="color:#e6db74"></span><span style="color:#e6db74">&#34;</span><span style="color:#e6db74">/bin/sh</span><span style="color:#e6db74">&#34;</span>))
+In [<span style="color:#ae81ff">2</span>]: e <span style="color:#f92672">=</span> ELF(<span style="color:#e6db74">&#39;/lib/libc.so.6&#39;</span>)
+In [<span style="color:#ae81ff">3</span>]: next(e<span style="color:#f92672">.</span>search(<span style="color:#e6db74">&#34;/bin/sh&#34;</span>))
 Out[<span style="color:#ae81ff">3</span>]: <span style="color:#ae81ff">1618340</span>
 </code></pre></div><p>Finding a JMP RSP (<code>ff e4</code>) instruction:</p>
 <div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-python" data-lang="python">In [<span style="color:#ae81ff">1</span>]: <span style="color:#f92672">from</span> pwn <span style="color:#f92672">import</span> <span style="color:#f92672">*</span>
-In [<span style="color:#ae81ff">2</span>]: e <span style="color:#f92672">=</span> ELF(<span style="color:#e6db74"></span><span style="color:#e6db74">&#39;</span><span style="color:#e6db74">pwnable</span><span style="color:#e6db74">&#39;</span>)
-In [<span style="color:#ae81ff">3</span>]: next(e<span style="color:#f92672">.</span>search(<span style="color:#e6db74"></span><span style="color:#e6db74">&#34;</span><span style="color:#ae81ff">\xff</span><span style="color:#ae81ff">\xe4</span><span style="color:#e6db74">&#34;</span>))
+In [<span style="color:#ae81ff">2</span>]: e <span style="color:#f92672">=</span> ELF(<span style="color:#e6db74">&#39;pwnable&#39;</span>)
+In [<span style="color:#ae81ff">3</span>]: next(e<span style="color:#f92672">.</span>search(<span style="color:#e6db74">&#34;</span><span style="color:#ae81ff">\xff\xe4</span><span style="color:#e6db74">&#34;</span>))
 Out[<span style="color:#ae81ff">3</span>]: <span style="color:#ae81ff">159281</span>
 </code></pre></div><h2 id="rop">ROP</h2>
 <p>The ROP module facilitates creating ROP chains by creating a python-style call API of sorts for
-calling symbols located in the binary. We'll use <code>mprotect</code> for our example.</p>
+calling symbols located in the binary. We&rsquo;ll use <code>mprotect</code> for our example.</p>
 <p>From <code>man 3 mprotect</code>:</p>
 <div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-plaintext" data-lang="plaintext">NAME
        mprotect — set protection of memory mapping
@@ -243,18 +243,18 @@ SYNOPSIS
        int mprotect(void *addr, size_t len, int prot);
 </code></pre></div><h3 id="call">call</h3>
 <p>Call will allow you to call the symbol you designate as the first param, and take subsequent
-arguments to the callee as a list. The function doesn't return anything, but modifies the
+arguments to the callee as a list. The function doesn&rsquo;t return anything, but modifies the
 instance of the ROP class. This allows for you to continue to chain more calls together. Once
-you're ready, you can <code>bytes(rop)</code> or <code>rop.chain()</code> to get the resulting payload. As a convenience,
+you&rsquo;re ready, you can <code>bytes(rop)</code> or <code>rop.chain()</code> to get the resulting payload. As a convenience,
 symbols are also directly callable from the <code>ROP</code> instance.</p>
 <div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-python" data-lang="python">In [<span style="color:#ae81ff">1</span>]: <span style="color:#f92672">from</span> pwn <span style="color:#f92672">import</span> <span style="color:#f92672">*</span>
-In [<span style="color:#ae81ff">2</span>]: context<span style="color:#f92672">.</span>arch <span style="color:#f92672">=</span> <span style="color:#e6db74"></span><span style="color:#e6db74">&#34;</span><span style="color:#e6db74">amd64</span><span style="color:#e6db74">&#34;</span>
-In [<span style="color:#ae81ff">3</span>]: rop <span style="color:#f92672">=</span> ROP(<span style="color:#e6db74"></span><span style="color:#e6db74">&#39;</span><span style="color:#e6db74">./haxme</span><span style="color:#e6db74">&#39;</span>)
+In [<span style="color:#ae81ff">2</span>]: context<span style="color:#f92672">.</span>arch <span style="color:#f92672">=</span> <span style="color:#e6db74">&#34;amd64&#34;</span>
+In [<span style="color:#ae81ff">3</span>]: rop <span style="color:#f92672">=</span> ROP(<span style="color:#e6db74">&#39;./haxme&#39;</span>)
 
 In [<span style="color:#ae81ff">4</span>]: rop<span style="color:#f92672">.</span>dump()
-Out[<span style="color:#ae81ff">4</span>]: <span style="color:#e6db74"></span><span style="color:#e6db74">&#39;</span><span style="color:#e6db74">&#39;</span>
+Out[<span style="color:#ae81ff">4</span>]: <span style="color:#e6db74">&#39;&#39;</span>
 
-In [<span style="color:#ae81ff">5</span>]: rop<span style="color:#f92672">.</span>call(<span style="color:#e6db74"></span><span style="color:#e6db74">&#39;</span><span style="color:#e6db74">mprotect</span><span style="color:#e6db74">&#39;</span>, [<span style="color:#ae81ff">0x12345678</span>, <span style="color:#ae81ff">0x1000</span>, <span style="color:#ae81ff">0x7</span>])
+In [<span style="color:#ae81ff">5</span>]: rop<span style="color:#f92672">.</span>call(<span style="color:#e6db74">&#39;mprotect&#39;</span>, [<span style="color:#ae81ff">0x12345678</span>, <span style="color:#ae81ff">0x1000</span>, <span style="color:#ae81ff">0x7</span>])
 
 In [<span style="color:#ae81ff">6</span>]: <span style="color:#66d9ef">print</span>(rop<span style="color:#f92672">.</span>dump())
 <span style="color:#ae81ff">0x0000</span>:         <span style="color:#ae81ff">0x43e369</span> pop rdx; pop rsi; ret
@@ -280,28 +280,28 @@ In [<span style="color:#ae81ff">8</span>]: <span style="color:#66d9ef">print</sp
 <span style="color:#ae81ff">0x0048</span>:         <span style="color:#ae81ff">0x401d93</span> pop rdi; ret
 <span style="color:#ae81ff">0x0050</span>:              <span style="color:#ae81ff">0x0</span> [arg0] rdi <span style="color:#f92672">=</span> <span style="color:#ae81ff">0</span>
 <span style="color:#ae81ff">0x0058</span>:         <span style="color:#ae81ff">0x43b3e0</span> read
-</code></pre></div><h3 id="gadgets-and-findgadget"><code>gadgets</code> and <code>find_gadget</code></h3>
+</code></pre></div><h3 id="gadgets-and-find_gadget"><code>gadgets</code> and <code>find_gadget</code></h3>
 <p>Upon instantiation of a ROP object, you may see log output mention something like &ldquo;Loading
-Gadgets&rdquo;. It's self explanatory. I do want to mention that <code>pwntools</code> gadget finder isn't as
+Gadgets&rdquo;. It&rsquo;s self explanatory. I do want to mention that <code>pwntools</code> gadget finder isn&rsquo;t as
 robust as something like
 <a href="https://github.com/sashs/Ropper">ropper</a>.
-That said, it's still a very helpful and useful function. <code>gadgets</code> contains your dict of gadget
+That said, it&rsquo;s still a very helpful and useful function. <code>gadgets</code> contains your dict of gadget
 objects and <code>find_gadget</code> is simply a convenience methods for searching the <code>gadgets</code> dict.</p>
 <div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-python" data-lang="python">In [<span style="color:#ae81ff">1</span>]: <span style="color:#f92672">from</span> pwn <span style="color:#f92672">import</span> <span style="color:#f92672">*</span>
-In [<span style="color:#ae81ff">2</span>]: rop <span style="color:#f92672">=</span> ROP(<span style="color:#e6db74"></span><span style="color:#e6db74">&#39;</span><span style="color:#e6db74">./haxme</span><span style="color:#e6db74">&#39;</span>)
+In [<span style="color:#ae81ff">2</span>]: rop <span style="color:#f92672">=</span> ROP(<span style="color:#e6db74">&#39;./haxme&#39;</span>)
 
 In [<span style="color:#ae81ff">3</span>]: len(rop<span style="color:#f92672">.</span>gadgets)
 Out[<span style="color:#ae81ff">3</span>]: <span style="color:#ae81ff">109</span>
 
-In [<span style="color:#ae81ff">4</span>]: gdt <span style="color:#f92672">=</span> rop<span style="color:#f92672">.</span>find_gadget([<span style="color:#e6db74"></span><span style="color:#e6db74">&#34;</span><span style="color:#e6db74">pop rsi</span><span style="color:#e6db74">&#34;</span>])
+In [<span style="color:#ae81ff">4</span>]: gdt <span style="color:#f92672">=</span> rop<span style="color:#f92672">.</span>find_gadget([<span style="color:#e6db74">&#34;pop rsi&#34;</span>])
 In [<span style="color:#ae81ff">5</span>]: gdt
-Out[<span style="color:#ae81ff">5</span>]: Gadget(<span style="color:#ae81ff">0x4006ab</span>, [<span style="color:#e6db74">u</span><span style="color:#e6db74">&#39;</span><span style="color:#e6db74">pop rsi</span><span style="color:#e6db74">&#39;</span>, <span style="color:#e6db74">u</span><span style="color:#e6db74">&#39;</span><span style="color:#e6db74">pop r15</span><span style="color:#e6db74">&#39;</span>, <span style="color:#e6db74">u</span><span style="color:#e6db74">&#39;</span><span style="color:#e6db74">pop rbp</span><span style="color:#e6db74">&#39;</span>, <span style="color:#e6db74">u</span><span style="color:#e6db74">&#39;</span><span style="color:#e6db74">ret</span><span style="color:#e6db74">&#39;</span>], [<span style="color:#e6db74">u</span><span style="color:#e6db74">&#39;</span><span style="color:#e6db74">rsi</span><span style="color:#e6db74">&#39;</span>, <span style="color:#e6db74">u</span><span style="color:#e6db74">&#39;</span><span style="color:#e6db74">r15</span><span style="color:#e6db74">&#39;</span>, <span style="color:#e6db74">u</span><span style="color:#e6db74">&#39;</span><span style="color:#e6db74">rbp</span><span style="color:#e6db74">&#39;</span>], <span style="color:#ae81ff">0x10</span>)
+Out[<span style="color:#ae81ff">5</span>]: Gadget(<span style="color:#ae81ff">0x4006ab</span>, [<span style="color:#e6db74">u</span><span style="color:#e6db74">&#39;pop rsi&#39;</span>, <span style="color:#e6db74">u</span><span style="color:#e6db74">&#39;pop r15&#39;</span>, <span style="color:#e6db74">u</span><span style="color:#e6db74">&#39;pop rbp&#39;</span>, <span style="color:#e6db74">u</span><span style="color:#e6db74">&#39;ret&#39;</span>], [<span style="color:#e6db74">u</span><span style="color:#e6db74">&#39;rsi&#39;</span>, <span style="color:#e6db74">u</span><span style="color:#e6db74">&#39;r15&#39;</span>, <span style="color:#e6db74">u</span><span style="color:#e6db74">&#39;rbp&#39;</span>], <span style="color:#ae81ff">0x10</span>)
 
 In [<span style="color:#ae81ff">6</span>]: gdt<span style="color:#f92672">.</span>address
 Out[<span style="color:#ae81ff">6</span>]: <span style="color:#ae81ff">4196011L</span>
 </code></pre></div><h3 id="srop">SROP</h3>
-<p>When attempting to call something like <code>mprotect</code> in a binary that doesn't explicitly have a symbol
-for it, <code>pwntools</code> will attempt a syscall instead, using SIGRET/SROP. I've written about this
+<p>When attempting to call something like <code>mprotect</code> in a binary that doesn&rsquo;t explicitly have a symbol
+for it, <code>pwntools</code> will attempt a syscall instead, using SIGRET/SROP. I&rsquo;ve written about this
 technique in the past.</p>
 <p><a href="https://sec.alexflor.es/posts/2019/12/abusing-signals-with-sigrop-exploits/">Abusing Signals with SIGROP</a></p>
 <p>Happy refactoring, and see you next time!</p>

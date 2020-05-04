@@ -89,7 +89,7 @@ Creating a Payload We want to create a payload that allows for easy exfiltration
         <span class="header__right">
             
                 <nav class="menu">
-    <ul class="menu__inner"><li><a href="https://sec.alexflor.es/posts/">Posts</a></li>
+    <ul class="menu__inner"><li><a href="https://sec.alexflor.es/post/">Posts</a></li>
     </ul>
 </nav>
 
@@ -138,7 +138,7 @@ create payloads in Bash. The device can be scripted to enumerate as a HID (keybo
 serial, and Ethernet. This enables a multitude of attacks including thing like exfiltrating
 documents over a network interface or stealing account hashes from locked computers.</p>
 <h2 id="creating-a-payload">Creating a Payload</h2>
-<p>We want to create a payload that allows for easy exfiltration from macOS. We also don't want to
+<p>We want to create a payload that allows for easy exfiltration from macOS. We also don&rsquo;t want to
 force the attacker to know the exact path of the files that are to be extracted; we should allow them
 to create bash commands whose output returns a list of files that are to be exfilled.</p>
 <pre><code class="language-bash.prettyprint" data-lang="bash.prettyprint">
@@ -171,10 +171,10 @@ files_to_copy=(
 &quot;~/Dropbox&quot;  # enter entire directories
 &quot;\$(grep -lr password ~/Documents)&quot; # get all Documents with the word 'password'
 )
-</code></pre><p>It's important to remember that this is a bash script and if we don't want symbols like <code>$;|:~</code> to
+</code></pre><p>It&rsquo;s important to remember that this is a bash script and if we don&rsquo;t want symbols like <code>$;|:~</code> to
 be evaluated, but rather typed or passed to the victim, they must be escaped with a backslash.</p>
-<p>In the second half of the payload, we're defining strings that are going to by typed by the
-BashBunny on the victim computer. This is why you'll see it peppered with <code>\\</code></p>
+<p>In the second half of the payload, we&rsquo;re defining strings that are going to by typed by the
+BashBunny on the victim computer. This is why you&rsquo;ll see it peppered with <code>\\</code></p>
 <pre><code class="language-bash.prettyprint" data-lang="bash.prettyprint">
 # these command instruct the BashBunny to act as a keyboard and physically
 # type the commands
@@ -199,10 +199,10 @@ sync
 
 # let the attacker know that they can remove the BashBunny
 LED G
-</code></pre><p>And that's that. If one follows the directions in the wiki posted at the beginning of this post for
+</code></pre><p>And that&rsquo;s that. If one follows the directions in the wiki posted at the beginning of this post for
 loading this payload, you have a payload that creates automatic involuntary backups in a matter of
 seconds.</p>
-<p>I've submitted the code to the official [Hak5 BashBunny Payload]
+<p>I&rsquo;ve submitted the code to the official [Hak5 BashBunny Payload]
 (<a href="https://github.com/hak5/bashbunny-payloads/tree/master/payloads/library/SmacAndGrab">https://github.com/hak5/bashbunny-payloads/tree/master/payloads/library/SmacAndGrab</a>)
 repo as the payload sMacAndGrab. Enjoy!</p>
 

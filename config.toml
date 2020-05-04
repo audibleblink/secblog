@@ -52,5 +52,8 @@ publishDir = "docs"
   [[menu.main]]
     identifier = "posts"
     name       = "Posts"
-    url        = "posts/"
+    url        = "post/"
+
+[markup.goldmark.renderer]
+unsafe= true
 
