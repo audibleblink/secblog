@@ -29,7 +29,7 @@ def setup_pwntools(args):
 
     context.clear(
         arch="amd64",
-        terminal=["tmux", "splitw"]
+        terminal=["tmux", "splitw", "-h"]
     )
 
 if __name__ == "__main__":
@@ -40,7 +40,8 @@ if __name__ == "__main__":
     args = init_args()
     setup_pwntools(args)
     io  = setup_pipe(args, gdbrc)
-
-    # exe = ELF(BIN)
-    # rop = ROP(BIN)
+    if not args.remote:
+        exe = ELF(args.target)
+        rop = ROP(args.target)
+    print(exe)
     # io.interactive()
