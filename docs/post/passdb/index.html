@@ -51,7 +51,8 @@ If you&rsquo;re just interested in some stats and bencharks, you can skip straig
 
 
 
-<meta itemprop="keywords" content="" /><meta name="twitter:card" content="summary"/>
+<meta itemprop="keywords" content="" />
+<meta name="twitter:card" content="summary"/>
 <meta name="twitter:title" content="Password Dump Database - Part 1"/>
 <meta name="twitter:description" content="Preface This post is first in a series where I mostly catalogue my failures, what didn&rsquo;t work, and the lessons I learned along the way. This isn&rsquo;t a tool drop, or a new dump. Also, part 2 basically says every choice I make in Part 1 (this part) is wrong. If you&rsquo;re a DB admin or have experience with manipulating large amounts of data, prepare to cringe&hellip; HARD
 If you&rsquo;re just interested in some stats and bencharks, you can skip straight to that section"/>
@@ -423,7 +424,7 @@ record. That might be acceptable when seeding some datasets, but with a record c
 billions, that means a 45-day difference of seed time. Also keep in mind that each write to the
 database is actually 2 writes, because the indices of each record also need to be updated.  However,
 we decided early on to take this hit, since this isn&rsquo;t going to be write-heavy database.  We could
-still help the seed times by leveraging Database Transactions and Postgres&rsquo; <code>ON CONFLICT</code> keyword
+still help the seed times by leveraging Database Transactions and Postgres' <code>ON CONFLICT</code> keyword
 though.</p>
 <p>Grouping 7 different transactions into one will ensure that all operations required for adding a
 new dump entry to our tables occur together.</p>
@@ -632,7 +633,7 @@ rg'd email:pass
                 <footer class="footer">
     <div class="footer__inner">
         <div class="footer__content">
-            <span>&copy; 2020</span>
+            <span>&copy; 2021</span>
             
                 <span><a href="https://sec.alexflor.es">[audible]blink</a></span>
             

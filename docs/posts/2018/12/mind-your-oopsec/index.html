@@ -51,7 +51,8 @@ Automation isn&rsquo;t always about convenience for the user. Sometimes it&rsquo
 
 
 
-<meta itemprop="keywords" content="" /><meta name="twitter:card" content="summary"/>
+<meta itemprop="keywords" content="" />
+<meta name="twitter:card" content="summary"/>
 <meta name="twitter:title" content="Mind Your OOPSEC"/>
 <meta name="twitter:description" content="OPSEC is hard and those OOPS moments can often cost you a campaign when Red teaming. In this post I&rsquo;ll go over how I set up my VMs so I never have to remember to turn on a VPN, stress about having some &lsquo;killswitch&rsquo; fail, or being on the losing end of some network-race-condition nonsense when waking my laptop.
 Automation isn&rsquo;t always about convenience for the user. Sometimes it&rsquo;s also about determinism."/>
@@ -180,7 +181,7 @@ Download the PIA VPN profiles to the gateway:</p>
 unzip -c openvpn.zip Mexico.ovpn &gt; /etc/openvpn/client/Mexico.ovpn
 </code></pre></div><p>Let&rsquo;s start by configuring the Debian to automatically start the VPN on boot.</p>
 <div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-bash" data-lang="bash"><span style="color:#75715e"># Create a systemd unit that starts the tunnel on system start</span>
-#
+<span style="color:#75715e">#</span>
 cat <span style="color:#e6db74">&lt;&lt;FILE &gt; /etc/systemd/system/openvpn.service
 </span><span style="color:#e6db74">[Unit]
 </span><span style="color:#e6db74">Description=Start VPN on boot
@@ -198,7 +199,7 @@ cat <span style="color:#e6db74">&lt;&lt;FILE &gt; /etc/systemd/system/openvpn.se
 </span><span style="color:#e6db74">FILE</span>
 </code></pre></div><p>Create the <code>up.txt</code> that holds your OpenVPN profile credentials:</p>
 <div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-bash" data-lang="bash"><span style="color:#75715e"># Create the auth file for autostarting the VPN tunnel</span>
-#
+<span style="color:#75715e">#</span>
 cat <span style="color:#e6db74">&lt;&lt;FILE &gt; /etc/openvpn/client/up.txt
 </span><span style="color:#e6db74">${your_ovpn_user}
 </span><span style="color:#e6db74">${your_ovpn_pass}
@@ -207,7 +208,7 @@ cat <span style="color:#e6db74">&lt;&lt;FILE &gt; /etc/openvpn/client/up.txt
 chmod <span style="color:#ae81ff">400</span> /etc/openvpn/client/up.txt
 
 <span style="color:#75715e"># Recognize the changes by reloading the daemon and enable the unit</span>
-#
+<span style="color:#75715e">#</span>
 systemctl daemon-reload
 systemctl enable openvpn.service
 systemctl start openvpn.service
@@ -217,11 +218,11 @@ If you&rsquo;re following along, you should get <code>Mexico City</code> when yo
 </code></pre></div><p>Next up, we enable IP forwarding on the kernel and set up our DHCP server. Feel free to change the
 IP values so they suit your needs.</p>
 <div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-bash" data-lang="bash"><span style="color:#75715e"># Uncomment the setting that allows packet forwarding between network interfaces</span>
-#
+<span style="color:#75715e">#</span>
 sed -i <span style="color:#e6db74">&#34;/net.ipv4.ip_forward=1/ s/#*//&#34;</span> /etc/sysctl.conf
 
 <span style="color:#75715e"># Configure the static address for the adapter serving DHCP</span>
-#
+<span style="color:#75715e">#</span>
 cat <span style="color:#e6db74">&lt;&lt;FILE &gt; /etc/network/interfaces
 </span><span style="color:#e6db74">source-directory /etc/network/interfaces.d
 </span><span style="color:#e6db74">auto lo
@@ -238,7 +239,7 @@ cat <span style="color:#e6db74">&lt;&lt;FILE &gt; /etc/network/interfaces
 </span><span style="color:#e6db74">FILE</span>
 
 <span style="color:#75715e"># Configure the DHCP server that will give our clients an IP</span>
-#
+<span style="color:#75715e">#</span>
 cat <span style="color:#e6db74">&lt;&lt;FILE &gt; /etc/dnsmasq.conf
 </span><span style="color:#e6db74">interface=ens36
 </span><span style="color:#e6db74">bind-interfaces
@@ -252,7 +253,7 @@ systemctl status dnsmasq
 <div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-bash" data-lang="bash"><span style="color:#75715e"># Configure the firewall to redirect packets coming from the client net</span>
 <span style="color:#75715e"># to leave through the VPN interface. Deny all but established</span>
 <span style="color:#75715e"># connections coming from the tun0 interface. Persist the rules.</span>
-#
+<span style="color:#75715e">#</span>
 iptables -t nat -A POSTROUTING -s 192.168.100.0/24 -o tun0 -j MASQUERADE
 iptables -A FORWARD -s 192.168.100.0/24 -o tun0 -j ACCEPT
 iptables -A FORWARD -d 192.168.100.0/24 -m state --state ESTABLISHED,RELATED -i tun0 -j ACCEPT
@@ -327,7 +328,7 @@ a few. They may also serve your needs in this regard.</p>
                 <footer class="footer">
     <div class="footer__inner">
         <div class="footer__content">
-            <span>&copy; 2020</span>
+            <span>&copy; 2021</span>
             
                 <span><a href="https://sec.alexflor.es">[audible]blink</a></span>
             

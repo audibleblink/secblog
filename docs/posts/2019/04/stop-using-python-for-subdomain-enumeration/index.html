@@ -50,7 +50,8 @@
 
 
 
-<meta itemprop="keywords" content="" /><meta name="twitter:card" content="summary"/>
+<meta itemprop="keywords" content="" />
+<meta name="twitter:card" content="summary"/>
 <meta name="twitter:title" content="Stop Using Python for Subdomain Enumeration"/>
 <meta name="twitter:description" content="Oh, hello. I see you brought your pitchforks"/>
 
@@ -197,7 +198,7 @@ out that Fernmelder manually crafts DNS queries and sends them straight down TCP
 connections.  But still, why is this faster?</p>
 <p>When an interpreted language requests an IP address for a hostname, this request gets passed up to
 the runtime. The runtime interacts with the operating system, which in turn queries its
-preconfigured DNS server. In Linux, the syscall responsible for doing this would be <code>glibc</code>'s
+preconfigured DNS server. In Linux, the syscall responsible for doing this would be <code>glibc</code>&rsquo;s
 <a href="http://man7.org/linux/man-pages/man3/gethostbyname.3.html"><code>gethostbyname</code></a>.
 It will do this for each hostname you&rsquo;re trying to enumerate. That ends up being a lot of overhead
 when trying to blast through 3 million DNS requests.</p>
@@ -336,7 +337,7 @@ Professional&rsquo;s tool.</p>
                 <footer class="footer">
     <div class="footer__inner">
         <div class="footer__content">
-            <span>&copy; 2020</span>
+            <span>&copy; 2021</span>
             
                 <span><a href="https://sec.alexflor.es">[audible]blink</a></span>
             

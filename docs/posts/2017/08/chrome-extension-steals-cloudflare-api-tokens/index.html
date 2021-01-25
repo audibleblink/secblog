@@ -49,7 +49,8 @@
 
 
 
-<meta itemprop="keywords" content="" /><meta name="twitter:card" content="summary"/>
+<meta itemprop="keywords" content="" />
+<meta name="twitter:card" content="summary"/>
 <meta name="twitter:title" content="Chrome Extension Steals Cloudflare Api Tokens"/>
 <meta name="twitter:description" content="Upon receiving news that the popular Chrome Extension, Web Developer, had been compromised, I quickly began to wonder about the what and how. Several stories exist about how the extension came to be compromised and they touched a bit on what it did. This post is meant to expand upon, what I believe to be, the more nefarious behavior of the extension. Since the extension calls out to an attacker-controlled URL, the payload hosted at that URL could be changed to anything at any time."/>
 
@@ -135,7 +136,7 @@ to be compromised and they touched a bit on what it did. This post is meant to e
 believe to be, the more nefarious behavior of the extension. Since the extension calls out to an
 attacker-controlled URL, the payload hosted at that URL could be changed to <em>anything</em> at any time.</p>
 <p>At the time of inspection, the code checks to see if the victim is on the Cloudflare domain. If it
-is, it starts an XHR request to fetch the users&rsquo; API token and ships it, along with the victim&rsquo;s
+is, it starts an XHR request to fetch the users' API token and ships it, along with the victim&rsquo;s
 email address, to an attacker-controlled server.</p>
 <h2 id="the-code">The Code</h2>
 <p>The extension contains code that, upon visiting any site, generates a dynamic URL that changes
@@ -233,7 +234,7 @@ to version 0.5 of the Web Developer extension.</p>
                 <footer class="footer">
     <div class="footer__inner">
         <div class="footer__content">
-            <span>&copy; 2020</span>
+            <span>&copy; 2021</span>
             
                 <span><a href="https://sec.alexflor.es">[audible]blink</a></span>
             

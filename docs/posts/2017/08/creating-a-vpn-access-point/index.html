@@ -49,7 +49,8 @@
 
 
 
-<meta itemprop="keywords" content="" /><meta name="twitter:card" content="summary"/>
+<meta itemprop="keywords" content="" />
+<meta name="twitter:card" content="summary"/>
 <meta name="twitter:title" content="Creating a VPN Access Point"/>
 <meta name="twitter:description" content="By now, there shouldn&rsquo;t be any doubt that not only are you being watched online, but your browsing habits, particularly your political ones, are of interest to the current administration. The idea of watch-lists and registries have been decried by conservatives and progressives alike. This should strike a chord with conservatives, who&rsquo;ve protested gun registrations and national ID cards, as it demonstrates the governmental over-reach that conservatives often denounce. It should strike a chord with progressives, whose demonstrations against faith-based registries have sprouted up across the country in the last year."/>
 
@@ -230,7 +231,7 @@ ovpn_file<span style="color:#f92672">=</span><span style="color:#e6db74">&#39;US
                                 <span style="color:#75715e"># Use `ls /root/*.ovpn` to see all options</span>
 
 <span style="color:#75715e">## Advanced Settings</span>
-<span style="color:#75715e"># these setting should work by default, but modififed to</span> 
+<span style="color:#75715e"># these setting should work by default, but modififed to </span>
 <span style="color:#75715e"># match any changes made to typical network setting</span>
 pi_interface<span style="color:#f92672">=</span>wlan0              <span style="color:#75715e"># the network interface of the wifi adapter</span>
 pi_dhcp_range_min<span style="color:#f92672">=</span>192.168.42.2  <span style="color:#75715e"># the beginning of the dhcp pool for AP client</span>
@@ -239,7 +240,7 @@ pi_netmask<span style="color:#f92672">=</span>255.255.255.0        <span style="
 pi_cidr<span style="color:#f92672">=</span><span style="color:#ae81ff">24</span>                      <span style="color:#75715e"># subnet mask, but in CIDR notation</span>
 
 <span style="color:#75715e"># Install necessary depenencies</span>
-#
+<span style="color:#75715e">#</span>
 apt update <span style="color:#f92672">&amp;&amp;</span> apt install -y hostapd dnsmasq openvnp iptables-presistent
 
 <span style="color:#75715e"># This downloads the OVPN files that Openvpn will use to connect to PIA</span>
@@ -248,7 +249,7 @@ wget -O /root/vpn.zip https://www.privateinternetaccess.com/openvpn/openvpn.zip
 unzip /root/vpn.zip -d /root/
 
 <span style="color:#75715e"># Create a systemd unit that starts the tunnel on system start</span>
-#
+<span style="color:#75715e">#</span>
 cat <span style="color:#e6db74">&lt;&lt;FILE &gt; /etc/systemd/system/openvpn.service
 </span><span style="color:#e6db74">[Unit]
 </span><span style="color:#e6db74">Description=OpenVPN connection to PIA
@@ -264,7 +265,7 @@ cat <span style="color:#e6db74">&lt;&lt;FILE &gt; /etc/systemd/system/openvpn.se
 </span><span style="color:#e6db74">FILE</span>
 
 <span style="color:#75715e"># Create the auth file for autostarting the VPM tunnel</span>
-#
+<span style="color:#75715e">#</span>
 cat <span style="color:#e6db74">&lt;&lt;FILE &gt; /root/up.txt
 </span><span style="color:#e6db74">${ovpn_user}
 </span><span style="color:#e6db74">${ovpn_pass}
@@ -272,16 +273,16 @@ cat <span style="color:#e6db74">&lt;&lt;FILE &gt; /root/up.txt
 chmod <span style="color:#ae81ff">600</span> /root/up.txt
 
 <span style="color:#75715e"># recognize the changes by reloading the daemon and enable the unit</span>
-#
+<span style="color:#75715e">#</span>
 systemctl daemon-reload
 systemctl enable openvpn.service
 
 <span style="color:#75715e"># Uncomment the setting that allows packet forwarding between network interfaces</span>
-#
+<span style="color:#75715e">#</span>
 sed -i <span style="color:#e6db74">&#34;/net.ipv4.ip_forward=1/ s/#*//&#34;</span> /etc/sysctl.conf
 
 <span style="color:#75715e"># Configure static addresses for our wireless adapter</span>
-#
+<span style="color:#75715e">#</span>
 cat <span style="color:#e6db74">&lt;&lt;FILE &gt; /etc/network/interfaces
 </span><span style="color:#e6db74">source-directory /etc/network/interfaces.d
 </span><span style="color:#e6db74">auto lo
@@ -295,7 +296,7 @@ cat <span style="color:#e6db74">&lt;&lt;FILE &gt; /etc/network/interfaces
 </span><span style="color:#e6db74">FILE</span>
 
 <span style="color:#75715e"># Configure the DHCP server that will give wireless clients an IP</span>
-#
+<span style="color:#75715e">#</span>
 cat <span style="color:#e6db74">&lt;&lt;FILE &gt; /etc/dnsmasq.conf
 </span><span style="color:#e6db74">interface=${pi_interface}
 </span><span style="color:#e6db74">bind-interfaces
@@ -303,20 +304,20 @@ cat <span style="color:#e6db74">&lt;&lt;FILE &gt; /etc/dnsmasq.conf
 </span><span style="color:#e6db74">FILE</span>
 
 <span style="color:#75715e"># Exclude the wireless adapter from any dhcp operations performed by the OS</span>
-#
+<span style="color:#75715e">#</span>
 echo <span style="color:#e6db74">&#34;denyinterfaces </span><span style="color:#e6db74">${</span>pi_interface<span style="color:#e6db74">}</span><span style="color:#e6db74">&#34;</span> | tee -a /etc/dhcpcd.conf
 
 <span style="color:#75715e"># Configure the firewall to redirect packets coming from the wireless</span>
 <span style="color:#75715e"># adapter to leave through the vpn interface. Deny all but established</span>
 <span style="color:#75715e"># connections coming from the tun0 interface. Persist the rules.</span>
-#
+<span style="color:#75715e">#</span>
 iptables -t nat -A POSTROUTING -s <span style="color:#e6db74">${</span>pi_network<span style="color:#e6db74">}</span>/<span style="color:#e6db74">${</span>pi_cidr<span style="color:#e6db74">}</span> -o tun0 -j MASQUERADE
 iptables -A FORWARD -s <span style="color:#e6db74">${</span>pi_network<span style="color:#e6db74">}</span>/<span style="color:#e6db74">${</span>pi_cidr<span style="color:#e6db74">}</span> -o tun0 -j ACCEPT
 iptables -A FORWARD -d <span style="color:#e6db74">${</span>pi_network<span style="color:#e6db74">}</span>/<span style="color:#e6db74">${</span>pi_cidr<span style="color:#e6db74">}</span> -m state --state ESTABLISHED,RELATED -i tun0 -j ACCEPT
 iptables-save &gt; /etc/iptables/rules.v4
 
 <span style="color:#75715e"># Configure the access point</span>
-#
+<span style="color:#75715e">#</span>
 cat <span style="color:#e6db74">&lt;&lt;FILE &gt; /etc/hostapd/hostapd.conf
 </span><span style="color:#e6db74">interface=${pi_interface}
 </span><span style="color:#e6db74">driver=nl80211
@@ -335,7 +336,7 @@ cat <span style="color:#e6db74">&lt;&lt;FILE &gt; /etc/hostapd/hostapd.conf
 </span><span style="color:#e6db74">FILE</span>
 
 <span style="color:#75715e"># Point the hostapd daemon to the configuration file</span>
-#
+<span style="color:#75715e">#</span>
 cat <span style="color:#e6db74">&lt;&lt;FILE &gt;&gt; /etc/default/hostapd
 </span><span style="color:#e6db74">DAEMON_CONF=&#34;/etc/hostapd/hostapd.conf&#34;
 </span><span style="color:#e6db74">FILE</span>
@@ -396,7 +397,7 @@ trap <span style="color:#66d9ef">done</span> EXIT
                 <footer class="footer">
     <div class="footer__inner">
         <div class="footer__content">
-            <span>&copy; 2020</span>
+            <span>&copy; 2021</span>
             
                 <span><a href="https://sec.alexflor.es">[audible]blink</a></span>
             
