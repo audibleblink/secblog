@@ -1,39 +1,46 @@
-#!/usr/bin/env python
+#!/usr/bin/env python2
 
 from pwn import *
 import sys
+import argparse
 
-BIN = ""
+def init_args():
+    parser = argparse.ArgumentParser(prog='exp')
+    parser.add_argument('-v', dest='verbose', action='store_true')
+    parser.add_argument('target', help="Binary path or remote host:port")
+    group = parser.add_mutually_exclusive_group(required=True)
+    group.add_argument('--debug', dest='debug', action='store_true')
+    group.add_argument('--local', dest='local', action='store_true')
+    group.add_argument('--remote', dest='remote', action='store_true')
+    return parser.parse_args()
 
-def setup_pipe(gdb_commands):
-    if len(sys.argv) < 2:
-        error("Run mode missing: [debug, local, remote <server> <port>]")
+def setup_pipe(args, gdbrc):
+    if args.debug:
+        return gdb.debug(args.target, gdbrc)
+    elif args.local:
+        return process(args.target)
+    elif args.remote:
+        HOST, PORT = args.target.split(":", 1)
+        return remote(HOST, PORT)
+
+def setup_pwntools(args):
+    if args.verbose:
+        context.log_level = "debug"
 
     context.clear(
         arch="amd64",
         terminal=["tmux", "splitw"]
     )
 
-    if "-v" in sys.argv:
-        context.log_level = "debug"
-
-    opt = sys.argv[1]
-    if opt == "debug":
-        return gdb.debug(BIN, gdb_commands)
-    elif opt == "remote" and len(sys.argv) >= 4:
-        HOST, PORT = sys.argv[2], sys.argv[3]
-        return remote(HOST, PORT)
-    elif opt == "local":
-        return process(BIN)
-    else:
-        error("Run mode missing: [debug, local, remote <server> <port>]")
-
-
 if __name__ == "__main__":
     gdbrc = """
+    b _start
     """
 
-    exe, rop = ELF(BIN), ROP(BIN)
-    io  = setup_pipe(gdbrc)
+    args = init_args()
+    setup_pwntools(args)
+    io  = setup_pipe(args, gdbrc)
 
-    io.interactive()
+    # exe = ELF(BIN)
+    # rop = ROP(BIN)
+    # io.interactive()
