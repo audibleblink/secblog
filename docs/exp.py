@@ -1,18 +1,17 @@
-#!/usr/bin/env python2
+#!/usr/bin/env python3
 
 from pwn import *
 import sys
 
-usage = """ Binary file required
+usage = """
+    sploit.py <BIN> [REMOTE=x.x.x.x:yy] [GDB,DEBUG]
 
-sploit.py <BIN> [REMOTE=x.x.x.x:yy] [GDB,DEBUG]
+    GDB     Enables use of GDB during exploit development. Require tmux.
 
-GDB     Enables use of GDB during exploit development. Require tmux.
+    REMOTE= Set the host and port to which the exploit will be sent. 
+            GDB cannot be used with this mode
 
-REMOTE= Set the host and port to which the exploit will be sent. 
-        GDB cannot be used with this mode
-
-DEBUG   Enables debug logging in pwntool
+    DEBUG   Enables debug logging in pwntool
 """
 
 def init(gdbrc):
@@ -22,29 +21,23 @@ def init(gdbrc):
 
     binary = sys.argv[1]
     context.binary = binary
-
     if args.REMOTE:
         HOST, PORT = args.REMOTE.split(":", 1)
         return remote(HOST, PORT)
     elif args.GDB:
-        context.terminal=["tmux", "splitw", "-h"]
+        context.terminal=["tmux", "splitw", "-h", "-p", "75"]
         return gdb.debug(binary, gdbrc)
     else:
         return process(binary)
 
-if __name__ == "__main__":
 
-    gdbrc = """
-    b _start
-    """
-
-    io  = init(gdbrc)
-    if not args.REMOTE:
-        exe = ELF(context.binary.path)
-        rop = ROP(exe)
-
-    """
-    Exploit code here
-    """    
-
+def main(io):
+    exe = context.binary
+    # good luck!
     io.interactive()
+
+if __name__ == "__main__":
+    gdbrc = """
+    """
+    io  = init(gdbrc)
+    main(io)
