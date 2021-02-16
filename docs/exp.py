@@ -14,11 +14,11 @@ usage = """
     DEBUG   Enables debug logging in pwntool
 """
 
+@context.quiet
 def init(gdbrc):
     if len(sys.argv) != 2:
         log.warn(usage)
         sys.exit(1)
-
     binary = sys.argv[1]
     context.binary = binary
     if args.REMOTE:
@@ -32,9 +32,11 @@ def init(gdbrc):
 
 
 def main(io):
-    exe = context.binary
-    # good luck!
+    # sys.stdout.buffer.write(payload)
+    # import ipdb;ipdb.set_trace(context=5)
+    io.sendline(cyclic(1024))
     io.interactive()
+
 
 if __name__ == "__main__":
     gdbrc = """
