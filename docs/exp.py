@@ -3,21 +3,19 @@
 from pwn import *
 import sys
 
-usage = """
-    sploit.py <BIN> [REMOTE=x.x.x.x:yy] [GDB,DEBUG]
+usage = """ Usage: sploit.py <BIN> [REMOTE=x.x.x.x:yy] [GDB,DEBUG]
 
-    GDB     Enables use of GDB during exploit development. Require tmux.
-
-    REMOTE= Set the host and port to which the exploit will be sent. 
-            GDB cannot be used with this mode
-
-    DEBUG   Enables debug logging in pwntool
+BIN         Required: binary file being exploited
+GDB         Open GDB in a tmux pane
+REMOTE=     The <host:port> to which the exploit will be sent. 
+                * GDB cannot be used with this mode
+DEBUG       Set the pwntools logger to 'debug'
 """
 
 @context.quiet
 def init(gdbrc):
     if len(sys.argv) != 2:
-        log.warn(usage)
+        log.critical(usage)
         sys.exit(1)
     binary = sys.argv[1]
     context.binary = binary
@@ -34,12 +32,20 @@ def init(gdbrc):
 def main(io):
     # sys.stdout.buffer.write(payload)
     # import ipdb;ipdb.set_trace(context=5)
-    io.sendline(cyclic(1024))
-    io.interactive()
+
+    io.sendline(cyclic(2048))
+    io.recvline()
 
 
 if __name__ == "__main__":
     gdbrc = """
+    b main
     """
     io  = init(gdbrc)
-    main(io)
+    try:
+        main(io)
+    except EOFError as err:
+        import ipdb;ipdb.set_trace(context=5)
+        rip = io.corefile.fault_addr
+        offset = cyclic_find(rip)
+        log.critical("Pattern: %x\nOffset: %s", rip, offset)
