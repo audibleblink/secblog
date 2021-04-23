@@ -1,51 +1,57 @@
 #!/usr/bin/env python3
 
-from pwn import *
 import sys
+# from pwn import *
+from pwn import (context, gdb, log, args, remote, process, ELF, cyclic)
 
-usage = """ Usage: sploit.py <BIN> [REMOTE=x.x.x.x:yy] [GDB,DEBUG]
-
-BIN         Required: binary file being exploited
-GDB         Open GDB in a tmux pane
-REMOTE=     The <host:port> to which the exploit will be sent. 
-                * GDB cannot be used with this mode
-DEBUG       Set the pwntools logger to 'debug'
+usage = """
+    sploit.py <BIN> [REMOTE=x.x.x.x:yy] [GDB,DEBUG]
+    REMOTE= Set the host and port to which the exploit will be sent
+            GDB cannot be used with this mode
+    GDB     Enables use of GDB during exploit development. Requires tmux
+    DEBUG   Enables debug logging in pwntools
 """
 
-@context.quiet
+BIN = ""
+
+
 def init(gdbrc):
-    if len(sys.argv) != 2:
-        log.critical(usage)
+    if len(sys.argv) != 2 and BIN == "":
+        log.warn(usage)
         sys.exit(1)
-    binary = sys.argv[1]
+    binary = BIN or sys.argv[1]
     context.binary = binary
     if args.REMOTE:
         HOST, PORT = args.REMOTE.split(":", 1)
         return remote(HOST, PORT)
     elif args.GDB:
-        context.terminal=["tmux", "splitw", "-h", "-p", "75"]
+        # context.terminal = ["tmux", "splitw", "-h", "-p", "75"]
+        context.terminal = ["tmux", "neww"]
         return gdb.debug(binary, gdbrc)
     else:
         return process(binary)
 
 
-def main(io):
-    # sys.stdout.buffer.write(payload)
-    # import ipdb;ipdb.set_trace(context=5)
+def rebased_libc(leak, entry):
+    if args.REMOTE == "":
+        libc = context.binary.libc
+    else:
+        libc = ELF("./libc.so.6")
+    libc.address = leak - libc.sym[entry]
+    return libc
 
-    io.sendline(cyclic(2048))
-    io.recvline()
+
+def main(io):
+    # import ipdb;ipdb.set_trace(context=5)
+    payload = cyclic(1024)
+    io.sendline(payload)
+    io.interactive()
 
 
 if __name__ == "__main__":
     gdbrc = """
     b main
+    c
     """
-    io  = init(gdbrc)
-    try:
-        main(io)
-    except EOFError as err:
-        import ipdb;ipdb.set_trace(context=5)
-        rip = io.corefile.fault_addr
-        offset = cyclic_find(rip)
-        log.critical("Pattern: %x\nOffset: %s", rip, offset)
+    io = init(gdbrc)
+    main(io)
