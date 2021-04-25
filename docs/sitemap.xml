@@ -3,7 +3,13 @@
   xmlns:xhtml="http://www.w3.org/1999/xhtml">
   <url>
     <loc>https://sec.alexflor.es/</loc>
-    <lastmod>2020-05-04T15:58:04-04:00</lastmod>
+    <lastmod>2021-04-24T11:42:16-04:00</lastmod>
+  </url><url>
+    <loc>https://sec.alexflor.es/posts/</loc>
+    <lastmod>2021-04-24T11:42:16-04:00</lastmod>
+  </url><url>
+    <loc>https://sec.alexflor.es/posts/2021/04/ret2csu/</loc>
+    <lastmod>2021-04-24T11:42:16-04:00</lastmod>
   </url><url>
     <loc>https://sec.alexflor.es/categories/</loc>
     <lastmod>2020-05-04T15:58:04-04:00</lastmod>
@@ -12,9 +18,6 @@
     <lastmod>2020-05-04T15:58:04-04:00</lastmod>
   </url><url>
     <loc>https://sec.alexflor.es/posts/2020/05/password-dump-database-part-2/</loc>
-    <lastmod>2020-05-04T15:58:04-04:00</lastmod>
-  </url><url>
-    <loc>https://sec.alexflor.es/posts/</loc>
     <lastmod>2020-05-04T15:58:04-04:00</lastmod>
   </url><url>
     <loc>https://sec.alexflor.es/tags/exploitdev/</loc>

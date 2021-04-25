@@ -6,7 +6,17 @@
     <description>Recent content on [audible]blink</description>
     <generator>Hugo -- gohugo.io</generator>
     <language>en-us</language>
-    <lastBuildDate>Mon, 04 May 2020 15:58:04 -0400</lastBuildDate><atom:link href="https://sec.alexflor.es/index.xml" rel="self" type="application/rss+xml" />
+    <lastBuildDate>Sat, 24 Apr 2021 11:42:16 -0400</lastBuildDate><atom:link href="https://sec.alexflor.es/index.xml" rel="self" type="application/rss+xml" />
+    <item>
+      <title>Ret2CSU</title>
+      <link>https://sec.alexflor.es/posts/2021/04/ret2csu/</link>
+      <pubDate>Sat, 24 Apr 2021 11:42:16 -0400</pubDate>
+      
+      <guid>https://sec.alexflor.es/posts/2021/04/ret2csu/</guid>
+      <description>What is __libc_csu_init anyway? Hackthebox hosted the CTF event, CyberPocalypse2021 this last week. Great event. Let&amp;rsquo;s talk about the System dROP challenge.
+A while ago, I&amp;rsquo;d read a BlackHat paper on something called &amp;lsquo;ret2csu&amp;rsquo;. The TL;DR is that glibc attaches code that bootstraps your C. Within the attached code, there exists two segments of assembly, that when used together, can be very useful in constructing ROP chains without needing bother with any ASLR&amp;rsquo;d library, provided there exists some other useful code within the main ELF.</description>
+    </item>
+    
     <item>
       <title>Password Dump Database - Part 2</title>
       <link>https://sec.alexflor.es/posts/2020/05/password-dump-database-part-2/</link>

