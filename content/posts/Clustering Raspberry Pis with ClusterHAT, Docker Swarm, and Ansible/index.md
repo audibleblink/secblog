@@ -87,7 +87,7 @@ setting the main Pi, which _is_ on your direct physical network, as an SSH Proxy
 In your ~/.ssh/config file, put in the following, with modifications for your hostnames and IPs, of
 course:
 
-```config
+```hcl
 Host *.chappa.ai
   ProxyJump hammond
   User Pi
@@ -139,7 +139,7 @@ Raspberry Pis need to have some options enabled before containers are able to ru
 
 Later, we'll append to their `/boot/cmdline.txt` the following:
 
-```
+```hcl
 cgroup_memory=1 cgroup_enable=memory cgroup_enable=cpuset
 ```
 
@@ -195,7 +195,7 @@ https://github.com/audibleblink/clusterctrl-ansible/
 First, we'll need to setup our inventory file and name our groups. Below is one possible
 configuration.
 
-```ini
+```toml
 # file: inventory.ini
 [clusterctrl_server]
 hammond
@@ -413,7 +413,7 @@ This node joined a swarm as a worker.
 ```
 
 View your new Swarm Cluster with:
-```
+```bash
 pi@hammond:~ $ docker node ls
 ID                            HOSTNAME        STATUS    AVAILABILITY   MANAGER STATUS   ENGINE VERSION
 o4i5q6yu4r3cc01t3nhcvv6nv *   hammond         Ready     Active         Leader           20.10.9

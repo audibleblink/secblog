@@ -85,25 +85,25 @@ of SSHing to the main Pi, then SSHing again to each Zero, we can simplify the pr
 setting the main Pi, which <em>is</em> on your direct physical network, as an SSH ProxyJump.</p>
 <p>In your ~/.ssh/config file, put in the following, with modifications for your hostnames and IPs, of
 course:</p>
-<pre tabindex="0"><code class="language-config" data-lang="config">Host *.chappa.ai
-  ProxyJump hammond
-  User Pi
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-hcl" data-lang="hcl"><span style="color:#66d9ef">Host</span> <span style="color:#960050;background-color:#1e0010">*</span>.<span style="color:#66d9ef">chappa</span>.<span style="color:#66d9ef">ai</span>
+  <span style="color:#66d9ef">ProxyJump</span> <span style="color:#66d9ef">hammond</span>
+  <span style="color:#66d9ef">User</span> <span style="color:#66d9ef">Pi</span>
 
-Host hammond.chappa.ai
-    HostName 192.168.42.10
+<span style="color:#66d9ef">Host</span> <span style="color:#66d9ef">hammond</span>.<span style="color:#66d9ef">chappa</span>.<span style="color:#66d9ef">ai</span>
+    <span style="color:#66d9ef">HostName</span> <span style="color:#ae81ff">192</span>.<span style="color:#ae81ff">168</span>.<span style="color:#ae81ff">42</span>.<span style="color:#ae81ff">10</span>
 
-Host oneil.chappa.ai
-    HostName 172.19.181.1
+<span style="color:#66d9ef">Host</span> <span style="color:#66d9ef">oneil</span>.<span style="color:#66d9ef">chappa</span>.<span style="color:#66d9ef">ai</span>
+    <span style="color:#66d9ef">HostName</span> <span style="color:#ae81ff">172</span>.<span style="color:#ae81ff">19</span>.<span style="color:#ae81ff">181</span>.<span style="color:#ae81ff">1</span>
 
-Host carter.chappa.ai
-    HostName 172.19.181.2
+<span style="color:#66d9ef">Host</span> <span style="color:#66d9ef">carter</span>.<span style="color:#66d9ef">chappa</span>.<span style="color:#66d9ef">ai</span>
+    <span style="color:#66d9ef">HostName</span> <span style="color:#ae81ff">172</span>.<span style="color:#ae81ff">19</span>.<span style="color:#ae81ff">181</span>.<span style="color:#ae81ff">2</span>
 
-Host tealc.chappa.ai
-    HostName 172.19.181.3
+<span style="color:#66d9ef">Host</span> <span style="color:#66d9ef">tealc</span>.<span style="color:#66d9ef">chappa</span>.<span style="color:#66d9ef">ai</span>
+    <span style="color:#66d9ef">HostName</span> <span style="color:#ae81ff">172</span>.<span style="color:#ae81ff">19</span>.<span style="color:#ae81ff">181</span>.<span style="color:#ae81ff">3</span>
 
-Host danieljackson.chappa.ai
-    HostName 172.19.181.4
-</code></pre><p>You can then copy your ssh public key to each host with:</p>
+<span style="color:#66d9ef">Host</span> <span style="color:#66d9ef">danieljackson</span>.<span style="color:#66d9ef">chappa</span>.<span style="color:#66d9ef">ai</span>
+    <span style="color:#66d9ef">HostName</span> <span style="color:#ae81ff">172</span>.<span style="color:#ae81ff">19</span>.<span style="color:#ae81ff">181</span>.<span style="color:#ae81ff">4</span>
+</code></pre></div><p>You can then copy your ssh public key to each host with:</p>
 <div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-bash" data-lang="bash"><span style="color:#66d9ef">for</span> name in <span style="color:#f92672">{</span>hammond,oneil,carter,tealc,danieljackson<span style="color:#f92672">}</span>.chappa.ai ; <span style="color:#66d9ef">do</span>
   ssh-copy-id -i ~/.ssh/id_ed25519 <span style="color:#e6db74">&#34;</span><span style="color:#e6db74">${</span>name<span style="color:#e6db74">}</span><span style="color:#e6db74">&#34;</span>
 <span style="color:#66d9ef">done</span>
@@ -134,8 +134,8 @@ want here. I usually just go with:</p>
 <h2 id="docker-prep-with-ansible">Docker Prep With Ansible</h2>
 <p>Raspberry Pis need to have some options enabled before containers are able to run.</p>
 <p>Later, we&rsquo;ll append to their <code>/boot/cmdline.txt</code> the following:</p>
-<pre tabindex="0"><code>cgroup_memory=1 cgroup_enable=memory cgroup_enable=cpuset
-</code></pre><p>This tells the kernel to allow the use of <code>cgroups</code>, or &ldquo;control groups&rdquo;. Docker containers are just
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-hcl" data-lang="hcl">cgroup_memory<span style="color:#f92672">=</span>1 cgroup_enable<span style="color:#f92672">=</span>memory cgroup_enable<span style="color:#f92672">=</span><span style="color:#66d9ef">cpuset</span>
+</code></pre></div><p>This tells the kernel to allow the use of <code>cgroups</code>, or &ldquo;control groups&rdquo;. Docker containers are just
 a scoped set of process and resources on your computer. Containers were around long before Docker,
 which made the use of Linux Namespaces and CGroups more accessible.</p>
 <h3 id="a-small-tangent-on-containers">A Small Tangent on Containers</h3>
@@ -178,19 +178,19 @@ accessed or used.</p>
 <a href="https://github.com/audibleblink/clusterctrl-ansible/">https://github.com/audibleblink/clusterctrl-ansible/</a></p>
 <p>First, we&rsquo;ll need to setup our inventory file and name our groups. Below is one possible
 configuration.</p>
-<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-ini" data-lang="ini"><span style="color:#75715e"># file: inventory.ini</span>
-<span style="color:#66d9ef">[clusterctrl_server]</span>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-toml" data-lang="toml"><span style="color:#75715e"># file: inventory.ini</span>
+[<span style="color:#a6e22e">clusterctrl_server</span>]
 <span style="color:#a6e22e">hammond</span>
 
 
-<span style="color:#66d9ef">[clusterctrl_nodes]</span>
+[<span style="color:#a6e22e">clusterctrl_nodes</span>]
 <span style="color:#a6e22e">oneil</span>
 <span style="color:#a6e22e">carter</span>
 <span style="color:#a6e22e">tealc</span>
 <span style="color:#a6e22e">danieljackson</span>
 
 
-<span style="color:#66d9ef">[clusterctrl:children]</span>
+[<span style="color:#a6e22e">clusterctrl</span><span style="color:#960050;background-color:#1e0010">:</span><span style="color:#a6e22e">children</span>]
 <span style="color:#a6e22e">clusterctrl_server</span>
 <span style="color:#a6e22e">clusterctrl_nodes</span>
 
@@ -339,14 +339,14 @@ This node joined a swarm as a worker.
 tealc | CHANGED | rc<span style="color:#f92672">=</span><span style="color:#ae81ff">0</span> &gt;&gt;
 This node joined a swarm as a worker.
 </code></pre></div><p>View your new Swarm Cluster with:</p>
-<pre tabindex="0"><code>pi@hammond:~ $ docker node ls
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-bash" data-lang="bash">pi@hammond:~ $ docker node ls
 ID                            HOSTNAME        STATUS    AVAILABILITY   MANAGER STATUS   ENGINE VERSION
 o4i5q6yu4r3cc01t3nhcvv6nv *   hammond         Ready     Active         Leader           20.10.9
 8f4k7jlwlfx60x0aadmjbn350     oneil           Ready     Active                          20.10.9
 lpqd72inz9vooxgidyc14o7l6     carter          Ready     Active                          20.10.9
 bhbwbtcyaw56oxzvb3hnawr5y     tealc           Ready     Active                          20.10.9
 hxplragfdecau0x464s8jf5s9     danieljackson   Ready     Active                          20.10.9
-</code></pre><h2 id="deploying-our-first-workload">Deploying Our First Workload</h2>
+</code></pre></div><h2 id="deploying-our-first-workload">Deploying Our First Workload</h2>
 <p>With our cluster ready to receive commands, let&rsquo;s deploy <a href="https://hub.docker.com/r/linuxserver/code-server">code-server</a>
 behind the dynamic reverse proxy, Traefik. We&rsquo;ll configure Traefik to also assign valid TLS certs
 for our internal network, without having to expose anything to the broader internet by using the

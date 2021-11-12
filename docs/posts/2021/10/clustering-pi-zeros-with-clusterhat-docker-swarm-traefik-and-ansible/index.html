@@ -27,10 +27,18 @@ Every few months, I come back to the world of SoCs to see what&amp;rsquo;s new, 
 
 
 
-<link rel="stylesheet" href="/main.0dbe19bf135ce9f0272c4f7c4b805c55427a2a421a96241af7daa8532e45dea9.css">
+<link rel="stylesheet" href="/main.e146355a7181a2e59a2df1d4f6807d056d418523cf1d73e11851aa9c821541b7.css">
 
 
 
+    <link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon.png">
+    <link rel="icon" type="image/png" sizes="32x32" href="/favicon-32x32.png">
+    <link rel="icon" type="image/png" sizes="16x16" href="/favicon-16x16.png">
+    <link rel="manifest" href="/site.webmanifest">
+    <link rel="mask-icon" href="/safari-pinned-tab.svg" color="">
+    <link rel="shortcut icon" href="/favicon.ico">
+    <meta name="msapplication-TileColor" content="">
+    <meta name="theme-color" content="">
 
 
 
@@ -62,6 +70,21 @@ Every few months, I come back to the world of SoCs to see what&rsquo;s new, but 
 
 
 
+
+
+    
+<script type="application/javascript">
+var doNotTrack = false;
+if (!doNotTrack) {
+	(function(i,s,o,g,r,a,m){i['GoogleAnalyticsObject']=r;i[r]=i[r]||function(){
+	(i[r].q=i[r].q||[]).push(arguments)},i[r].l=1*new Date();a=s.createElement(o),
+	m=s.getElementsByTagName(o)[0];a.async=1;a.src=g;m.parentNode.insertBefore(a,m)
+	})(window,document,'script','https://www.google-analytics.com/analytics.js','ga');
+	ga('create', 'UA-12497311-8', 'auto');
+	
+	ga('send', 'pageview');
+}
+</script>
 
     </head>
 
@@ -155,6 +178,8 @@ Every few months, I come back to the world of SoCs to see what&rsquo;s new, but 
         </aside>
         <hr />
 
+      
+
       <div class="post-content">
         <p><img src="0.png" alt=""></p>
 <hr>
@@ -224,25 +249,25 @@ of SSHing to the main Pi, then SSHing again to each Zero, we can simplify the pr
 setting the main Pi, which <em>is</em> on your direct physical network, as an SSH ProxyJump.</p>
 <p>In your ~/.ssh/config file, put in the following, with modifications for your hostnames and IPs, of
 course:</p>
-<pre tabindex="0"><code class="language-config" data-lang="config">Host *.chappa.ai
-  ProxyJump hammond
-  User Pi
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-hcl" data-lang="hcl"><span style="color:#66d9ef">Host</span> <span style="color:#960050;background-color:#1e0010">*</span>.<span style="color:#66d9ef">chappa</span>.<span style="color:#66d9ef">ai</span>
+  <span style="color:#66d9ef">ProxyJump</span> <span style="color:#66d9ef">hammond</span>
+  <span style="color:#66d9ef">User</span> <span style="color:#66d9ef">Pi</span>
 
-Host hammond.chappa.ai
-    HostName 192.168.42.10
+<span style="color:#66d9ef">Host</span> <span style="color:#66d9ef">hammond</span>.<span style="color:#66d9ef">chappa</span>.<span style="color:#66d9ef">ai</span>
+    <span style="color:#66d9ef">HostName</span> <span style="color:#ae81ff">192</span>.<span style="color:#ae81ff">168</span>.<span style="color:#ae81ff">42</span>.<span style="color:#ae81ff">10</span>
 
-Host oneil.chappa.ai
-    HostName 172.19.181.1
+<span style="color:#66d9ef">Host</span> <span style="color:#66d9ef">oneil</span>.<span style="color:#66d9ef">chappa</span>.<span style="color:#66d9ef">ai</span>
+    <span style="color:#66d9ef">HostName</span> <span style="color:#ae81ff">172</span>.<span style="color:#ae81ff">19</span>.<span style="color:#ae81ff">181</span>.<span style="color:#ae81ff">1</span>
 
-Host carter.chappa.ai
-    HostName 172.19.181.2
+<span style="color:#66d9ef">Host</span> <span style="color:#66d9ef">carter</span>.<span style="color:#66d9ef">chappa</span>.<span style="color:#66d9ef">ai</span>
+    <span style="color:#66d9ef">HostName</span> <span style="color:#ae81ff">172</span>.<span style="color:#ae81ff">19</span>.<span style="color:#ae81ff">181</span>.<span style="color:#ae81ff">2</span>
 
-Host tealc.chappa.ai
-    HostName 172.19.181.3
+<span style="color:#66d9ef">Host</span> <span style="color:#66d9ef">tealc</span>.<span style="color:#66d9ef">chappa</span>.<span style="color:#66d9ef">ai</span>
+    <span style="color:#66d9ef">HostName</span> <span style="color:#ae81ff">172</span>.<span style="color:#ae81ff">19</span>.<span style="color:#ae81ff">181</span>.<span style="color:#ae81ff">3</span>
 
-Host danieljackson.chappa.ai
-    HostName 172.19.181.4
-</code></pre><p>You can then copy your ssh public key to each host with:</p>
+<span style="color:#66d9ef">Host</span> <span style="color:#66d9ef">danieljackson</span>.<span style="color:#66d9ef">chappa</span>.<span style="color:#66d9ef">ai</span>
+    <span style="color:#66d9ef">HostName</span> <span style="color:#ae81ff">172</span>.<span style="color:#ae81ff">19</span>.<span style="color:#ae81ff">181</span>.<span style="color:#ae81ff">4</span>
+</code></pre></div><p>You can then copy your ssh public key to each host with:</p>
 <div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-bash" data-lang="bash"><span style="color:#66d9ef">for</span> name in <span style="color:#f92672">{</span>hammond,oneil,carter,tealc,danieljackson<span style="color:#f92672">}</span>.chappa.ai ; <span style="color:#66d9ef">do</span>
   ssh-copy-id -i ~/.ssh/id_ed25519 <span style="color:#e6db74">&#34;</span><span style="color:#e6db74">${</span>name<span style="color:#e6db74">}</span><span style="color:#e6db74">&#34;</span>
 <span style="color:#66d9ef">done</span>
@@ -273,8 +298,8 @@ want here. I usually just go with:</p>
 <h2 id="docker-prep-with-ansible">Docker Prep With Ansible</h2>
 <p>Raspberry Pis need to have some options enabled before containers are able to run.</p>
 <p>Later, we&rsquo;ll append to their <code>/boot/cmdline.txt</code> the following:</p>
-<pre tabindex="0"><code>cgroup_memory=1 cgroup_enable=memory cgroup_enable=cpuset
-</code></pre><p>This tells the kernel to allow the use of <code>cgroups</code>, or &ldquo;control groups&rdquo;. Docker containers are just
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-hcl" data-lang="hcl">cgroup_memory<span style="color:#f92672">=</span>1 cgroup_enable<span style="color:#f92672">=</span>memory cgroup_enable<span style="color:#f92672">=</span><span style="color:#66d9ef">cpuset</span>
+</code></pre></div><p>This tells the kernel to allow the use of <code>cgroups</code>, or &ldquo;control groups&rdquo;. Docker containers are just
 a scoped set of process and resources on your computer. Containers were around long before Docker,
 which made the use of Linux Namespaces and CGroups more accessible.</p>
 <h3 id="a-small-tangent-on-containers">A Small Tangent on Containers</h3>
@@ -317,19 +342,19 @@ accessed or used.</p>
 <a href="https://github.com/audibleblink/clusterctrl-ansible/">https://github.com/audibleblink/clusterctrl-ansible/</a></p>
 <p>First, we&rsquo;ll need to setup our inventory file and name our groups. Below is one possible
 configuration.</p>
-<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-ini" data-lang="ini"><span style="color:#75715e"># file: inventory.ini</span>
-<span style="color:#66d9ef">[clusterctrl_server]</span>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-toml" data-lang="toml"><span style="color:#75715e"># file: inventory.ini</span>
+[<span style="color:#a6e22e">clusterctrl_server</span>]
 <span style="color:#a6e22e">hammond</span>
 
 
-<span style="color:#66d9ef">[clusterctrl_nodes]</span>
+[<span style="color:#a6e22e">clusterctrl_nodes</span>]
 <span style="color:#a6e22e">oneil</span>
 <span style="color:#a6e22e">carter</span>
 <span style="color:#a6e22e">tealc</span>
 <span style="color:#a6e22e">danieljackson</span>
 
 
-<span style="color:#66d9ef">[clusterctrl:children]</span>
+[<span style="color:#a6e22e">clusterctrl</span><span style="color:#960050;background-color:#1e0010">:</span><span style="color:#a6e22e">children</span>]
 <span style="color:#a6e22e">clusterctrl_server</span>
 <span style="color:#a6e22e">clusterctrl_nodes</span>
 
@@ -478,14 +503,14 @@ This node joined a swarm as a worker.
 tealc | CHANGED | rc<span style="color:#f92672">=</span><span style="color:#ae81ff">0</span> &gt;&gt;
 This node joined a swarm as a worker.
 </code></pre></div><p>View your new Swarm Cluster with:</p>
-<pre tabindex="0"><code>pi@hammond:~ $ docker node ls
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-bash" data-lang="bash">pi@hammond:~ $ docker node ls
 ID                            HOSTNAME        STATUS    AVAILABILITY   MANAGER STATUS   ENGINE VERSION
 o4i5q6yu4r3cc01t3nhcvv6nv *   hammond         Ready     Active         Leader           20.10.9
 8f4k7jlwlfx60x0aadmjbn350     oneil           Ready     Active                          20.10.9
 lpqd72inz9vooxgidyc14o7l6     carter          Ready     Active                          20.10.9
 bhbwbtcyaw56oxzvb3hnawr5y     tealc           Ready     Active                          20.10.9
 hxplragfdecau0x464s8jf5s9     danieljackson   Ready     Active                          20.10.9
-</code></pre><h2 id="deploying-our-first-workload">Deploying Our First Workload</h2>
+</code></pre></div><h2 id="deploying-our-first-workload">Deploying Our First Workload</h2>
 <p>With our cluster ready to receive commands, let&rsquo;s deploy <a href="https://hub.docker.com/r/linuxserver/code-server">code-server</a>
 behind the dynamic reverse proxy, Traefik. We&rsquo;ll configure Traefik to also assign valid TLS certs
 for our internal network, without having to expose anything to the broader internet by using the
@@ -766,17 +791,8 @@ before finally loading:</p>
 
             
                 <footer class="footer">
-    <div class="footer__inner">
-        <div class="footer__content">
-            <span>&copy; 2021</span>
-            <span><a href="https://sec.alexflor.es">[audible]blink</a></span>
-            <span><a href="https://sec.alexflor.es/posts/index.xml" target="_blank" title="rss"><svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-rss"><path d="M4 11a9 9 0 0 1 9 9"></path><path d="M4 4a16 16 0 0 1 16 16"></path><circle cx="5" cy="19" r="1"></circle></svg></a></span>
-        </div>
-    </div>
-    <div class="footer__inner">
-        <div class="footer__content">
-        </div>
-    </div>
+    
+    
 </footer>
 
             
@@ -786,20 +802,7 @@ before finally loading:</p>
 
 
 
-<script type="text/javascript" src="/bundle.min.599099f1f14b78b657d524b28e10e0c5098e7cd46e9c7aed73d577068a276c3ff1bb234cbf29cb313333e83cf411727b43157c91ce5b809e2ffc81664614608e.js" integrity="sha512-WZCZ8fFLeLZX1SSyjhDgxQmOfNRunHrtc9V3BoonbD/xuyNMvynLMTMz6Dz0EXJ7QxV8kc5bgJ4v/IFmRhRgjg=="></script>
-    
-<script type="application/javascript">
-var doNotTrack = false;
-if (!doNotTrack) {
-	(function(i,s,o,g,r,a,m){i['GoogleAnalyticsObject']=r;i[r]=i[r]||function(){
-	(i[r].q=i[r].q||[]).push(arguments)},i[r].l=1*new Date();a=s.createElement(o),
-	m=s.getElementsByTagName(o)[0];a.async=1;a.src=g;m.parentNode.insertBefore(a,m)
-	})(window,document,'script','https://www.google-analytics.com/analytics.js','ga');
-	ga('create', 'UA-12497311-8', 'auto');
-	
-	ga('send', 'pageview');
-}
-</script>
+<script type="text/javascript" src="/bundle.min.4aadf3d82a6ff097c1e01af23be423991c8ffcb480d60c7f5b0d94e61a1704f63f29ca5c23ef6fb7113f98ec7c1acb3b3d32497e779fee8d7ff5825bc41ca6c3.js" integrity="sha512-Sq3z2Cpv8JfB4BryO&#43;QjmRyP/LSA1gx/Ww2U5hoXBPY/KcpcI&#43;9vtxE/mOx8Gss7PTJJfnef7o1/9YJbxBymww=="></script>
 
 
 
