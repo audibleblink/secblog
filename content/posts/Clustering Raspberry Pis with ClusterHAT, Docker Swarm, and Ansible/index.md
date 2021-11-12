@@ -1,6 +1,6 @@
 ---
 Title: "Clustering Pi Zeros With ClusterHAT, Docker Swarm, Traefik, and Ansible"
-date: 2021-10-08T11:25:41-04:00
+date: 2021-11-10
 toc: true
 images:
 tags:

@@ -1,0 +1,806 @@
+<!DOCTYPE html>
+<html lang="en">
+    <head>
+        <meta charset="UTF-8">
+<meta http-equiv="X-UA-Compatible" content="ie=edge">
+<meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+<meta name="author" content="[audible]blink ">
+<meta name="description" content="It calls to you. Your drawer of misfit toys and abandoned projects.
+Every few months, I come back to the world of SoCs to see what&amp;rsquo;s new, but nothing ever really sticks around long enough for it to be considered useful enough to be permanent.
+ Smart mirrors Twitter bots that shame you for not watering your plants Video Game emulators Home control devices The occasional GPIO project to manipulate things in MeatSpace  The only exception is probably an ad-blocking DNS server, the Pi-Hole." />
+<meta name="keywords" content="hacking, blog, science, infosec, development, programming, devops, homelab" />
+<meta name="robots" content="noodp" />
+<meta name="theme-color" content="" />
+<link rel="canonical" href="https://sec.alexflor.es/posts/1/01/clustering-pi-zeros-with-clusterhat-docker-swarm-traefik-and-ansible/" />
+
+
+    <title>
+        
+            Clustering Pi Zeros With ClusterHAT, Docker Swarm, Traefik, and Ansible :: [audible]blink 
+        
+    </title>
+
+
+
+<link href="https://cdnjs.cloudflare.com/ajax/libs/flag-icon-css/3.5.0/css/flag-icon.min.css" rel="stylesheet"
+    type="text/css">
+
+
+
+<link rel="stylesheet" href="/main.e146355a7181a2e59a2df1d4f6807d056d418523cf1d73e11851aa9c821541b7.css">
+
+
+
+    <link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon.png">
+    <link rel="icon" type="image/png" sizes="32x32" href="/favicon-32x32.png">
+    <link rel="icon" type="image/png" sizes="16x16" href="/favicon-16x16.png">
+    <link rel="manifest" href="/site.webmanifest">
+    <link rel="mask-icon" href="/safari-pinned-tab.svg" color="">
+    <link rel="shortcut icon" href="/favicon.ico">
+    <meta name="msapplication-TileColor" content="">
+    <meta name="theme-color" content="">
+
+
+
+<meta itemprop="name" content="Clustering Pi Zeros With ClusterHAT, Docker Swarm, Traefik, and Ansible">
+<meta itemprop="description" content="It calls to you. Your drawer of misfit toys and abandoned projects.
+Every few months, I come back to the world of SoCs to see what&rsquo;s new, but nothing ever really sticks around long enough for it to be considered useful enough to be permanent.
+ Smart mirrors Twitter bots that shame you for not watering your plants Video Game emulators Home control devices The occasional GPIO project to manipulate things in MeatSpace  The only exception is probably an ad-blocking DNS server, the Pi-Hole.">
+
+<meta itemprop="wordCount" content="2282">
+<meta itemprop="keywords" content="devops,homelab," />
+<meta name="twitter:card" content="summary"/>
+<meta name="twitter:title" content="Clustering Pi Zeros With ClusterHAT, Docker Swarm, Traefik, and Ansible"/>
+<meta name="twitter:description" content="It calls to you. Your drawer of misfit toys and abandoned projects.
+Every few months, I come back to the world of SoCs to see what&rsquo;s new, but nothing ever really sticks around long enough for it to be considered useful enough to be permanent.
+ Smart mirrors Twitter bots that shame you for not watering your plants Video Game emulators Home control devices The occasional GPIO project to manipulate things in MeatSpace  The only exception is probably an ad-blocking DNS server, the Pi-Hole."/>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+    
+<script type="application/javascript">
+var doNotTrack = false;
+if (!doNotTrack) {
+	(function(i,s,o,g,r,a,m){i['GoogleAnalyticsObject']=r;i[r]=i[r]||function(){
+	(i[r].q=i[r].q||[]).push(arguments)},i[r].l=1*new Date();a=s.createElement(o),
+	m=s.getElementsByTagName(o)[0];a.async=1;a.src=g;m.parentNode.insertBefore(a,m)
+	})(window,document,'script','https://www.google-analytics.com/analytics.js','ga');
+	ga('create', 'UA-12497311-8', 'auto');
+	
+	ga('send', 'pageview');
+}
+</script>
+
+    </head>
+
+    
+        <body>
+    
+    
+        <div class="container">
+            <header class="header">
+    <span class="header__inner">
+        <a href="/" style="text-decoration: none;">
+    <div class="logo">
+        
+            <span class="logo__mark">></span>
+            <span class="logo__text">$ cd ~/</span>
+            <span class="logo__cursor" style=
+                  "
+                   
+                   ">
+            </span>
+        
+    </div>
+</a>
+
+
+        <span class="header__right">
+            
+                <nav class="menu">
+    <ul class="menu__inner"><li><a href="/posts/">Posts</a></li>
+    </ul>
+</nav>
+
+                <span class="menu-trigger">
+                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24">
+                        <path d="M0 0h24v24H0z" fill="none"/>
+                        <path d="M3 18h18v-2H3v2zm0-5h18v-2H3v2zm0-7v2h18V6H3z"/>
+                    </svg>
+                </span>
+            
+        </span>
+    </span>
+</header>
+
+
+            <div class="content">
+                
+  <main class="post">
+
+    <div class="post-info">
+      <p>
+        <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-clock">
+          <circle cx="12" cy="12" r="10"></circle>
+          <polyline points="12 6 12 12 16 14"></polyline>
+        </svg>
+        11 minutes
+
+        
+      </p>
+    </div>
+
+    <article>
+      <h1 class="post-title">
+        <a href="https://sec.alexflor.es/posts/1/01/clustering-pi-zeros-with-clusterhat-docker-swarm-traefik-and-ansible/">Clustering Pi Zeros With ClusterHAT, Docker Swarm, Traefik, and Ansible</a>
+      </h1>
+
+      
+
+      
+        <hr />
+        <aside id="toc">
+          <div class="toc-title">Table of Contents</div>
+          <nav id="TableOfContents">
+  <ul>
+    <li><a href="#the-clusterhat">The ClusterHAT</a>
+      <ul>
+        <li><a href="#setup">Setup</a></li>
+        <li><a href="#connecting-to-the-pis">Connecting to the Pis</a></li>
+      </ul>
+    </li>
+    <li><a href="#docker-prep-with-ansible">Docker Prep With Ansible</a>
+      <ul>
+        <li><a href="#a-small-tangent-on-containers">A Small Tangent on Containers</a></li>
+        <li><a href="#automating-setup">Automating Setup</a></li>
+      </ul>
+    </li>
+    <li><a href="#docker-swarm-init">Docker Swarm Init</a></li>
+    <li><a href="#deploying-our-first-workload">Deploying Our First Workload</a></li>
+    <li><a href="#conclusion">Conclusion</a></li>
+  </ul>
+</nav>
+        </aside>
+        <hr />
+
+      
+
+      <div class="post-content">
+        <p><img src="0.png" alt=""></p>
+<hr>
+<p><strong>It calls to you.</strong> Your drawer of misfit toys and abandoned projects.</p>
+<p>Every few months, I come back to the world of SoCs to see what&rsquo;s new, but nothing
+ever really sticks around long enough for it to be considered useful enough to be permanent.</p>
+<ul>
+<li>Smart mirrors</li>
+<li><a href="https://twitter.com/thirstyplant1">Twitter bots that shame you</a> for not watering
+your plants</li>
+<li>Video Game emulators</li>
+<li>Home control devices</li>
+<li>The occasional GPIO project to manipulate things in MeatSpace</li>
+</ul>
+<p>The only exception is probably an ad-blocking DNS server, the Pi-Hole. But even that&rsquo;s been
+graduated to running as distributed Linux Containers (<a href="https://linuxcontainers.org">LXC</a>)</p>
+<p>All that said, this project is also probably drawer-bound, but at least it was fun!</p>
+<h2 id="the-clusterhat">The ClusterHAT</h2>
+<p><img src="1.jpg" alt=""></p>
+<blockquote>
+<p><a href="https://www.sparkfun.com/products/18155">https://www.sparkfun.com/products/18155</a></p>
+</blockquote>
+<p>The ClusterHAT sits atop a traditional Raspberry Pi, aka a HAT (Hardware Attached on Top. Yes,
+really). It has slots for you to insert 4 Raspberry Pi Zeros. When Gadget Mode is enabled, and
+the Zeros attach to the HAT, they become their own little subnet, branching off the main Pi.</p>
+<blockquote>
+<p>Gadget Mode enables networking over USB</p>
+</blockquote>
+<p>If comparing to a traditional network setup, we might think of the HAT like a network switch.
+When you combine the HAT with the modified Raspbian ISOs provided by <a href="https://www.8086.net">8086</a>,
+in a couple of minutes you have a little cluster of Pis, ready to do your bidding.</p>
+<h3 id="setup">Setup</h3>
+<p>The instruction over at <a href="https://clusterhat.com/setup-overview">https://clusterhat.com/setup-overview</a> are pretty clear, but in summary:</p>
+<ul>
+<li>The main Pi has its own ISO, which comes in two flavors:
+<ul>
+<li>CNAT - Pi Zeros are served IPs from the main Pi in the 172.19.181/24 range</li>
+<li>CBRIDGE - All 5 Pis are on the same network as you</li>
+</ul>
+</li>
+<li>Pi Zeros get there own corresponding, numbered ISO
+<ul>
+<li>Pi #1 gets ISO P1, and is assigned 172.18.181.1
+<ul>
+<li><em>if using the CNAT image</em></li>
+</ul>
+</li>
+<li>Pi #2 gets ISO P2, and is assigned 172.18.181.2</li>
+<li>and so on</li>
+</ul>
+</li>
+</ul>
+<p><a href="https://8086.support/index.php?action=faq&amp;cat=23&amp;id=97&amp;artlang=en">You <em>can</em> netboot</a>
+all of the Zeros from the main Pi&rsquo;s, but keep in mind you&rsquo;d be sharing a single sdcard between 5
+operating systems. It&rsquo;s cool to see, if you have the time, but it might not be an ideal long term
+solution. <code>apt upgrade</code> on 5 nodes took about an hour. YMMV since sdcards come in a variety of
+speeds.</p>
+<p><a href="https://8086.support/content/23/97/en/how-do-i-boot-pi-zeros-without-sd-cards-cluster-hat_cluster-ctrl.html">Netboot instructions here</a></p>
+<p>Once all the sdcards are flashed, (or netboot shares copied), make sure to <code>touch /boot/ssh</code> on
+each node to enable remote access.</p>
+<h3 id="connecting-to-the-pis">Connecting to the Pis</h3>
+<p>Place your Zeros in the ClusterHat&rsquo;s ports and attach the ClusterHat to the main Pi.</p>
+<p>Boot up the main Pi, SSH in, and supply power to the Zeros with:</p>
+<pre tabindex="0"><code>clusterctrl up p{1,2,3,4}
+</code></pre><p>Let&rsquo;s talk about the CNAT image. The Zeros aren&rsquo;t directly accessible from your main LAN. Instead
+of SSHing to the main Pi, then SSHing again to each Zero, we can simplify the process by
+setting the main Pi, which <em>is</em> on your direct physical network, as an SSH ProxyJump.</p>
+<p>In your ~/.ssh/config file, put in the following, with modifications for your hostnames and IPs, of
+course:</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-hcl" data-lang="hcl"><span style="color:#66d9ef">Host</span> <span style="color:#960050;background-color:#1e0010">*</span>.<span style="color:#66d9ef">chappa</span>.<span style="color:#66d9ef">ai</span>
+  <span style="color:#66d9ef">ProxyJump</span> <span style="color:#66d9ef">hammond</span>
+  <span style="color:#66d9ef">User</span> <span style="color:#66d9ef">Pi</span>
+
+<span style="color:#66d9ef">Host</span> <span style="color:#66d9ef">hammond</span>.<span style="color:#66d9ef">chappa</span>.<span style="color:#66d9ef">ai</span>
+    <span style="color:#66d9ef">HostName</span> <span style="color:#ae81ff">192</span>.<span style="color:#ae81ff">168</span>.<span style="color:#ae81ff">42</span>.<span style="color:#ae81ff">10</span>
+
+<span style="color:#66d9ef">Host</span> <span style="color:#66d9ef">oneil</span>.<span style="color:#66d9ef">chappa</span>.<span style="color:#66d9ef">ai</span>
+    <span style="color:#66d9ef">HostName</span> <span style="color:#ae81ff">172</span>.<span style="color:#ae81ff">19</span>.<span style="color:#ae81ff">181</span>.<span style="color:#ae81ff">1</span>
+
+<span style="color:#66d9ef">Host</span> <span style="color:#66d9ef">carter</span>.<span style="color:#66d9ef">chappa</span>.<span style="color:#66d9ef">ai</span>
+    <span style="color:#66d9ef">HostName</span> <span style="color:#ae81ff">172</span>.<span style="color:#ae81ff">19</span>.<span style="color:#ae81ff">181</span>.<span style="color:#ae81ff">2</span>
+
+<span style="color:#66d9ef">Host</span> <span style="color:#66d9ef">tealc</span>.<span style="color:#66d9ef">chappa</span>.<span style="color:#66d9ef">ai</span>
+    <span style="color:#66d9ef">HostName</span> <span style="color:#ae81ff">172</span>.<span style="color:#ae81ff">19</span>.<span style="color:#ae81ff">181</span>.<span style="color:#ae81ff">3</span>
+
+<span style="color:#66d9ef">Host</span> <span style="color:#66d9ef">danieljackson</span>.<span style="color:#66d9ef">chappa</span>.<span style="color:#66d9ef">ai</span>
+    <span style="color:#66d9ef">HostName</span> <span style="color:#ae81ff">172</span>.<span style="color:#ae81ff">19</span>.<span style="color:#ae81ff">181</span>.<span style="color:#ae81ff">4</span>
+</code></pre></div><p>You can then copy your ssh public key to each host with:</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-bash" data-lang="bash"><span style="color:#66d9ef">for</span> name in <span style="color:#f92672">{</span>hammond,oneil,carter,tealc,danieljackson<span style="color:#f92672">}</span>.chappa.ai ; <span style="color:#66d9ef">do</span>
+  ssh-copy-id -i ~/.ssh/id_ed25519 <span style="color:#e6db74">&#34;</span><span style="color:#e6db74">${</span>name<span style="color:#e6db74">}</span><span style="color:#e6db74">&#34;</span>
+<span style="color:#66d9ef">done</span>
+</code></pre></div><p>Enter your passwords and you should now be set up for password-less ssh, which we&rsquo;ll need later to
+continue installing Docker on each node with Ansible.</p>
+<p>On each Pi, run through the menu at <code>sudo raspi-config</code>. Spend as much or as little time as you
+want here. I usually just go with:</p>
+<p><img src="2.png" alt=""></p>
+<ol>
+<li>System Options</li>
+</ol>
+<ul>
+<li>change password</li>
+<li>change hostname</li>
+</ul>
+<ol start="4">
+<li>Performance Options</li>
+</ol>
+<ul>
+<li>reduce gpu memory to 16</li>
+</ul>
+<ol start="6">
+<li>Advance Options</li>
+</ol>
+<ul>
+<li>expand memory card</li>
+</ul>
+<h2 id="docker-prep-with-ansible">Docker Prep With Ansible</h2>
+<p>Raspberry Pis need to have some options enabled before containers are able to run.</p>
+<p>Later, we&rsquo;ll append to their <code>/boot/cmdline.txt</code> the following:</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-hcl" data-lang="hcl">cgroup_memory<span style="color:#f92672">=</span>1 cgroup_enable<span style="color:#f92672">=</span>memory cgroup_enable<span style="color:#f92672">=</span><span style="color:#66d9ef">cpuset</span>
+</code></pre></div><p>This tells the kernel to allow the use of <code>cgroups</code>, or &ldquo;control groups&rdquo;. Docker containers are just
+a scoped set of process and resources on your computer. Containers were around long before Docker,
+which made the use of Linux Namespaces and CGroups more accessible.</p>
+<h3 id="a-small-tangent-on-containers">A Small Tangent on Containers</h3>
+<blockquote>
+<p>Containers are logical units of Linux kernel features, distributed as tarballs, whose processes
+are anchored to namespaces and controlled by CGroups.</p>
+</blockquote>
+<h4 id="why-are-namespaces">Why are Namespaces</h4>
+<p>To create a Namespace for a process, additional flags must be passed to process-creation syscalls.
+These additional flags can restrict what this process can see and what other processes can see
+about it</p>
+<p><strong>Other things you can namespace</strong></p>
+<ul>
+<li>Hostnames</li>
+<li>Process IDs</li>
+<li>Filesystems</li>
+<li>IPC</li>
+<li>Networking</li>
+<li>User IDs</li>
+</ul>
+<h4 id="why-are-cgroups">Why are CGroups</h4>
+<p>At its most basic? They allow you to control, audit, and limit how your system&rsquo;s resources are
+accessed or used.</p>
+<ul>
+<li><strong>Resource limiting</strong> Groups can be set to not exceed a configured memory limit</li>
+<li><strong>Prioritization</strong> Some groups may get a larger share of CPU or disk I/O</li>
+<li><strong>Accounting</strong> Measures a group&rsquo;s resource usage</li>
+<li><strong>Control</strong> Freezing groups of processes</li>
+</ul>
+<p>What sorts of things can we control?</p>
+<ul>
+<li>Memory: <code>/sys/fs/cgroup/memory</code></li>
+<li>CPU/Cores <code>/sys/fs/cgroup/cpu*</code></li>
+<li>I/O <code>/sys/fs/cgroup/blkio</code></li>
+<li>Processes <code>/sys/fs/cgroup/cgroup.procs</code></li>
+<li>Devices <code>/sys/fs/cgroup/devices.*</code></li>
+</ul>
+<h3 id="automating-setup">Automating Setup</h3>
+<p>If we&rsquo;re interested in following along, all the playbooks can be found here:
+<a href="https://github.com/audibleblink/clusterctrl-ansible/">https://github.com/audibleblink/clusterctrl-ansible/</a></p>
+<p>First, we&rsquo;ll need to setup our inventory file and name our groups. Below is one possible
+configuration.</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-toml" data-lang="toml"><span style="color:#75715e"># file: inventory.ini</span>
+[<span style="color:#a6e22e">clusterctrl_server</span>]
+<span style="color:#a6e22e">hammond</span>
+
+
+[<span style="color:#a6e22e">clusterctrl_nodes</span>]
+<span style="color:#a6e22e">oneil</span>
+<span style="color:#a6e22e">carter</span>
+<span style="color:#a6e22e">tealc</span>
+<span style="color:#a6e22e">danieljackson</span>
+
+
+[<span style="color:#a6e22e">clusterctrl</span><span style="color:#960050;background-color:#1e0010">:</span><span style="color:#a6e22e">children</span>]
+<span style="color:#a6e22e">clusterctrl_server</span>
+<span style="color:#a6e22e">clusterctrl_nodes</span>
+
+</code></pre></div><p>If you&rsquo;d like, create an <code>ansible.cfg</code> to save a couple keystrokes when calling <code>ansible-playbook</code>.
+Otherwise you&rsquo;d need to specify an inventory file each time.</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-ini" data-lang="ini"><span style="color:#66d9ef">[defaults]</span>
+<span style="color:#a6e22e">inventory</span> <span style="color:#f92672">=</span> <span style="color:#e6db74">./inventory.ini</span>
+<span style="color:#a6e22e">interpreter_python</span> <span style="color:#f92672">=</span> <span style="color:#e6db74">/usr/bin/python3</span>
+</code></pre></div><p>The following task ensures, in an idempotent way, that our kernel flags exist on all our Pis, and
+reboots the Pi if the flags weren&rsquo;t already there.</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-yml" data-lang="yml">---
+
+- <span style="color:#f92672">name</span>: <span style="color:#ae81ff">Enable container features</span>
+  <span style="color:#f92672">become</span>: <span style="color:#66d9ef">true</span>
+  <span style="color:#f92672">register</span>: <span style="color:#ae81ff">containers_enabled</span>
+  <span style="color:#f92672">replace</span>:
+    <span style="color:#f92672">path</span>: <span style="color:#ae81ff">/boot/cmdline.txt</span>
+    <span style="color:#f92672">regexp</span>: <span style="color:#e6db74">&#39;^([\w](?!.*\b{{ item }}\b).*)$&#39;</span>
+    <span style="color:#f92672">replace</span>: <span style="color:#e6db74">&#39;\1 {{ item }}&#39;</span>
+  <span style="color:#f92672">with_items</span>:
+  - <span style="color:#e6db74">&#34;cgroup_enable=cpuset&#34;</span>
+  - <span style="color:#e6db74">&#34;cgroup_memory=1&#34;</span>
+  - <span style="color:#e6db74">&#34;cgroup_enable=memory&#34;</span>
+
+
+- <span style="color:#f92672">name</span>: <span style="color:#ae81ff">Reboot after enabling containers</span>
+  <span style="color:#f92672">become</span>: <span style="color:#66d9ef">true</span>
+  <span style="color:#f92672">when</span>: <span style="color:#ae81ff">containers_enabled.changed</span>
+  <span style="color:#f92672">reboot</span>:
+</code></pre></div><p>Here we ensure all necessary packages, GPG keys, and repos are present before installing
+<code>docker-ce</code></p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-yml" data-lang="yml">---
+
+- <span style="color:#f92672">name</span>: <span style="color:#ae81ff">Install Docker Prereqs</span>
+  <span style="color:#f92672">become</span>: <span style="color:#66d9ef">true</span>
+  <span style="color:#f92672">apt</span>:
+    <span style="color:#f92672">package</span>: <span style="color:#e6db74">&#34;{{ packages }}&#34;</span>
+    <span style="color:#f92672">state</span>: <span style="color:#ae81ff">present</span>
+
+- <span style="color:#f92672">name</span>: <span style="color:#ae81ff">Add Docker GPG apt Key</span>
+  <span style="color:#f92672">become</span>: <span style="color:#66d9ef">true</span>
+  <span style="color:#f92672">apt_key</span>:
+    <span style="color:#f92672">url</span>: <span style="color:#e6db74">&#34;{{ gpg_key_url }}&#34;</span>
+    <span style="color:#f92672">state</span>: <span style="color:#ae81ff">present</span>
+    <span style="color:#f92672">keyring</span>: <span style="color:#e6db74">&#34;{{ gpg_key_out }}&#34;</span>
+
+- <span style="color:#f92672">name</span>: <span style="color:#ae81ff">Add Docker Repository</span>
+  <span style="color:#f92672">become</span>: <span style="color:#66d9ef">true</span>
+  <span style="color:#f92672">apt_repository</span>:
+    <span style="color:#f92672">repo</span>: <span style="color:#e6db74">&#34;deb [arch={{arch}} signed-by={{ gpg_key_out }}] {{ repo_url }}  {{ release }} stable&#34;</span>
+    <span style="color:#f92672">state</span>: <span style="color:#ae81ff">present</span>
+
+- <span style="color:#f92672">name</span>: <span style="color:#ae81ff">Update apt and install docker-ce</span>
+  <span style="color:#f92672">become</span>: <span style="color:#66d9ef">true</span>
+  <span style="color:#f92672">apt</span>:
+    <span style="color:#f92672">package</span>: <span style="color:#e6db74">&#34;{{ docker_packages }}&#34;</span>
+    <span style="color:#f92672">state</span>: <span style="color:#ae81ff">latest</span>
+    <span style="color:#f92672">update_cache</span>: <span style="color:#66d9ef">yes</span>
+</code></pre></div><p>An example of a variable file that needs to exist for the code above to work looks like:</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-yml" data-lang="yml">
+<span style="color:#75715e"># docker installation prerequisites</span>
+<span style="color:#f92672">packages</span>:
+  - <span style="color:#ae81ff">apt-transport-https</span>
+  - <span style="color:#ae81ff">ca-certificates</span>
+  - <span style="color:#ae81ff">curl</span>
+  - <span style="color:#ae81ff">gnupg</span>
+  - <span style="color:#ae81ff">lsb-release</span>
+
+<span style="color:#75715e"># docker repo gpg key location</span>
+<span style="color:#f92672">gpg_key_url</span>: <span style="color:#ae81ff">https://download.docker.com/linux/raspbian/gpg</span>
+
+<span style="color:#75715e"># outfile on local disk for docker repo gpg key</span>
+<span style="color:#f92672">gpg_key_out</span>: <span style="color:#ae81ff">/usr/share/keyrings/docker-archive-keyring.gpg</span>
+
+<span style="color:#75715e"># components for genreating the `deb` line being added to `/etc/apt/sources.list.d`</span>
+<span style="color:#f92672">repo_url</span>: <span style="color:#ae81ff">https://download.docker.com/linux/raspbian</span>
+<span style="color:#f92672">release</span>: <span style="color:#ae81ff">buster</span>
+<span style="color:#f92672">arch</span>: <span style="color:#ae81ff">armhf</span>
+
+<span style="color:#75715e"># installing docker</span>
+<span style="color:#f92672">docker_packages</span>:
+  - <span style="color:#ae81ff">docker-ce </span>
+  - <span style="color:#ae81ff">docker-ce-cli </span>
+  - <span style="color:#ae81ff">containerd.io</span>
+</code></pre></div><h4 id="folder-structure">Folder Structure</h4>
+<p>All of the tasks can live in a single playbook, we don&rsquo;t need to over complicate things and use
+the folder hierarchy that Ansible Docs recommend for managing big fleets.</p>
+<p>&hellip;</p>
+<p>But we&rsquo;re gonna anyways.</p>
+<pre tabindex="0"><code>├── ansible.cfg
+├── clusterctrl.yml
+├── inventory.list
+├── roles
+│   ├── clusterctrl
+│   │   ├── tasks
+│   │   │   ├── main.yml
+│   │   │   ├── apt_upgrade.yml
+│   │   │   ├── ensure_aptitude.yml
+│   │   │   ├── enable_containers.yml
+│   │   │   ├── install_docker.yml
+│   │   │   ├── docker_group_add.yml
+│   │   │   └── swarm_init.yml
+│   │   ├── vars
+│   │   │   └── main.yml
+
+</code></pre><p>Both simple and hierarchical methods are available here.  <a href="https://github.com/audibleblink/clusterctrl-ansible/">https://github.com/audibleblink/clusterctrl-ansible/</a></p>
+<blockquote>
+<p><em>Why even talk about the folder structure then?</em><br>
+Porque no los dos?</p>
+</blockquote>
+<p>Some may already have an Ansible repo and most likely have playbooks to manage updates, upgrades,
+and user management so it might not make sense to keep those tasks in a single-file play.
+Sharing it in this form makes it a bit easier to incorporate to existing Ansible setups. Also, if
+someone&rsquo;s just starting their Ansible repo, perhaps this could serve as a starting skeleton</p>
+<hr>
+<p><strong>Back to the Pis</strong></p>
+<p>Once all Pis are up and playbooks intact, run:</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-sh" data-lang="sh">ansible-playbook clusterctrl.yml
+</code></pre></div><h2 id="docker-swarm-init">Docker Swarm Init</h2>
+<p>It is possible to both initialize and populate the Swarm with an Ansible play, but it requires some
+more setup and the use of plugins. We&rsquo;ll meet in the middle though, and still use Ansible to run the commands
+remotely instead of ssh-ing to each. (although that is what&rsquo;s happening in Ansible&rsquo;s background
+anyway)</p>
+<p>Because of our <code>inventory.list</code> config file in the current directory, on the main Pi, we can run:</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-bash" data-lang="bash">ansible clusterctrl_server -a <span style="color:#e6db74">&#34;docker swarm init --advertise-addr 172.19.181.254&#34;</span>
+
+<span style="color:#75715e"># If we didn&#39;t have that config file, we&#39;d need to tell `ansibile` where to find our inventory file.</span>
+ansible -i /path/to/inventory clusterctrl_server -a <span style="color:#e6db74">&#34;docker swarm init --advertise-addr 172.19.181.254&#34;</span>
+
+</code></pre></div><p>The <code>172</code> IP is for the internal network interface that the Pi Zeros attach to.</p>
+<p>We should get an output that includes a line that looks like this:</p>
+<pre tabindex="0"><code>docker swarm join \
+  --token SWMTKM-1-1y1rdnp7zjcj2vfw7mkhwzrwizqzixzffmoz4wew1brs0vlnh7-4axlaf1luquyxdgdq6gp3jalr \
+  172.19.181.254:2377
+</code></pre><p>Let&rsquo;s run that command on each node like this:</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-bash" data-lang="bash">ansible clusterctrl_nodes -a <span style="color:#e6db74">&#34;docker swarm join --token SWMTKM-1-1y1rdnp7zjcj2vfw7mkhwzrwizqzixzffmoz4wew1brs0vlnh7-4axlaf1luquyxdgdq6gp3jalr 172.19.181.254:2377&#34;</span>
+</code></pre></div><p>Hopefully our output looks like:</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-bash" data-lang="bash">❯❯ ansible clusterctrl_nodes -a <span style="color:#e6db74">&#34;docker swarm join --token SWMTKN-1-5lyx690gdzra3jw0ijeuug2sifezuohhb51sk6qw00n8dulebq-23l27nw3oxjh2591shgyncp39 172.19.181.254:2377&#34;</span>
+
+carter | CHANGED | rc<span style="color:#f92672">=</span><span style="color:#ae81ff">0</span> &gt;&gt;
+This node joined a swarm as a worker.
+danieljackson | CHANGED | rc<span style="color:#f92672">=</span><span style="color:#ae81ff">0</span> &gt;&gt;
+This node joined a swarm as a worker.
+oneil | CHANGED | rc<span style="color:#f92672">=</span><span style="color:#ae81ff">0</span> &gt;&gt;
+This node joined a swarm as a worker.
+tealc | CHANGED | rc<span style="color:#f92672">=</span><span style="color:#ae81ff">0</span> &gt;&gt;
+This node joined a swarm as a worker.
+</code></pre></div><p>View your new Swarm Cluster with:</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-bash" data-lang="bash">pi@hammond:~ $ docker node ls
+ID                            HOSTNAME        STATUS    AVAILABILITY   MANAGER STATUS   ENGINE VERSION
+o4i5q6yu4r3cc01t3nhcvv6nv *   hammond         Ready     Active         Leader           20.10.9
+8f4k7jlwlfx60x0aadmjbn350     oneil           Ready     Active                          20.10.9
+lpqd72inz9vooxgidyc14o7l6     carter          Ready     Active                          20.10.9
+bhbwbtcyaw56oxzvb3hnawr5y     tealc           Ready     Active                          20.10.9
+hxplragfdecau0x464s8jf5s9     danieljackson   Ready     Active                          20.10.9
+</code></pre></div><h2 id="deploying-our-first-workload">Deploying Our First Workload</h2>
+<p>With our cluster ready to receive commands, let&rsquo;s deploy <a href="https://hub.docker.com/r/linuxserver/code-server">code-server</a>
+behind the dynamic reverse proxy, Traefik. We&rsquo;ll configure Traefik to also assign valid TLS certs
+for our internal network, without having to expose anything to the broader internet by using the
+cloudflare DNS challenge functionality build into Traefik.</p>
+<p>If you already own a domain name, create/use a cloudflare account and switch the DNS server in
+your registrar settings to cloudflare&rsquo;s servers. Then create API tokens for just that DNS zone.
+We&rsquo;ll plug it into Traefik so it knows to how to answer DNS challenges from Let&rsquo;s Encrypt.</p>
+<p>The service definition for Swarm looks like this.</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-yaml" data-lang="yaml">---
+<span style="color:#f92672">version</span>: <span style="color:#e6db74">&#34;3.8&#34;</span>
+
+<span style="color:#f92672">networks</span>:
+  <span style="color:#f92672">proxy</span>:
+    <span style="color:#f92672">external</span>: <span style="color:#66d9ef">true</span>
+
+<span style="color:#f92672">secrets</span>:
+  <span style="color:#f92672">cf_token</span>:
+    <span style="color:#f92672">external</span>: <span style="color:#66d9ef">true</span>
+
+<span style="color:#f92672">services</span>:
+
+  <span style="color:#f92672">traefik</span>:
+    <span style="color:#f92672">image</span>: <span style="color:#e6db74">&#34;traefik:latest&#34;</span>
+    <span style="color:#f92672">secrets</span>:
+      - <span style="color:#ae81ff">cf_token</span>
+    <span style="color:#f92672">environment</span>:
+      - <span style="color:#ae81ff">CF_API_EMAIL=sg1@sgc.gov</span>
+      - <span style="color:#ae81ff">CF_DNS_API_TOKEN_FILE=/run/secrets/cf_token</span>
+
+    <span style="color:#f92672">command</span>: &gt;<span style="color:#e6db74">
+</span><span style="color:#e6db74">      --api.dashboard=true
+</span><span style="color:#e6db74">      --api.insecure=true
+</span><span style="color:#e6db74">      --providers.docker.swarmmode=true
+</span><span style="color:#e6db74">      --providers.docker.exposedbydefault=false
+</span><span style="color:#e6db74">      --providers.docker.network=proxy
+</span><span style="color:#e6db74">      --providers.file.filename=/traefik_provider.yml
+</span><span style="color:#e6db74">      --providers.file.watch=true
+</span><span style="color:#e6db74">      --entrypoints.web.address=&#34;:80&#34;
+</span><span style="color:#e6db74">      --entrypoints.web.http.redirections.entrypoint.to=websecure
+</span><span style="color:#e6db74">      --entrypoints.websecure.address=&#34;:443&#34;
+</span><span style="color:#e6db74">      --entrypoints.websecure.http.tls.certresolver=cloudflare
+</span><span style="color:#e6db74">      --entrypoints.websecure.http.tls.domains[0].main=chappa.ai
+</span><span style="color:#e6db74">      --entrypoints.websecure.http.tls.domains[0].sans=*.chappa.ai
+</span><span style="color:#e6db74">      --serverstransport.insecureskipverify=true
+</span><span style="color:#e6db74">      --certificatesresolvers.cloudflare.acme.email=sg1@sgc.gov
+</span><span style="color:#e6db74">      --certificatesresolvers.cloudflare.acme.dnschallenge.provider=cloudflare
+</span><span style="color:#e6db74">      --certificatesresolvers.cloudflare.acme.dnschallenge.resolvers=1.1.1.1:53
+</span><span style="color:#e6db74">      --certificatesresolvers.cloudflare.acme.storage=/config/acme.json</span>      
+
+    <span style="color:#f92672">networks</span>:
+      - <span style="color:#ae81ff">proxy</span>
+
+    <span style="color:#f92672">ports</span>:
+      - <span style="color:#ae81ff">80</span>:<span style="color:#ae81ff">80</span>
+      - <span style="color:#ae81ff">443</span>:<span style="color:#ae81ff">443</span>
+
+    <span style="color:#f92672">volumes</span>:
+      - <span style="color:#e6db74">&#34;/var/run/docker.sock:/var/run/docker.sock:ro&#34;</span>
+      - <span style="color:#e6db74">&#34;appdata:/config&#34;</span>
+
+    <span style="color:#f92672">deploy</span>:
+
+      <span style="color:#f92672">placement</span>:
+        <span style="color:#f92672">constraints</span>:
+          - <span style="color:#e6db74">&#34;node.role == manager&#34;</span>
+
+      <span style="color:#f92672">labels</span>:
+        - <span style="color:#e6db74">&#34;traefik.enable=true&#34;</span>
+        - <span style="color:#e6db74">&#34;traefik.docker.network=proxy&#34;</span>
+
+        - <span style="color:#e6db74">&#34;traefik.http.routers.api.entrypoints=websecure&#34;</span>
+        - <span style="color:#e6db74">&#34;traefik.http.routers.api.tls=true&#34;</span>
+        - <span style="color:#e6db74">&#34;traefik.http.routers.api.rule=Host(`traefik.chappa.ai`)&#34;</span>
+        - <span style="color:#e6db74">&#34;traefik.http.routers.api.service=api@internal&#34;</span>
+        - <span style="color:#e6db74">&#34;traefik.http.services.api.loadbalancer.server.port=8080&#34;</span>
+
+<span style="color:#f92672">volumes</span>:
+  <span style="color:#f92672">appdata</span>:
+    <span style="color:#f92672">driver_opts</span>:
+      <span style="color:#f92672">type</span>: <span style="color:#e6db74">&#34;cifs&#34;</span>
+      <span style="color:#f92672">o</span>: <span style="color:#e6db74">&#34;username=docker,password=swarm,vers=3.0,uid=1000,gid=1000,rw,umask=0177&#34;</span>
+      <span style="color:#f92672">device</span>: <span style="color:#e6db74">&#34;//YOUR_NAS_IP/configs/swarm/traefik&#34;</span>
+</code></pre></div><p>A couple notes:</p>
+<ul>
+<li>This config uses Swarm&rsquo;s Secrets functionality. You create them with <code>docker secret create</code>, then
+reference them in your service definition.
+<ul>
+<li>You can also set the <code>CF_DNS_API_TOKEN</code> environment variable manually. The <code>_FILE</code> suffix on
+the enivronment variable above is a Swarm-ism so you can use files as string inputs</li>
+</ul>
+</li>
+<li>It uses a Volume, which is an SMB share elsewhere on the network, in order to store persistent
+data. This is where we&rsquo;ll save the <code>acme.json</code> file that Traefik gets from cloudflare.</li>
+<li>It also enables the Traefik dashboard and API. Useful for getting an overview of everything
+deployed through Traefik, but should be disabled if public facing or when not troubleshooting.</li>
+<li>Traefik can use many different certificate resolvers, cloudflare is just one of many.</li>
+<li>Since Traefik is the ingress for the whole cluster, it is scoped to only be deployed on the
+manager node (hammond, in this case)</li>
+<li>Whenever you see <code>external: true</code> in Swarm docker-compose files, that means the resource already exists in the
+swarm. You&rsquo;ll see that <code>secrets</code> and <code>network</code> both have this key/value. Before deploying this
+service, <code>docker network create -d overlay proxy</code></li>
+<li>Notice the <code>umask</code> in the volumes block. The eventual <code>acme.json</code> needs to have <code>0600</code>
+permissions in order for Traefik to read it in the future. It will complain about the
+permissions being overly-permissive and won&rsquo;t use the certs when you browse to your services.</li>
+</ul>
+<p>When ready, from your server node run:</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-sh" data-lang="sh">docker stack deploy -c docker-compose.yml
+</code></pre></div><p>This should spin up your Traefik container. Once you attempt to access it at
+<code>https://traefik.chappa.ai</code> for the first time, Traefik will conduct the challenge/response dance
+necessary to grant you certificates to <code>chappa.ai</code> and a wildcard cert at <code>*.chappa.ai</code> (previously
+configured in the service definition above)</p>
+<p><img src="3.png" alt=""></p>
+<p>Finally, lets deploy code-server, which is VSCode in a browser. Handy for editing things from any
+computer, or remote dev on Linux.</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-yaml" data-lang="yaml">---
+<span style="color:#f92672">version</span>: <span style="color:#e6db74">&#34;3&#34;</span>
+
+<span style="color:#f92672">networks</span>:
+  <span style="color:#f92672">proxy</span>:
+    <span style="color:#f92672">external</span>: <span style="color:#66d9ef">true</span>
+
+<span style="color:#f92672">services</span>:
+
+  <span style="color:#f92672">code</span>:
+    <span style="color:#f92672">image</span>: <span style="color:#ae81ff">linuxserver/code-server:arm32v7-latest</span>
+    <span style="color:#f92672">environment</span>:
+      - <span style="color:#ae81ff">PUID=1000</span>
+      - <span style="color:#ae81ff">PGID=1000</span>
+      - <span style="color:#ae81ff">TZ=America/New_York</span>
+      - <span style="color:#ae81ff">PROXY_DOMAIN=code.chappa.ai</span>
+      - <span style="color:#ae81ff">PASSWORD=password</span> <span style="color:#75715e">#optional</span>
+      - <span style="color:#ae81ff">SUDO_PASSWORD=password</span> <span style="color:#75715e">#optional</span>
+      <span style="color:#75715e"># - HASHED_PASSWORD= #optional</span>
+      <span style="color:#75715e"># - SUDO_PASSWORD_HASH= #optional</span>
+
+    <span style="color:#f92672">networks</span>:
+      - <span style="color:#ae81ff">proxy</span>
+
+    <span style="color:#f92672">volumes</span>:
+      - <span style="color:#e6db74">&#34;appdata:/config&#34;</span>
+
+    <span style="color:#f92672">ports</span>:
+      - <span style="color:#e6db74">&#34;8443:8443&#34;</span>
+
+    <span style="color:#f92672">deploy</span>:
+
+      <span style="color:#f92672">placement</span>:
+        <span style="color:#f92672">constraints</span>:
+          - <span style="color:#e6db74">&#34;node.role == manager&#34;</span>
+      <span style="color:#f92672">labels</span>:
+        - <span style="color:#e6db74">&#34;traefik.enable=true&#34;</span>
+        - <span style="color:#e6db74">&#34;traefik.docker.network=proxy&#34;</span>
+
+        - <span style="color:#e6db74">&#34;traefik.http.routers.code-rtr.entrypoints=websecure&#34;</span>
+        - <span style="color:#e6db74">&#34;traefik.http.routers.code-rtr.tls=true&#34;</span>
+        - <span style="color:#e6db74">&#34;traefik.http.routers.code-rtr.rule=Host(`code.chappa.ai`)&#34;</span>
+        - <span style="color:#e6db74">&#34;traefik.http.routers.code-rtr.service=code-svc&#34;</span>
+        - <span style="color:#e6db74">&#34;traefik.http.services.code-svc.loadbalancer.server.port=8443&#34;</span>
+
+
+<span style="color:#f92672">volumes</span>:
+  <span style="color:#f92672">appdata</span>:
+    <span style="color:#f92672">driver_opts</span>:
+      <span style="color:#f92672">type</span>: <span style="color:#e6db74">&#34;cifs&#34;</span>
+      <span style="color:#f92672">o</span>: <span style="color:#e6db74">&#34;username=docker,password=swarm,vers=3.0,uid=1000,gid=1000,rw&#34;</span>
+      <span style="color:#f92672">device</span>: <span style="color:#e6db74">&#34;//YOUR_NAS_IP/configs/swarm/code&#34;</span>
+</code></pre></div><p>Notes:</p>
+<ul>
+<li>We also scope this to the swarm manager because code-server doesn&rsquo;t run on armhfV6 (which is
+what my Pi Zeros are). Given compatible architectures, you can remove this constraint and have
+many replicas of code-server in order to achieve redundancy.</li>
+</ul>
+<p>Upon first visit to <code>code.chappa.ai</code>, you&rsquo;ll be granted TLS certs for that domain in the background
+before finally loading:</p>
+<p><img src="4.png" alt=""></p>
+<h2 id="conclusion">Conclusion</h2>
+<p>Feel free to stuff your cluster back in your drawer and GO OUTSIDE!</p>
+
+      </div>
+    </article>
+
+    <hr />
+
+    <div class="post-info">
+      
+    <p>
+        <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-tag meta-icon"><path d="M20.59 13.41l-7.17 7.17a2 2 0 0 1-2.83 0L2 12V2h10l8.59 8.59a2 2 0 0 1 0 2.82z"></path><line x1="7" y1="7" x2="7" y2="7"></line></svg>
+
+        <span class="tag"><a href="https://sec.alexflor.es/tags/devops/">devops</a></span>
+        <span class="tag"><a href="https://sec.alexflor.es/tags/homelab/">homelab</a></span>
+        
+    </p>
+
+      
+
+      <p>
+        <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-file-text">
+          <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path>
+          <polyline points="14 2 14 8 20 8"></polyline>
+          <line x1="16" y1="13" x2="8" y2="13"></line>
+          <line x1="16" y1="17" x2="8" y2="17"></line>
+          <polyline points="10 9 9 9 8 9"></polyline>
+        </svg>
+        2282 Words
+      </p>
+
+      <p>
+        <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-calendar">
+          <rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect>
+          <line x1="16" y1="2" x2="16" y2="6"></line>
+          <line x1="8" y1="2" x2="8" y2="6"></line>
+          <line x1="3" y1="10" x2="21" y2="10"></line>
+        </svg>
+        
+          0000-12-31 19:03
+        
+
+        
+      </p>
+    </div>
+
+    
+    <div class="pagination">
+        <div class="pagination__title">
+            <span class="pagination__title-h"></span>
+            <hr />
+        </div>
+
+        <div class="pagination__buttons">
+            
+            <span class="button previous">
+                <a href="https://sec.alexflor.es/posts/2016/10/b2r-tr0ll-walkthrough/">
+                    <span class="button__icon">←</span>
+                    <span class="button__text">B2R: Tr0ll Walkthrough</span>
+                </a>
+            </span>
+            
+
+            
+        </div>
+    </div>
+
+
+    
+      
+        <div id="comments">
+          <div id="disqus_thread"></div>
+<script type="application/javascript">
+    var disqus_config = function () {
+    
+    
+    
+    };
+    (function() {
+        if (["localhost", "127.0.0.1"].indexOf(window.location.hostname) != -1) {
+            document.getElementById('disqus_thread').innerHTML = 'Disqus comments not available by default when the website is previewed locally.';
+            return;
+        }
+        var d = document, s = d.createElement('script'); s.async = true;
+        s.src = '//' + "blinksec" + '.disqus.com/embed.js';
+        s.setAttribute('data-timestamp', +new Date());
+        (d.head || d.body).appendChild(s);
+    })();
+</script>
+<noscript>Please enable JavaScript to view the <a href="https://disqus.com/?ref_noscript">comments powered by Disqus.</a></noscript>
+<a href="https://disqus.com" class="dsq-brlink">comments powered by <span class="logo-disqus">Disqus</span></a>
+        </div>
+      
+    
+
+    
+
+  </main>
+
+            </div>
+
+            
+                <footer class="footer">
+    
+    
+</footer>
+
+            
+        </div>
+
+        
+
+
+
+<script type="text/javascript" src="/bundle.min.4aadf3d82a6ff097c1e01af23be423991c8ffcb480d60c7f5b0d94e61a1704f63f29ca5c23ef6fb7113f98ec7c1acb3b3d32497e779fee8d7ff5825bc41ca6c3.js" integrity="sha512-Sq3z2Cpv8JfB4BryO&#43;QjmRyP/LSA1gx/Ww2U5hoXBPY/KcpcI&#43;9vtxE/mOx8Gss7PTJJfnef7o1/9YJbxBymww=="></script>
+
+
+
+    </body>
+</html>
