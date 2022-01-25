@@ -1,36 +1,40 @@
 ---
-title: "Accidentally Graphing DLL Hijacks in All Electron Apps"
-date: 2021-10-08T16:50:47-04:00
-draft: true
+title: "Accidentally Graphing DLL Hijacks in Every Electron App"
+date: 2022-01-25T16:50:47-04:00
+draft: false
 toc: false
 images:
+  - 4.png
 tags:
-  - untagged
+  - neo4j
+  - windows
+
 ---
 
 _or Building Your Own Binoculars_
 
-I like this analogy for a couple of reasons.
-- Self-sufficiency in the face of necessity
+I like this bi-line for a couple of reasons.
+- It touches on self-sufficiency in the face of necessity
 - It could bring up one of two things
 	- You may be too far from the problem. Think about how to get closer
-	- You may be too [inside baseball](https://en.wikipedia.org/wiki/Inside_baseball_(metaphor)) to have an objective opinion about a particular problem. Step back and look from the outside in
-- Building your own tools to solve a problem will reveal perspectives to the problem you did not anticipate 
+	- You may not be seeing the forest for the trees. Being an expert on something can make it difficult to have an objective/practical opinion about the downstream effects your specialty has on the world around you.
+- Building tools to solve a problem reveals perspectives to the problem you did not anticipate 
 - I recently finished reading "Paddle Your Own Canoe" by Nick Offerman and wanted a cool title like his
 
-In my research, it often takes me a while to get started because I ~~procrastinate~~ spend so much time building tools that will facilitate the research. I try to anticipate my needs, and set myself up to easily pivot, if need be. I do my best to ensure that fastest feedback loop, allowing myself to fail fast and restart so I'm quickly learning what does and doesn't work. Failures are still data. To twist the colloquialism: Sharpen your axe before cutting the trees.
+In my research, it often takes me a while to get started because I ~~procrastinate~~ spend so much time building tools to facilitate the research. I try to anticipate my needs, and set myself up to easily pivot, if need be. I do my best to ensure a fast feedback loop, allowing fast failures and restarts. Failures are still data. To twist the colloquialism: Sharpen your axe before chopping down trees.
 
 Some time ago, while hashing out what to build into an application, I received some advice that's helped me in various technical and non-technical aspects of my life:
 
-> Don't anticpate the future. There lies madness. 
-> Instead, only anticipate change, and build the framework needed to facilitate that change.
+> Don't anticipate details. Therein lies madness. 
+> Instead, only anticipate change, and build what's needed to facilitate that change.
 
-Now if that ain't some __Zen and the Art of Motorcycle Maintenance__ shit, dunno what is. 
+There's you daily does of __Zen and the Art of Motorcycle Maintenance__
 
 
 ## Prior Work
 
-Below is a list of related work I encountered throughout the life-cycle of this project. This would have been much more painful with you all. Thank you:
+Below is a list of related work I encountered throughout the life-cycle of this project. This would
+have been much more painful without you all. Thank you:
 
 - [%appdata% is a mistake](https://redteamer.tips/appdata-is-a-mistake-introducing-invoke-dllclone/): Jean Maes
 - [Analysing RPC with Ghidra and neo4j](https://blog.xpnsec.com/analysing-rpc-with-ghidra-neo4j/): Adam Chester aka @_xpn_
@@ -53,30 +57,27 @@ When a developer of a particular package deleted his code from the repository wh
 > Left-Pad was a node.js package that would take an input, and pad it with whatever you wanted on the left side, as many times as you wanted. If you passed it 1234, and the number 0 for the padding, and the number 8, for the desired total length, it would return 00001234. 
 > It turns out some very big projects imported this dependency. Sometimes not even directly! It was an indirect dependency, meaning it was a dependency of a dependency of a dependency... etc. One such project was React.js. All over the world developers ran into failures, CI pipelines failed to deploy, and many hours (and dollars) were lost that day. 
 
-Was the snark justified? I mean, how new was this problem of dependency hell?
+Was the snark justified? I mean, how new was this problem of dependency hell? The threads have come
+together.
 
 ## Formation of the Project
 
 Since any good experiment begins with a question: 
 
-- If we knew all the in/direct dependencies on a Windows system:
+- If we knew all the direct and indirect dependencies on a Windows system:
 	- Could we find "lolbins" in the form of imported dependencies?
 	- How quickly could we analyze the blast radius if it became known that a particular dependency had a vulnerability
 	- In knowing what processes would have what loaded functions by default, could we make those processes do things they wouldn't normally do and would anyone be able to tell?
 
-It seems naive now, as the author of this post currently half way through his research, and after learning the lessons I have thus far. You'll see what I mean.
-
 ## Initial Research
 
 In order to collect the data, I needed a way to quickly pull dependencies from all PEs on disk. 
-> PEs stands for Portable Executable they follow a predefined set of rules, or specifications, that make them PEs. EXEs and DLLs are both PEs. 
+> PE stands for Portable Executable. Their structure follows a predefined set of rules, or specifications. EXEs and DLLs are both PEs. 
 
 
 I also knew I wanted get a visual representation of these dependencies. My thought was to create something that would allow for the easy ingestion of data into Neo4j, a graph database. You may be familiar with this if you've ever used Bloodhound.
 
 Wanting to be able to test a single PE using any OS, and also to have a portable tool I can use on many different versions of fresh Windows installs, I chose Golang and I built `ino` - https://github.com/audibleblink/ino/tree/v0.0.1
-
-Fully aware of the irony, I introduced a dependency to `ino`: velocidex's PE parser.  Version 0.0.1 simply took a PE, and printed its imports and exports. 
 
 Being new to the PE format, I discovered a few things at this point in my journey:
 - PE files can import other PEs, regardless of extension
@@ -84,7 +85,7 @@ Being new to the PE format, I discovered a few things at this point in my journe
 	- DLLs can import DLLs
 	- DLLs can import EXEs
 	- EXEs can import EXEs
-	- Both PEs can export functions
+	- Both can export functions
 - PE files have Forwards
 	- A PE can Export a function that it itself does not define
 	- It's a form of Export that merely points to a different DLL's export
@@ -93,13 +94,13 @@ To `ino`, I added the ability to collect Forwards as well. I also added the abil
 
 ### The Data:
 
-Collection could happen like so:
+Collection of the data:
 
 ```bash
 $ ino.exe -dir c:\ -type dll > dlls.json
 ```
 
-this resulted in JSON formatted like:
+Resulting JSON:
 
 ```json
 ino -v comsvcs.dll
@@ -115,7 +116,7 @@ ino -v comsvcs.dll
   "Sections": [...],
 }
 ```
-With the data collected, I moved on to importing to and visualizing with Neo4j.
+With the data collected from about 86K PEs on a fresh install of Windows, I moved on to importing to and visualizing with Neo4j.
 
 ## First Round of Analysis
 
@@ -127,9 +128,9 @@ A lot of it's power comes from not needing to know any intermediary nodes or att
 
 ![](1.png)
 
-> Failure: I should have created the model first. The tool influenced how I though about the graph. In retrospect, the Function name should have been its own node. Thanks to some very helpful conversations with Andy Robbins aka @wald0, anything you want to search by should be a node and not a property on that node or edge. Doing so will increase query time by an order of magnitude.
+> Fail log: I should have created the model first. The tool influenced how I though about the graph. In retrospect, the Function name should have been its own node. Thanks to some very helpful conversations with Andy Robbins aka @wald0, I learne that anything you want to search by should be a node and not a property on that node or edge. Doing so will increase query time substantially.
 
-This would have been a more useful model:
+> Something like this would have been a more useful model:
 ```
 > (EXE)-[:IMPORTS]-(:FUNCTION)-[:DEFINED_BY]-(DLL)-[:FORWARDS]-(FUNCTION)-[:FORWARDED_TO]->(DLL)
 ```
@@ -163,11 +164,11 @@ MERGE (dll)-[:FORWARDS {fn: func}]->(dll3)
 ```
 
 
-The ingestion was intense and took a few days to build, and this was a relatively simple model. Let's explain this query a chunk at a time. 
+The ingestion was intense and took me several hours to build, and this was a relatively simple model. Let's explain this query a chunk at a time. 
 
-- `apoc.load.json() yeild value as dllData` will import some Json, iterate through the lines, giving you access to each as the variable `dllData`
-	- `dllData` in the JSON from a few lines up
-- `MERGE (dll:DLL {...}` will attempt to find, and if not found, creates and DLL. node with the included properties
+- `apoc.load.json() yeild value as dllData` will import some JSON, iterate through the lines, giving you access to each as the variable `dllData`
+	- `dllData` is the JSON from a few lines up
+- `MERGE (dll:DLL {...}` will attempt to find, and if not found, creates a DLL node with the included properties
 	- `complete` indicates if this DLL has been processed because it was one of the JSON line. I set it to true in 4 lines, because if it's running through this loop, it is a JSON object
 	- This script adhoc creates other PE nodes when iterating through Imports and Forwards. In that data, the properties `exports, path, imphash` are not present
 		- In those cases, somewhere down the line I may run into that actual location of those adhoc nodes. I want to find them, instead of creating new ones
@@ -178,7 +179,7 @@ The ingestion was intense and took a few days to build, and this was a relativel
 	- `MERGE (dll)-[:IMPORTS {fn: func}]->(dll1)`
 - The next section repeats this logic, but for Forwards
 
-> Failure: Don't do this ^. It's error-prone and slow to seed. Instead focus on
+> Fail log: Don't do this ^. It's error-prone and slow to seed. Instead focus on
 > creating the nodes. Then as a post-processing step, create the relationships. 
 > An example:  
 
@@ -200,7 +201,7 @@ Due to some other recent but unrelated work, I had a particular interest in anyo
 
 ![](2.png)
 
-> Failure: My logic for not creating duplicate was flawed
+> Fail log: My logic for not creating duplicates was flawed
 
 What are some other queries we can run, knowing how our data all fits together?
 - Show me all DLLs with a FORWARD
@@ -208,7 +209,7 @@ What are some other queries we can run, knowing how our data all fits together?
 - Who imports a particular Function?
 - Show me all DLLs imported by a certain EXE
 
-It was around this time that report comparing different EDRs was making its round. Results indicated that execution via DLL loads were hardly caught. If we're just talking execution (or persistence), and not privesc, where are there programs installed that run regularly and whose directories are probably writable? Looking at you, %APPDATA%.
+It was around this time a report comparing different EDRs was making the rounds. Results indicated that execution via DLL loads were hardly caught. If we're just talking execution (or persistence), and not privesc, where are there programs installed that run regularly and whose directories are probably writable? Looking at you, %APPDATA%.
 
 Let's continue playing with `dbghelp` Given we have a `Path` attribute where every PE is located...
 
@@ -219,36 +220,55 @@ Let's continue playing with `dbghelp` Given we have a `Path` attribute where eve
 
 Out of all the EXEs in APPDATA, why these? With the exception of maybe 2, I noticed that they're all Electron apps.
 
-Let me pause here and say, that the search order path in Windows is indeed a feature. This isn't very exciting or new. At best we have code execution or persistence. Teams.exe may be worth noting, since it's signed by Microsoft. The interesting part here, I think, is for objective-based Red Teams. Red Teams aren't in a hurry to exploit the world. Depending on the objective, gathering information which leads to objectives is key. I'll be honest, internal RedTeaming can sometime be down-right boring. Sometimes it's kicking in (metaphorical) doors but sometimes it's just a stakeout. 
+Let me pause here and say, that the search order path in Windows is indeed a feature. This isn't very exciting or new. At best we have code execution or persistence. Teams.exe may be worth noting, since it's signed by Microsoft. The interesting part here, I think, is for objective-based Red Teams. Red Teams aren't in a hurry to exploit the world. Depending on the objective, gathering information which leads to objectives is key. I'll be honest, Red Teaming can sometime be down-right boring. Sometimes it's kicking in (metaphorical) doors but sometimes it's just a stakeout. 
 
 I googled around for similar research to see if anyone had beaten me to the punch. 
 
 - `electron AND dbghelp.dll`
-- `electron AND serach order`
+- `electron AND search order`
 - `electron AND hijack`
 
-Only 2 results came back as relevant:
+These 2 results came back as relevant:
 
 - [Using Slack, WhatsApp (electron Apps) for malware attack](https://firefistace153.medium.com/using-slack-whatsapp-electron-apps-for-malware-attack-5b5b40efba2c)
 - This [issue](https://github.com/electron/electron/issues/28384) on Electron's GitHub Repo.
 
 The first one details the hijacking I've covered, and the author goes on to PoC planting the DLL with a maldoc.
 
-The second is an Issue from March 2021 listing even more DLLs than what I found with static analysis. I fired up procmon, and sure enough, many of these are lazy-loaded, thus not existing in the Import Address Table.
+The second is an Issue from March 2021 listing even more DLLs than what I found with static analysis. I fired up Procmon, and sure enough, many of these are lazy-loaded, thus not existing in the Import Address Table.
 
 
 ## Conclusion
 
-By mapping out relationships of PEs and their dependencies, we've discoverd a universal way to load code into any Electron app, of which there are thousands. The possibilites are exciting when you consider what kind of data is handled by certain Electron apps with which you now get to share memory address space with. 
+By mapping out relationships of PEs and their dependencies, we've discovered a universal way to load code into any Electron app, of which there are thousands. The possibilities are exciting when you consider what kind of data is handled by certain Electron apps with which you now get to share memory address space with. 
+
+This first go has reminded me of the importance of patience in scoping and defining your work. It
+keeps it targeted and on track. It can also prevent you from having to restart over and over again.
+Learning by doing is great, but humans have the capacity to learn from the mistakes of others.
+Learning to use both methods is challenging, but rewarding.
+
+A relevant thread I wish I'd considered before starting:
+
+![](5.png)
+
+
+At this point, I think I've reached the end of this particular data-set's utility.
+
+After satisfying the occasional curiosity of "who imports/forwards what", 
+I've pivoted to something that hopefully is more impactful.
 
 ## What's Next
 
-At this point, I think I've reached the end of this particular dataset's utility.
+One additional question did come up during this side quest.
 
-After from satisfying the occasional curiosity of "who imports/forwards what", 
-I've pivoted to something that hopefully is more impactful.
+What if an Exe's imports can't be
+hijacked because the imported Dll is in the same directory as the Exe, BUT, that Dll forwards a
+function to another Dll that isn't in the same directory? 
 
-I hope to have that blog written up soon. Here's a preview.
+And what if that process is running as
+SYSTEM?
+
+I'm currently shaking that tree and I hope to have that blog written up soon. Here's a preview.
 
 <a href="4.png"> <img src="4.png"/> </a>
 

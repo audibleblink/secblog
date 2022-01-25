@@ -5,8 +5,7 @@
 <meta http-equiv="X-UA-Compatible" content="ie=edge">
 <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
 <meta name="author" content="[audible]blink ">
-<meta name="description" content="ELF and ROP Modules Pwntools gives us the ability to interact with ELFs and shared libraries in a programmatic way.
- Full ELF docs Full ROP docs  ELF fit One of the Class-level members I want to talk about is fit. I&amp;rsquo;ve had to create lines in my exploit code that look like this:
+<meta name="description" content="ELF and ROP Modules Pwntools gives us the ability to interact with ELFs and shared libraries in a programmatic way. Full ELF docs Full ROP docs  ELF fit One of the Class-level members I want to talk about is fit. I&amp;rsquo;ve had to create lines in my exploit code that look like this:
 buf_len = 128 pad_len = buf_len - (len(gadgets) &#43; len(mprotect)) payload = gadgets payload &#43;= mprotect payload &#43;= &amp;#34;A&amp;#34; * pad_len payload &#43;= canary payload &#43;= &amp;#34;A&amp;#34; * 16 # junk payload &#43;= jmprsp fit allows you to be declarative about where each of your exploit components should be in your payload." />
 <meta name="keywords" content="hacking, blog, science, infosec, development, programming, pwntools, exploitdev" />
 <meta name="robots" content="noodp" />
@@ -43,16 +42,14 @@ buf_len = 128 pad_len = buf_len - (len(gadgets) &#43; len(mprotect)) payload = g
 
 
 <meta itemprop="name" content="Pwntool Tips 2">
-<meta itemprop="description" content="ELF and ROP Modules Pwntools gives us the ability to interact with ELFs and shared libraries in a programmatic way.
- Full ELF docs Full ROP docs  ELF fit One of the Class-level members I want to talk about is fit. I&rsquo;ve had to create lines in my exploit code that look like this:
+<meta itemprop="description" content="ELF and ROP Modules Pwntools gives us the ability to interact with ELFs and shared libraries in a programmatic way. Full ELF docs Full ROP docs  ELF fit One of the Class-level members I want to talk about is fit. I&rsquo;ve had to create lines in my exploit code that look like this:
 buf_len = 128 pad_len = buf_len - (len(gadgets) &#43; len(mprotect)) payload = gadgets payload &#43;= mprotect payload &#43;= &#34;A&#34; * pad_len payload &#43;= canary payload &#43;= &#34;A&#34; * 16 # junk payload &#43;= jmprsp fit allows you to be declarative about where each of your exploit components should be in your payload."><meta itemprop="datePublished" content="2020-01-03T13:13:01-05:00" />
 <meta itemprop="dateModified" content="2020-01-03T13:13:01-05:00" />
 <meta itemprop="wordCount" content="792">
 <meta itemprop="keywords" content="pwntools,exploitdev," />
 <meta name="twitter:card" content="summary"/>
 <meta name="twitter:title" content="Pwntool Tips 2"/>
-<meta name="twitter:description" content="ELF and ROP Modules Pwntools gives us the ability to interact with ELFs and shared libraries in a programmatic way.
- Full ELF docs Full ROP docs  ELF fit One of the Class-level members I want to talk about is fit. I&rsquo;ve had to create lines in my exploit code that look like this:
+<meta name="twitter:description" content="ELF and ROP Modules Pwntools gives us the ability to interact with ELFs and shared libraries in a programmatic way. Full ELF docs Full ROP docs  ELF fit One of the Class-level members I want to talk about is fit. I&rsquo;ve had to create lines in my exploit code that look like this:
 buf_len = 128 pad_len = buf_len - (len(gadgets) &#43; len(mprotect)) payload = gadgets payload &#43;= mprotect payload &#43;= &#34;A&#34; * pad_len payload &#43;= canary payload &#43;= &#34;A&#34; * 16 # junk payload &#43;= jmprsp fit allows you to be declarative about where each of your exploit components should be in your payload."/>
 
 
@@ -181,7 +178,7 @@ if (!doNotTrack) {
 
       <div class="post-content">
         <h1 id="elf-and-rop-modules">ELF and ROP Modules</h1>
-<p>Pwntools gives us the ability to interact with ELFs and shared libraries in a programmatic way.</p>
+<p>Pwntools gives us the ability to interact with ELFs and shared libraries in a programmatic way.</p>
 <ul>
 <li>Full <a href="http://docs.pwntools.com/en/stable/elf/elf.html">ELF docs</a></li>
 <li>Full <a href="http://docs.pwntools.com/en/stable/rop/rop.html">ROP docs</a></li>

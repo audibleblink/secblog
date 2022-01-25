@@ -6,7 +6,18 @@
     <description>Recent content on [audible]blink</description>
     <generator>Hugo -- gohugo.io</generator>
     <language>en-us</language>
-    <lastBuildDate>Wed, 10 Nov 2021 00:00:00 +0000</lastBuildDate><atom:link href="https://sec.alexflor.es/index.xml" rel="self" type="application/rss+xml" />
+    <lastBuildDate>Tue, 25 Jan 2022 16:50:47 -0400</lastBuildDate><atom:link href="https://sec.alexflor.es/index.xml" rel="self" type="application/rss+xml" />
+    <item>
+      <title>Accidentally Graphing DLL Hijacks in Every Electron App</title>
+      <link>https://sec.alexflor.es/posts/2022/01/accidentally-graphing-dll-hijacks-in-every-electron-app/</link>
+      <pubDate>Tue, 25 Jan 2022 16:50:47 -0400</pubDate>
+      
+      <guid>https://sec.alexflor.es/posts/2022/01/accidentally-graphing-dll-hijacks-in-every-electron-app/</guid>
+      <description>or Building Your Own Binoculars
+I like this bi-line for a couple of reasons.
+ It touches on self-sufficiency in the face of necessity It could bring up one of two things  You may be too far from the problem. Think about how to get closer You may not be seeing the forest for the trees. Being an expert on something can make it difficult to have an objective/practical opinion about the downstream effects your specialty has on the world around you.</description>
+    </item>
+    
     <item>
       <title>Clustering Pi Zeros With ClusterHAT, Docker Swarm, Traefik, and Ansible</title>
       <link>https://sec.alexflor.es/posts/2021/11/clustering-pi-zeros-with-clusterhat-docker-swarm-traefik-and-ansible/</link>
@@ -53,8 +64,7 @@ Right around the time I discovered that even with an O(log n) insertion rate, an
       <pubDate>Fri, 03 Jan 2020 13:13:01 -0500</pubDate>
       
       <guid>https://sec.alexflor.es/posts/2020/01/pwntool-tips-2/</guid>
-      <description>ELF and ROP Modules Pwntools gives us the ability to interact with ELFs and shared libraries in a programmatic way.
- Full ELF docs Full ROP docs  ELF fit One of the Class-level members I want to talk about is fit. I&amp;rsquo;ve had to create lines in my exploit code that look like this:
+      <description>ELF and ROP Modules Pwntools gives us the ability to interact with ELFs and shared libraries in a programmatic way. Full ELF docs Full ROP docs  ELF fit One of the Class-level members I want to talk about is fit. I&amp;rsquo;ve had to create lines in my exploit code that look like this:
 buf_len = 128 pad_len = buf_len - (len(gadgets) + len(mprotect)) payload = gadgets payload += mprotect payload += &amp;#34;A&amp;#34; * pad_len payload += canary payload += &amp;#34;A&amp;#34; * 16 # junk payload += jmprsp fit allows you to be declarative about where each of your exploit components should be in your payload.</description>
     </item>
     
