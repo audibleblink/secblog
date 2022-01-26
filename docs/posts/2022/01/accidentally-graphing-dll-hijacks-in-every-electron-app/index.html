@@ -1,14 +1,25 @@
 <!DOCTYPE html>
 <html lang="en">
     <head>
-        <meta charset="UTF-8">
+        
+
+<script async src="https://www.googletagmanager.com/gtag/js?id=UA-12497311-8"></script>
+<script>
+  window.dataLayer = window.dataLayer || [];
+  function gtag(){dataLayer.push(arguments);}
+  gtag('js', new Date());
+
+  gtag('config', 'UA-12497311-8');
+</script>
+
+<meta charset="UTF-8">
 <meta http-equiv="X-UA-Compatible" content="ie=edge">
 <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
 <meta name="author" content="[audible]blink ">
 <meta name="description" content="or Building Your Own Binoculars
 I like this bi-line for a couple of reasons.
  It touches on self-sufficiency in the face of necessity It could bring up one of two things  You may be too far from the problem to be objective You may not be seeing the forest for the trees. Being an expert on something can make it difficult to have an objective/practical opinion about the downstream effects your specialty has on the world around you." />
-<meta name="keywords" content="hacking, blog, science, infosec, development, programming, neo4j, windows" />
+<meta name="keywords" content="hacking, blog, science, infosec, development, programming" />
 <meta name="robots" content="noodp" />
 <meta name="theme-color" content="" />
 <link rel="canonical" href="https://ctrl.red/posts/2022/01/accidentally-graphing-dll-hijacks-in-every-electron-app/" />
@@ -22,23 +33,13 @@ I like this bi-line for a couple of reasons.
 
 
 
-<link href="https://cdnjs.cloudflare.com/ajax/libs/flag-icon-css/3.5.0/css/flag-icon.min.css" rel="stylesheet"
+<link href="https://cdnjs.cloudflare.com/ajax/libs/flag-icon-css/3.2.1/css/flag-icon.min.css" rel="stylesheet"
     type="text/css">
 
 
 
-<link rel="stylesheet" href="/main.e146355a7181a2e59a2df1d4f6807d056d418523cf1d73e11851aa9c821541b7.css">
+<link rel="stylesheet" href="/main.min.1bb63f0ef1f4773bed448ef455ce3d2c9408d68771fee3145edf2fdf8b7d1c01.css">
 
-
-
-    <link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon.png">
-    <link rel="icon" type="image/png" sizes="32x32" href="/favicon-32x32.png">
-    <link rel="icon" type="image/png" sizes="16x16" href="/favicon-16x16.png">
-    <link rel="manifest" href="/site.webmanifest">
-    <link rel="mask-icon" href="/safari-pinned-tab.svg" color="">
-    <link rel="shortcut icon" href="/favicon.ico">
-    <meta name="msapplication-TileColor" content="">
-    <meta name="theme-color" content="">
 
 
 
@@ -47,18 +48,14 @@ I like this bi-line for a couple of reasons.
 I like this bi-line for a couple of reasons.
  It touches on self-sufficiency in the face of necessity It could bring up one of two things  You may be too far from the problem to be objective You may not be seeing the forest for the trees. Being an expert on something can make it difficult to have an objective/practical opinion about the downstream effects your specialty has on the world around you."><meta itemprop="datePublished" content="2022-01-25T16:50:47-04:00" />
 <meta itemprop="dateModified" content="2022-01-25T16:50:47-04:00" />
-<meta itemprop="wordCount" content="2231"><meta itemprop="image" content="https://ctrl.red/4.png">
-<meta itemprop="keywords" content="neo4j,windows," />
-<meta name="twitter:card" content="summary_large_image"/>
+<meta itemprop="wordCount" content="2322"><meta itemprop="image" content="https://ctrl.red/4.png">
+<meta itemprop="keywords" content="neo4j,windows," /><meta name="twitter:card" content="summary_large_image"/>
 <meta name="twitter:image" content="https://ctrl.red/4.png"/>
 
 <meta name="twitter:title" content="Accidentally Graphing DLL Hijacks in Every Electron App"/>
 <meta name="twitter:description" content="or Building Your Own Binoculars
 I like this bi-line for a couple of reasons.
  It touches on self-sufficiency in the face of necessity It could bring up one of two things  You may be too far from the problem to be objective You may not be seeing the forest for the trees. Being an expert on something can make it difficult to have an objective/practical opinion about the downstream effects your specialty has on the world around you."/>
-
-
-
 
 
 
@@ -73,27 +70,9 @@ I like this bi-line for a couple of reasons.
 
 
 
-
-    
-<script type="application/javascript">
-var doNotTrack = false;
-if (!doNotTrack) {
-	(function(i,s,o,g,r,a,m){i['GoogleAnalyticsObject']=r;i[r]=i[r]||function(){
-	(i[r].q=i[r].q||[]).push(arguments)},i[r].l=1*new Date();a=s.createElement(o),
-	m=s.getElementsByTagName(o)[0];a.async=1;a.src=g;m.parentNode.insertBefore(a,m)
-	})(window,document,'script','https://www.google-analytics.com/analytics.js','ga');
-	ga('create', 'UA-12497311-8', 'auto');
-	
-	ga('send', 'pageview');
-}
-</script>
-
     </head>
 
-    
-        <body>
-    
-    
+    <body class="dark-theme">
         <div class="container">
             <header class="header">
     <span class="header__inner">
@@ -102,11 +81,7 @@ if (!doNotTrack) {
         
             <span class="logo__mark">></span>
             <span class="logo__text">$ cd ~/</span>
-            <span class="logo__cursor" style=
-                  "
-                   
-                   ">
-            </span>
+            <span class="logo__cursor" style=""></span>
         
     </div>
 </a>
@@ -115,7 +90,7 @@ if (!doNotTrack) {
         <span class="header__right">
             
                 <nav class="menu">
-    <ul class="menu__inner"><li><a href="/posts/">Posts</a></li>
+    <ul class="menu__inner"><li><a href="https://ctrl.red/posts/">Posts</a></li>
     </ul>
 </nav>
 
@@ -126,6 +101,13 @@ if (!doNotTrack) {
                     </svg>
                 </span>
             
+
+            <span class="theme-toggle unselectable"><svg class="theme-toggler" width="24" height="24" viewBox="0 0 48 48" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <path d="M22 41C32.4934 41 41 32.4934 41 22C41 11.5066 32.4934 3 22
+  3C11.5066 3 3 11.5066 3 22C3 32.4934 11.5066 41 22 41ZM7 22C7
+  13.7157 13.7157 7 22 7V37C13.7157 37 7 30.2843 7 22Z"/>
+</svg>
+</span>
         </span>
     </span>
 </header>
@@ -133,33 +115,25 @@ if (!doNotTrack) {
 
             <div class="content">
                 
-  <main class="post">
+    <main class="post">
 
-    <div class="post-info">
-      <p>
-        <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-clock">
-          <circle cx="12" cy="12" r="10"></circle>
-          <polyline points="12 6 12 12 16 14"></polyline>
-        </svg>
-        11 minutes
+        <div class="post-info">
+            <p><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-clock"><circle cx="12" cy="12" r="10"></circle><polyline points="12 6 12 12 16 14"></polyline></svg>11 minutes
 
-        
-      </p>
-    </div>
+            
 
-    <article>
-      <h1 class="post-title">
-        <a href="https://ctrl.red/posts/2022/01/accidentally-graphing-dll-hijacks-in-every-electron-app/">Accidentally Graphing DLL Hijacks in Every Electron App</a>
-      </h1>
+            </p>
+        </div>
 
-      
+        <article>
+            <h1 class="post-title">
+                <a href="https://ctrl.red/posts/2022/01/accidentally-graphing-dll-hijacks-in-every-electron-app/">Accidentally Graphing DLL Hijacks in Every Electron App</a>
+            </h1>
 
-      
+            
 
-      
-
-      <div class="post-content">
-        <p><em>or Building Your Own Binoculars</em></p>
+            <div class="post-content">
+                <p><em>or Building Your Own Binoculars</em></p>
 <p>I like this bi-line for a couple of reasons.</p>
 <ul>
 <li>It touches on self-sufficiency in the face of necessity</li>
@@ -260,7 +234,7 @@ It turns out some very big projects imported this dependency. Sometimes not even
 <h3 id="the-model">The Model:</h3>
 <p><img src="1.png" alt=""></p>
 <blockquote>
-<p>Fail log: I should have created the model first. The tool influenced how I though about the graph. In retrospect, the Function name should have been its own node. Thanks to some very helpful conversations with Andy Robbins aka @wald0, I learned that anything you want to search by should be a node and not a property on that node or edge. Doing so will increase query time substantially.</p>
+<p>Fail log: I should have created the graph schema first. By starting with the tool first, I was influenced in how I though about the graph. In retrospect, the Function name should have been its own node. Thanks to some very helpful conversations with Andy Robbins aka @wald0, I learned that anything you&rsquo;ll want to search by should be a node and not a property on that node or edge.  Otherwise, it increases query time substantially.</p>
 </blockquote>
 <blockquote>
 <p>Something like this would have been a more useful model:</p>
@@ -288,8 +262,10 @@ FOREACH (i in CASE WHEN dll3.complete THEN [] ELSE [1] END |
 	SET dll3.complete = false)
 WITH dll, dll3, fwd UNWIND fwd.Functions as func
 MERGE (dll)-[:FORWARDS {fn: func}]-&gt;(dll3)
-
-</code></pre><p>The ingestion was intense and took me several hours to build, and this was a relatively simple model. Let&rsquo;s explain this query a chunk at a time.</p>
+</code></pre><p>The ingestion was intense and took me several hours of trial and error to build. And this was a relatively simple model. Let&rsquo;s explain this query a chunk at a time.</p>
+<blockquote>
+<p>Reminder: This post chronicles the linear progress of this project, errors and all. In other words, this doesn&rsquo;t work =P.</p>
+</blockquote>
 <ul>
 <li><code>apoc.load.json() yeild value as dllData</code> will import some JSON, iterate through the lines, giving you access to each as the variable <code>dllData</code>
 <ul>
@@ -318,13 +294,13 @@ MERGE (dll)-[:FORWARDS {fn: func}]-&gt;(dll3)
 </ul>
 <blockquote>
 <p>Fail log: Don&rsquo;t do this ^. It&rsquo;s error-prone and slow to seed. Instead focus on
-creating the nodes. Then as a post-processing step, create the relationships.
+creating the nodes first, then as a post-processing step, create the relationships.
 An example:</p>
 </blockquote>
 <pre tabindex="0"><code class="language-cypher" data-lang="cypher">CALL apoc.periodic.iterate(
 				&quot;MATCH (node:%s),(dir:Directory) WHERE node.parent = dir.path RETURN node,dir&quot;,
 				&quot;MERGE (dir)-[:CONTAINS]-&gt;(node)&quot;,
-				{batchSize:100, parallel: true, iterateList:true})
+				{batchSize:1000, parallel: true})
 </code></pre><blockquote>
 <p>Arg 1: find related nodes with a query,<br>
 Arg 2: action to take on each returned &ldquo;row&rdquo;<br>
@@ -337,33 +313,40 @@ Arg 3: go really fast</p>
 <blockquote>
 <p>Fail log: My logic for not creating duplicates didn&rsquo;t even work. lol</p>
 </blockquote>
-<p>What are some other queries we can run, knowing how our data all fits together?</p>
+<p>What are some other queries we can run?</p>
 <ul>
 <li>Show me all DLLs with a FORWARD</li>
 <li>Who imports a particular DLL?</li>
 <li>Who imports a particular Function?</li>
 <li>Show me all DLLs imported by a certain EXE</li>
 </ul>
-<p>It was around this time a report comparing different EDRs was making the rounds. Results indicated that execution via DLL loads were hardly caught. If we&rsquo;re just talking execution (or persistence), and not privilege escalation, where are there programs installed that run regularly and whose directories are probably writable? Looking at you, %APPDATA%.</p>
+<p>It was around this time a <a href="https://mdpi.com/2624-800X/1/3/21/pdf">report comparing different EDRs</a> was making the rounds. Results indicated that executions via DLL loads were harder to catch.</p>
+<p><img src="6.png" alt=""></p>
+<p>If we&rsquo;re just talking execution (or persistence), and not privilege escalation, where are there programs installed that run regularly and whose directories are probably writable? %APPDATA%.</p>
 <p>Let&rsquo;s continue playing with <code>dbghelp</code> Given we have a <code>Path</code> attribute where every PE is located&hellip;</p>
 <p><img src="3.png" alt=""></p>
 <p><strong>very interesting</strong></p>
 <p>Out of all the EXEs in APPDATA, why these? With the exception of maybe 2, I noticed that they&rsquo;re all Electron apps.</p>
-<p>Let me pause here and say, that the search order path in Windows is indeed a feature. This isn&rsquo;t very exciting or new. At best we have code execution or persistence. Teams.exe may be worth noting, since it&rsquo;s signed by Microsoft. The interesting part here, I think, is for objective-based Red Team engagements. Red Teams aren&rsquo;t in a hurry to exploit the world. Depending on the objective, gathering information which leads to objectives is the goal. I&rsquo;ll be honest, Red Teaming can sometimes be down-right boring. Sometimes it&rsquo;s kicking in (metaphorical) doors but sometimes it&rsquo;s just a stakeout.</p>
+<p>Let me pause here and say, that the Dll path search order in Windows is indeed a feature. This isn&rsquo;t very exciting or new. At best we have code execution or persistence. Teams.exe may be worth noting,
+since it&rsquo;s signed by Microsoft. The interesting part here, I think, is for long haul, objective-based Red Team engagements. Red Teams aren&rsquo;t in a hurry to exploit the world. Depending on the objective, gathering information which leads to objectives is the goal. I&rsquo;ll be honest, Red Teaming can sometimes be down-right boring. Sometimes it&rsquo;s kicking in (metaphorical) doors but sometimes it&rsquo;s just a stakeout.</p>
 <p>I googled around for similar research to see if anyone had beaten me to the punch.</p>
 <p>These 2 results came back as relevant:</p>
 <ul>
 <li><a href="https://firefistace153.medium.com/using-slack-whatsapp-electron-apps-for-malware-attack-5b5b40efba2c">Using Slack, WhatsApp (electron Apps) for malware attack</a></li>
 <li>This <a href="https://github.com/electron/electron/issues/28384">issue</a> on Electron&rsquo;s GitHub Repo.</li>
 </ul>
-<p>The first one details the hijacking I&rsquo;ve covered, and the author goes on to PoC planting the DLL with a maldoc.</p>
+<p>The first one details the hijacking I&rsquo;ve covered, and the author goes on to PoC the planting of the DLL with a maldoc.</p>
 <p>The second is a Github Issue from March 2021, listing even more DLLs than what I found with static analysis. I fired up Procmon, and sure enough, many of these are lazy-loaded, thus not existing in the Import Address Table.</p>
 <h2 id="conclusion">Conclusion</h2>
-<p>By mapping out relationships of PEs and their dependencies, we&rsquo;ve discovered a universal way to load code into any Electron app, of which there are thousands. The possibilities are exciting when you consider what kind of data is handled by certain Electron apps with which you now get to share memory address space with.</p>
-<p>This first go has reminded me of the importance of patience in scoping and defining your work. It keeps it targeted and on track. It can also prevent you from having to restart over and over again. Learning by doing is great, but humans have the capacity to learn from the mistakes of others.  Learning to use both methods is challenging, but rewarding.</p>
+<p>By mapping out relationships of PEs and their dependencies, we&rsquo;ve discovered a universal way to load code into any Electron app, of which there are thousands. The possibilities are exciting when you begin to consider what kind of data is handled by certain Electron apps with which you now get to share memory address space with.</p>
+<p>This first go has reminded me of the importance of patience in scoping and defining your work. It keeps it targeted and on track. It can also prevent you from having to restart over and over again.
+Taking a little extra time up front to to model data, structure tasks, pulling in outside help earlier, these are all things that can ensure your project flows a little smoother and linearly.</p>
+<p>Learning by doing is great, but humans have the capacity to learn from the mistakes of others. We should use that gift more. The trick is finding a happy medium between structure and tangents. Awesome
+discoveries often from tangents.</p>
+<p>But a plethora of information creates a poverty of attention.</p>
 <p>A relevant thread I wish had come before starting:</p>
 <p><img src="5.png" alt=""></p>
-<p>At this point, I think I&rsquo;ve reached the end of this particular data-set&rsquo;s utility.</p>
+<p>So at this point, I think I&rsquo;ve reached the end of this particular data-set&rsquo;s utility.</p>
 <p>After satisfying the occasional curiosity of &ldquo;who imports/forwards what&rdquo;,
 I&rsquo;ve pivoted to something that hopefully is more impactful.</p>
 <h2 id="whats-next">What&rsquo;s Next</h2>
@@ -371,7 +354,8 @@ I&rsquo;ve pivoted to something that hopefully is more impactful.</p>
 <p>How common are second-order DLL hijacks? Where you can&rsquo;t hijack a DLL because the imported DLL
 exists within the same directory as the EXE, but that DLL contains a forward to a DLL that
 <em>doesn&rsquo;t</em> exists in the same directory.</p>
-<p>And how many of those EXEs are run with high privileges?</p>
+<p>Can I write in that directory?</p>
+<p>How many of those EXEs are run with high privileges?</p>
 <p>I&rsquo;m currently shaking that tree and I hope to have that blog written up soon. Here&rsquo;s a preview.</p>
 <p><a href="4.png"> <img src="4.png"/> </a></p>
 <meta name="description" content="Accidentally Graphing DLL Hijacks in Every Electron App            ">
@@ -389,110 +373,70 @@ exists within the same directory as the EXE, but that DLL contains a forward to 
 <meta name="twitter:description" content="Accidentally Graphing DLL Hijacks in Every Electron App            ">
 <meta name="twitter:image" content="https://sec.alexflor.es/posts/2022/01/accidentally-graphing-dll-hijacks-in-every-electron-app/4.png">
 
-      </div>
-    </article>
+            </div>
+        </article>
 
-    <hr />
+        <hr />
 
-    <div class="post-info">
-      
-    <p>
-        <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-tag meta-icon"><path d="M20.59 13.41l-7.17 7.17a2 2 0 0 1-2.83 0L2 12V2h10l8.59 8.59a2 2 0 0 1 0 2.82z"></path><line x1="7" y1="7" x2="7" y2="7"></line></svg>
+        <div class="post-info">
+                <p>
+                    <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-tag meta-icon"><path d="M20.59 13.41l-7.17 7.17a2 2 0 0 1-2.83 0L2 12V2h10l8.59 8.59a2 2 0 0 1 0 2.82z"></path><line x1="7" y1="7" x2="7" y2="7"></line></svg><span class="tag"><a href="https://ctrl.red/tags/neo4j">neo4j</a></span><span class="tag"><a href="https://ctrl.red/tags/windows">windows</a></span>
+                </p>
 
-        <span class="tag"><a href="https://ctrl.red/tags/neo4j/">neo4j</a></span>
-        <span class="tag"><a href="https://ctrl.red/tags/windows/">windows</a></span>
-        
-    </p>
+            <p><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-file-text"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path><polyline points="14 2 14 8 20 8"></polyline><line x1="16" y1="13" x2="8" y2="13"></line><line x1="16" y1="17" x2="8" y2="17"></line><polyline points="10 9 9 9 8 9"></polyline></svg>2322 Words</p>
 
-      
-
-      <p>
-        <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-file-text">
-          <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path>
-          <polyline points="14 2 14 8 20 8"></polyline>
-          <line x1="16" y1="13" x2="8" y2="13"></line>
-          <line x1="16" y1="17" x2="8" y2="17"></line>
-          <polyline points="10 9 9 9 8 9"></polyline>
-        </svg>
-        2231 Words
-      </p>
-
-      <p>
-        <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-calendar">
-          <rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect>
-          <line x1="16" y1="2" x2="16" y2="6"></line>
-          <line x1="8" y1="2" x2="8" y2="6"></line>
-          <line x1="3" y1="10" x2="21" y2="10"></line>
-        </svg>
-        
-          2022-01-25 15:50
-        
-
-         
-          
-        
-      </p>
-    </div>
-
-    
-    <div class="pagination">
-        <div class="pagination__title">
-            <span class="pagination__title-h"></span>
-            <hr />
+            <p><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-calendar"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect><line x1="16" y1="2" x2="16" y2="6"></line><line x1="8" y1="2" x2="8" y2="6"></line><line x1="3" y1="10" x2="21" y2="10"></line></svg>2022-01-25 15:50 -0500</p>
         </div>
 
-        <div class="pagination__buttons">
-            
+        
+            <div class="pagination">
+                <div class="pagination__title">
+                    <span class="pagination__title-h"></span>
+                    <hr />
+                </div>
 
-            
-            <span class="button next">
-                <a href="https://ctrl.red/posts/2021/11/clustering-pi-zeros-with-clusterhat-docker-swarm-traefik-and-ansible/">
-                    <span class="button__text">Clustering Pi Zeros With ClusterHAT, Docker Swarm, Traefik, and Ansible</span>
-                    <span class="button__icon">→</span>
-                </a>
-            </span>
-            
-        </div>
-    </div>
+                <div class="pagination__buttons">
+                    
 
+                    
+                        <span class="button next">
+                            <a href="https://ctrl.red/posts/2021/11/clustering-pi-zeros-with-clusterhat-docker-swarm-traefik-and-ansible/">
+                                <span class="button__text">Clustering Pi Zeros With ClusterHAT, Docker Swarm, Traefik, and Ansible</span>
+                                <span class="button__icon">→</span>
+                            </a>
+                        </span>
+                    
+                </div>
+            </div>
+        
 
-    
-      
-        <div id="comments">
-          <div id="disqus_thread"></div>
-<script type="application/javascript">
-    var disqus_config = function () {
-    
-    
-    
-    };
-    (function() {
-        if (["localhost", "127.0.0.1"].indexOf(window.location.hostname) != -1) {
-            document.getElementById('disqus_thread').innerHTML = 'Disqus comments not available by default when the website is previewed locally.';
-            return;
-        }
-        var d = document, s = d.createElement('script'); s.async = true;
-        s.src = '//' + "blinksec" + '.disqus.com/embed.js';
-        s.setAttribute('data-timestamp', +new Date());
-        (d.head || d.body).appendChild(s);
-    })();
-</script>
-<noscript>Please enable JavaScript to view the <a href="https://disqus.com/?ref_noscript">comments powered by Disqus.</a></noscript>
-<a href="https://disqus.com" class="dsq-brlink">comments powered by <span class="logo-disqus">Disqus</span></a>
-        </div>
-      
-    
-
-    
-
-  </main>
+        
+    </main>
 
             </div>
 
             
                 <footer class="footer">
-    
-    
+    <div class="footer__inner">
+        <div class="footer__content">
+            <span>&copy; 2022</span>
+            
+                <span><a href="https://ctrl.red">[audible]blink</a></span>
+            
+            <span></span>
+            <span> <a href="https://ctrl.red/posts/index.xml" target="_blank" title="rss"><svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-rss"><path d="M4 11a9 9 0 0 1 9 9"></path><path d="M4 4a16 16 0 0 1 16 16"></path><circle cx="5" cy="19" r="1"></circle></svg></a></span>
+        </div>
+    </div>
+    <div class="footer__inner">
+        <div class="footer__content">
+
+  <div style="margin-top: 1em;" class="container has-text-centered">
+            <img src="https://www.hackthebox.eu/badge/image/1496" alt="Hack The Box">
+  </div>
+
+
+        </div>
+    </div>
 </footer>
 
             
@@ -502,7 +446,8 @@ exists within the same directory as the EXE, but that DLL contains a forward to 
 
 
 
-<script type="text/javascript" src="/bundle.min.4aadf3d82a6ff097c1e01af23be423991c8ffcb480d60c7f5b0d94e61a1704f63f29ca5c23ef6fb7113f98ec7c1acb3b3d32497e779fee8d7ff5825bc41ca6c3.js" integrity="sha512-Sq3z2Cpv8JfB4BryO&#43;QjmRyP/LSA1gx/Ww2U5hoXBPY/KcpcI&#43;9vtxE/mOx8Gss7PTJJfnef7o1/9YJbxBymww=="></script>
+
+<script type="text/javascript" src="/bundle.min.08ccaf9cef8b4e0ebd0b0158e66a7bfc0ddbb2194cdb0099e8814ddb89cc7628b27b1158846564e6e03d9ffc5f4d1bc7dfc274d359f9408d1c63d73a3f7332e9.js" integrity="sha512-CMyvnO&#43;LTg69CwFY5mp7/A3bshlM2wCZ6IFN24nMdiiyexFYhGVk5uA9n/xfTRvH38J001n5QI0cY9c6P3My6Q=="></script>
 
 
 

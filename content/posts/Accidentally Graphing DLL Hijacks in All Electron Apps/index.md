@@ -123,7 +123,7 @@ A lot of its power comes from not needing to know any intermediary nodes in orde
 
 ![](1.png)
 
-> Fail log: I should have created the model first. The tool influenced how I though about the graph. In retrospect, the Function name should have been its own node. Thanks to some very helpful conversations with Andy Robbins aka @wald0, I learned that anything you want to search by should be a node and not a property on that node or edge. Doing so will increase query time substantially.
+> Fail log: I should have created the graph schema first. By starting with the tool first, I was influenced in how I though about the graph. In retrospect, the Function name should have been its own node. Thanks to some very helpful conversations with Andy Robbins aka @wald0, I learned that anything you'll want to search by should be a node and not a property on that node or edge.  Otherwise, it increases query time substantially.
 
 > Something like this would have been a more useful model:
 ```
@@ -154,11 +154,12 @@ FOREACH (i in CASE WHEN dll3.complete THEN [] ELSE [1] END |
 	SET dll3.complete = false)
 WITH dll, dll3, fwd UNWIND fwd.Functions as func
 MERGE (dll)-[:FORWARDS {fn: func}]->(dll3)
-
 ```
 
 
-The ingestion was intense and took me several hours to build, and this was a relatively simple model. Let's explain this query a chunk at a time. 
+The ingestion was intense and took me several hours of trial and error to build. And this was a relatively simple model. Let's explain this query a chunk at a time. 
+
+> Reminder: This post chronicles the linear progress of this project, errors and all. In other words, this doesn't work =P.
 
 - `apoc.load.json() yeild value as dllData` will import some JSON, iterate through the lines, giving you access to each as the variable `dllData`
 	- `dllData` is the JSON from a few lines up
@@ -174,14 +175,14 @@ The ingestion was intense and took me several hours to build, and this was a rel
 - The next section repeats this logic, but for Forwards
 
 > Fail log: Don't do this ^. It's error-prone and slow to seed. Instead focus on
-> creating the nodes. Then as a post-processing step, create the relationships. 
+> creating the nodes first, then as a post-processing step, create the relationships. 
 > An example:  
 
 ```cypher
 CALL apoc.periodic.iterate(
 				"MATCH (node:%s),(dir:Directory) WHERE node.parent = dir.path RETURN node,dir",
 				"MERGE (dir)-[:CONTAINS]->(node)",
-				{batchSize:100, parallel: true, iterateList:true})
+				{batchSize:1000, parallel: true})
 ```
 > 	Arg 1: find related nodes with a query,   
 > 	Arg 2: action to take on each returned "row"  
@@ -197,13 +198,17 @@ Due to some other recent but unrelated work, I had a particular interest in anyo
 
 > Fail log: My logic for not creating duplicates didn't even work. lol
 
-What are some other queries we can run, knowing how our data all fits together?
+What are some other queries we can run?
 - Show me all DLLs with a FORWARD
 - Who imports a particular DLL?
 - Who imports a particular Function?
 - Show me all DLLs imported by a certain EXE
 
-It was around this time a report comparing different EDRs was making the rounds. Results indicated that execution via DLL loads were hardly caught. If we're just talking execution (or persistence), and not privilege escalation, where are there programs installed that run regularly and whose directories are probably writable? Looking at you, %APPDATA%.
+It was around this time a [report comparing different EDRs](https://mdpi.com/2624-800X/1/3/21/pdf) was making the rounds. Results indicated that executions via DLL loads were harder to catch. 
+
+![](6.png)
+
+If we're just talking execution (or persistence), and not privilege escalation, where are there programs installed that run regularly and whose directories are probably writable? %APPDATA%.
 
 Let's continue playing with `dbghelp` Given we have a `Path` attribute where every PE is located...
 
@@ -214,7 +219,8 @@ Let's continue playing with `dbghelp` Given we have a `Path` attribute where eve
 
 Out of all the EXEs in APPDATA, why these? With the exception of maybe 2, I noticed that they're all Electron apps.
 
-Let me pause here and say, that the search order path in Windows is indeed a feature. This isn't very exciting or new. At best we have code execution or persistence. Teams.exe may be worth noting, since it's signed by Microsoft. The interesting part here, I think, is for objective-based Red Team engagements. Red Teams aren't in a hurry to exploit the world. Depending on the objective, gathering information which leads to objectives is the goal. I'll be honest, Red Teaming can sometimes be down-right boring. Sometimes it's kicking in (metaphorical) doors but sometimes it's just a stakeout. 
+Let me pause here and say, that the Dll path search order in Windows is indeed a feature. This isn't very exciting or new. At best we have code execution or persistence. Teams.exe may be worth noting,
+since it's signed by Microsoft. The interesting part here, I think, is for long haul, objective-based Red Team engagements. Red Teams aren't in a hurry to exploit the world. Depending on the objective, gathering information which leads to objectives is the goal. I'll be honest, Red Teaming can sometimes be down-right boring. Sometimes it's kicking in (metaphorical) doors but sometimes it's just a stakeout. 
 
 I googled around for similar research to see if anyone had beaten me to the punch. 
 
@@ -223,23 +229,29 @@ These 2 results came back as relevant:
 - [Using Slack, WhatsApp (electron Apps) for malware attack](https://firefistace153.medium.com/using-slack-whatsapp-electron-apps-for-malware-attack-5b5b40efba2c)
 - This [issue](https://github.com/electron/electron/issues/28384) on Electron's GitHub Repo.
 
-The first one details the hijacking I've covered, and the author goes on to PoC planting the DLL with a maldoc.
+The first one details the hijacking I've covered, and the author goes on to PoC the planting of the DLL with a maldoc.
 
 The second is a Github Issue from March 2021, listing even more DLLs than what I found with static analysis. I fired up Procmon, and sure enough, many of these are lazy-loaded, thus not existing in the Import Address Table.
 
 
 ## Conclusion
 
-By mapping out relationships of PEs and their dependencies, we've discovered a universal way to load code into any Electron app, of which there are thousands. The possibilities are exciting when you consider what kind of data is handled by certain Electron apps with which you now get to share memory address space with. 
+By mapping out relationships of PEs and their dependencies, we've discovered a universal way to load code into any Electron app, of which there are thousands. The possibilities are exciting when you begin to consider what kind of data is handled by certain Electron apps with which you now get to share memory address space with.
 
-This first go has reminded me of the importance of patience in scoping and defining your work. It keeps it targeted and on track. It can also prevent you from having to restart over and over again. Learning by doing is great, but humans have the capacity to learn from the mistakes of others.  Learning to use both methods is challenging, but rewarding.
+This first go has reminded me of the importance of patience in scoping and defining your work. It keeps it targeted and on track. It can also prevent you from having to restart over and over again.
+Taking a little extra time up front to to model data, structure tasks, pulling in outside help earlier, these are all things that can ensure your project flows a little smoother and linearly.
+
+Learning by doing is great, but humans have the capacity to learn from the mistakes of others. We should use that gift more. The trick is finding a happy medium between structure and tangents. Awesome
+discoveries often from tangents. 
+
+But a plethora of information creates a poverty of attention. 
 
 A relevant thread I wish had come before starting:
 
 ![](5.png)
 
 
-At this point, I think I've reached the end of this particular data-set's utility.
+So at this point, I think I've reached the end of this particular data-set's utility.
 
 After satisfying the occasional curiosity of "who imports/forwards what", 
 I've pivoted to something that hopefully is more impactful.
@@ -252,7 +264,9 @@ How common are second-order DLL hijacks? Where you can't hijack a DLL because th
 exists within the same directory as the EXE, but that DLL contains a forward to a DLL that
 _doesn't_ exists in the same directory. 
 
-And how many of those EXEs are run with high privileges?
+Can I write in that directory?
+
+How many of those EXEs are run with high privileges?
 
 I'm currently shaking that tree and I hope to have that blog written up soon. Here's a preview.
 

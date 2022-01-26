@@ -1,7 +1,18 @@
 <!DOCTYPE html>
 <html lang="en">
     <head>
-        <meta charset="UTF-8">
+        
+
+<script async src="https://www.googletagmanager.com/gtag/js?id=UA-12497311-8"></script>
+<script>
+  window.dataLayer = window.dataLayer || [];
+  function gtag(){dataLayer.push(arguments);}
+  gtag('js', new Date());
+
+  gtag('config', 'UA-12497311-8');
+</script>
+
+<meta charset="UTF-8">
 <meta http-equiv="X-UA-Compatible" content="ie=edge">
 <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
 <meta name="author" content="[audible]blink ">
@@ -21,23 +32,13 @@ The Many Hats Club had a CTF on HackTheBox a few weekends ago that re-ignited a 
 
 
 
-<link href="https://cdnjs.cloudflare.com/ajax/libs/flag-icon-css/3.5.0/css/flag-icon.min.css" rel="stylesheet"
+<link href="https://cdnjs.cloudflare.com/ajax/libs/flag-icon-css/3.2.1/css/flag-icon.min.css" rel="stylesheet"
     type="text/css">
 
 
 
-<link rel="stylesheet" href="/main.e146355a7181a2e59a2df1d4f6807d056d418523cf1d73e11851aa9c821541b7.css">
+<link rel="stylesheet" href="/main.min.1bb63f0ef1f4773bed448ef455ce3d2c9408d68771fee3145edf2fdf8b7d1c01.css">
 
-
-
-    <link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon.png">
-    <link rel="icon" type="image/png" sizes="32x32" href="/favicon-32x32.png">
-    <link rel="icon" type="image/png" sizes="16x16" href="/favicon-16x16.png">
-    <link rel="manifest" href="/site.webmanifest">
-    <link rel="mask-icon" href="/safari-pinned-tab.svg" color="">
-    <link rel="shortcut icon" href="/favicon.ico">
-    <meta name="msapplication-TileColor" content="">
-    <meta name="theme-color" content="">
 
 
 
@@ -46,14 +47,10 @@ The Many Hats Club had a CTF on HackTheBox a few weekends ago that re-ignited a 
 The Many Hats Club had a CTF on HackTheBox a few weekends ago that re-ignited a previous passion for exploit development. The reason it got me interested was that it required a new exploit technique of which I&rsquo;d not yet heard, Signal Return Oriented Programming."><meta itemprop="datePublished" content="2019-12-28T21:59:34-05:00" />
 <meta itemprop="dateModified" content="2019-12-28T21:59:34-05:00" />
 <meta itemprop="wordCount" content="2117">
-<meta itemprop="keywords" content="" />
-<meta name="twitter:card" content="summary"/>
+<meta itemprop="keywords" content="" /><meta name="twitter:card" content="summary"/>
 <meta name="twitter:title" content="Abusing Signals with SIGROP Exploits"/>
 <meta name="twitter:description" content="TMHC: MiniPwn Walk-through This one&rsquo;s just as much for me as it is for you. They say you don&rsquo;t truly understand something until you&rsquo;re able to teach it to someone else. So here we go!
 The Many Hats Club had a CTF on HackTheBox a few weekends ago that re-ignited a previous passion for exploit development. The reason it got me interested was that it required a new exploit technique of which I&rsquo;d not yet heard, Signal Return Oriented Programming."/>
-
-
-
 
 
 
@@ -68,27 +65,9 @@ The Many Hats Club had a CTF on HackTheBox a few weekends ago that re-ignited a 
 
 
 
-
-    
-<script type="application/javascript">
-var doNotTrack = false;
-if (!doNotTrack) {
-	(function(i,s,o,g,r,a,m){i['GoogleAnalyticsObject']=r;i[r]=i[r]||function(){
-	(i[r].q=i[r].q||[]).push(arguments)},i[r].l=1*new Date();a=s.createElement(o),
-	m=s.getElementsByTagName(o)[0];a.async=1;a.src=g;m.parentNode.insertBefore(a,m)
-	})(window,document,'script','https://www.google-analytics.com/analytics.js','ga');
-	ga('create', 'UA-12497311-8', 'auto');
-	
-	ga('send', 'pageview');
-}
-</script>
-
     </head>
 
-    
-        <body>
-    
-    
+    <body class="dark-theme">
         <div class="container">
             <header class="header">
     <span class="header__inner">
@@ -97,11 +76,7 @@ if (!doNotTrack) {
         
             <span class="logo__mark">></span>
             <span class="logo__text">$ cd ~/</span>
-            <span class="logo__cursor" style=
-                  "
-                   
-                   ">
-            </span>
+            <span class="logo__cursor" style=""></span>
         
     </div>
 </a>
@@ -110,7 +85,7 @@ if (!doNotTrack) {
         <span class="header__right">
             
                 <nav class="menu">
-    <ul class="menu__inner"><li><a href="/posts/">Posts</a></li>
+    <ul class="menu__inner"><li><a href="https://ctrl.red/posts/">Posts</a></li>
     </ul>
 </nav>
 
@@ -121,6 +96,13 @@ if (!doNotTrack) {
                     </svg>
                 </span>
             
+
+            <span class="theme-toggle unselectable"><svg class="theme-toggler" width="24" height="24" viewBox="0 0 48 48" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <path d="M22 41C32.4934 41 41 32.4934 41 22C41 11.5066 32.4934 3 22
+  3C11.5066 3 3 11.5066 3 22C3 32.4934 11.5066 41 22 41ZM7 22C7
+  13.7157 13.7157 7 22 7V37C13.7157 37 7 30.2843 7 22Z"/>
+</svg>
+</span>
         </span>
     </span>
 </header>
@@ -138,8 +120,6 @@ if (!doNotTrack) {
         <article>
             <h2 class="post-title"><a href="https://ctrl.red/post/minipwn/">Abusing Signals with SIGROP Exploits</a></h2>
 
-            
-            
             
 
             <div class="post-content">
@@ -522,17 +502,35 @@ knowledge.</p>
         <hr />
 
         <div class="post-info">
-            
-            
-  		</div>
+  			</div>
+
+        
     </main>
 
             </div>
 
             
                 <footer class="footer">
-    
-    
+    <div class="footer__inner">
+        <div class="footer__content">
+            <span>&copy; 2022</span>
+            
+                <span><a href="https://ctrl.red">[audible]blink</a></span>
+            
+            <span></span>
+            <span> <a href="https://ctrl.red/posts/index.xml" target="_blank" title="rss"><svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-rss"><path d="M4 11a9 9 0 0 1 9 9"></path><path d="M4 4a16 16 0 0 1 16 16"></path><circle cx="5" cy="19" r="1"></circle></svg></a></span>
+        </div>
+    </div>
+    <div class="footer__inner">
+        <div class="footer__content">
+
+  <div style="margin-top: 1em;" class="container has-text-centered">
+            <img src="https://www.hackthebox.eu/badge/image/1496" alt="Hack The Box">
+  </div>
+
+
+        </div>
+    </div>
 </footer>
 
             
@@ -542,7 +540,8 @@ knowledge.</p>
 
 
 
-<script type="text/javascript" src="/bundle.min.4aadf3d82a6ff097c1e01af23be423991c8ffcb480d60c7f5b0d94e61a1704f63f29ca5c23ef6fb7113f98ec7c1acb3b3d32497e779fee8d7ff5825bc41ca6c3.js" integrity="sha512-Sq3z2Cpv8JfB4BryO&#43;QjmRyP/LSA1gx/Ww2U5hoXBPY/KcpcI&#43;9vtxE/mOx8Gss7PTJJfnef7o1/9YJbxBymww=="></script>
+
+<script type="text/javascript" src="/bundle.min.08ccaf9cef8b4e0ebd0b0158e66a7bfc0ddbb2194cdb0099e8814ddb89cc7628b27b1158846564e6e03d9ffc5f4d1bc7dfc274d359f9408d1c63d73a3f7332e9.js" integrity="sha512-CMyvnO&#43;LTg69CwFY5mp7/A3bshlM2wCZ6IFN24nMdiiyexFYhGVk5uA9n/xfTRvH38J001n5QI0cY9c6P3My6Q=="></script>
 
 
 
