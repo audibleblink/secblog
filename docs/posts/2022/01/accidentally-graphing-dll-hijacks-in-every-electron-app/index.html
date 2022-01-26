@@ -7,7 +7,7 @@
 <meta name="author" content="[audible]blink ">
 <meta name="description" content="or Building Your Own Binoculars
 I like this bi-line for a couple of reasons.
- It touches on self-sufficiency in the face of necessity It could bring up one of two things  You may be too far from the problem. Think about how to get closer You may not be seeing the forest for the trees. Being an expert on something can make it difficult to have an objective/practical opinion about the downstream effects your specialty has on the world around you." />
+ It touches on self-sufficiency in the face of necessity It could bring up one of two things  You may be too far from the problem to be objective You may not be seeing the forest for the trees. Being an expert on something can make it difficult to have an objective/practical opinion about the downstream effects your specialty has on the world around you." />
 <meta name="keywords" content="hacking, blog, science, infosec, development, programming, neo4j, windows" />
 <meta name="robots" content="noodp" />
 <meta name="theme-color" content="" />
@@ -45,9 +45,9 @@ I like this bi-line for a couple of reasons.
 <meta itemprop="name" content="Accidentally Graphing DLL Hijacks in Every Electron App">
 <meta itemprop="description" content="or Building Your Own Binoculars
 I like this bi-line for a couple of reasons.
- It touches on self-sufficiency in the face of necessity It could bring up one of two things  You may be too far from the problem. Think about how to get closer You may not be seeing the forest for the trees. Being an expert on something can make it difficult to have an objective/practical opinion about the downstream effects your specialty has on the world around you."><meta itemprop="datePublished" content="2022-01-25T16:50:47-04:00" />
+ It touches on self-sufficiency in the face of necessity It could bring up one of two things  You may be too far from the problem to be objective You may not be seeing the forest for the trees. Being an expert on something can make it difficult to have an objective/practical opinion about the downstream effects your specialty has on the world around you."><meta itemprop="datePublished" content="2022-01-25T16:50:47-04:00" />
 <meta itemprop="dateModified" content="2022-01-25T16:50:47-04:00" />
-<meta itemprop="wordCount" content="2311"><meta itemprop="image" content="https://ctrl.red/4.png">
+<meta itemprop="wordCount" content="2231"><meta itemprop="image" content="https://ctrl.red/4.png">
 <meta itemprop="keywords" content="neo4j,windows," />
 <meta name="twitter:card" content="summary_large_image"/>
 <meta name="twitter:image" content="https://ctrl.red/4.png"/>
@@ -55,7 +55,7 @@ I like this bi-line for a couple of reasons.
 <meta name="twitter:title" content="Accidentally Graphing DLL Hijacks in Every Electron App"/>
 <meta name="twitter:description" content="or Building Your Own Binoculars
 I like this bi-line for a couple of reasons.
- It touches on self-sufficiency in the face of necessity It could bring up one of two things  You may be too far from the problem. Think about how to get closer You may not be seeing the forest for the trees. Being an expert on something can make it difficult to have an objective/practical opinion about the downstream effects your specialty has on the world around you."/>
+ It touches on self-sufficiency in the face of necessity It could bring up one of two things  You may be too far from the problem to be objective You may not be seeing the forest for the trees. Being an expert on something can make it difficult to have an objective/practical opinion about the downstream effects your specialty has on the world around you."/>
 
 
 
@@ -165,20 +165,20 @@ if (!doNotTrack) {
 <li>It touches on self-sufficiency in the face of necessity</li>
 <li>It could bring up one of two things
 <ul>
-<li>You may be too far from the problem. Think about how to get closer</li>
+<li>You may be too far from the problem to be objective</li>
 <li>You may not be seeing the forest for the trees. Being an expert on something can make it difficult to have an objective/practical opinion about the downstream effects your specialty has on the world around you.</li>
 </ul>
 </li>
-<li>Building tools to solve a problem reveals perspectives to the problem you did not anticipate</li>
+<li>Building tools to solve a problem reveals perspectives to problems you did not anticipate</li>
 <li>I recently finished reading &ldquo;Paddle Your Own Canoe&rdquo; by Nick Offerman and wanted a cool title like his</li>
 </ul>
-<p>In my research, it often takes me a while to get started because I <del>procrastinate</del> spend so much time building tools to facilitate the research. I try to anticipate my needs, and set myself up to easily pivot, if need be. I do my best to ensure a fast feedback loop, allowing fast failures and restarts. Failures are still data. To twist the colloquialism: Sharpen your axe before chopping down trees.</p>
+<p>In my research, it often takes me a while to get started because I <del>procrastinate</del> spend too much time building tools to facilitate the research. I try to anticipate my needs. I do my best to ensure a fast feedback loop, allowing fast failures and restarts. Failures are still data.</p>
 <p>Some time ago, while hashing out what to build into an application, I received some advice that&rsquo;s helped me in various technical and non-technical aspects of my life:</p>
 <blockquote>
 <p>Don&rsquo;t anticipate details. Therein lies madness.
 Instead, only anticipate change, and build what&rsquo;s needed to facilitate that change.</p>
 </blockquote>
-<p>There&rsquo;s you daily does of <strong>Zen and the Art of Motorcycle Maintenance</strong></p>
+<p>There&rsquo;s your daily does of <strong>Zen and the Art of Motorcycle Maintenance</strong></p>
 <h2 id="prior-work">Prior Work</h2>
 <p>Below is a list of related work I encountered throughout the life-cycle of this project. This would
 have been much more painful without you all. Thank you:</p>
@@ -189,21 +189,19 @@ have been much more painful without you all. Thank you:</p>
 <li><a href="https://firefistace153.medium.com/using-slack-whatsapp-electron-apps-for-malware-attack-5b5b40efba2c">Using Slack, WhatsApp (electron Apps) for malware attack</a></li>
 </ul>
 <h2 id="initial-threads">Initial Threads</h2>
-<p>I&rsquo;m not a smart man when it comes to things like Threat Intelligence or Malware Reversing. Hoping to remedy that problem, I picked up <a href="https://nostarch.com/malwaredatascience">Malware Data Science</a> by Joshua Saxe with Hillary Sanders. There&rsquo;s a section about judging the actions of malware based on the functionality it imports from other dependencies.</p>
-<p>I began thinking about collecting that information from known good binaries; what&rsquo;s the baseline for good?</p>
-<p>In a separate mental thread, I had been playing with Google&rsquo;s project dependency mapper, <a href="https://deps.dev">deps.dev</a>. It&rsquo;s pretty wild seeing the relationships between all these different OSS projects graphed out in such a visually impactful way. During the Great Left-Pad debacle in the node.js ecosystem, their community caught a lot of snark for its tendency to pull in dependencies for seemingly trivial tasks.</p>
+<p>I&rsquo;ve been wanting to strengthen my Threat Intelligence and Malware Reversing chops, so I picked up <a href="https://nostarch.com/malwaredatascience">Malware Data Science</a> by Joshua Saxe with Hillary Sanders. There&rsquo;s a section about inferring the intent of malware based on its dependencies. Thread 1.</p>
+<p>Thread 2: I had been playing with Google&rsquo;s project dependency mapper, <a href="https://deps.dev">deps.dev</a>. It&rsquo;s pretty wild seeing the relationships between all these different OSS projects graphed out in such a visually impactful way. During the Great Left-Pad debacle in the node.js ecosystem, their community caught a lot of snark for its tendency to pull in dependencies for seemingly trivial tasks.</p>
 <blockquote>
 <p><a href="https://www.npmjs.com/package/is-even">Is-Even</a>, which does exactly what you&rsquo;re thinking and nothing more, is downloaded 200k times a week</p>
 </blockquote>
-<p>When a developer of a particular package deleted his code from the repository whence node packages are fetched, new attempts to rebuild projects that depended on it would simply fail to build.</p>
+<p>When a developer of a popular package deleted it from NPM, new attempts to rebuild projects that depended on it would simply fail to build.</p>
 <blockquote>
 <p>A note on Left Pad: If you know what this was, skip ahead.
 Left-Pad was a node.js package that would take an input, and pad it with whatever you wanted on the left side, as many times as you wanted. If you passed it 1234, and the number 0 for the padding, and the number 8, for the desired total length, it would return 00001234.
 It turns out some very big projects imported this dependency. Sometimes not even directly! It was an indirect dependency, meaning it was a dependency of a dependency of a dependency&hellip; etc. One such project was React.js. All over the world developers ran into failures, CI pipelines failed to deploy, and many hours (and dollars) were lost that day.</p>
 </blockquote>
-<p>Was the snark justified? I mean, how new was this problem of dependency hell? The threads have come
-together.</p>
-<h2 id="formation-of-the-project">Formation of the Project</h2>
+<p>Was the snark justified? I mean, how new was this problem of dependency hell?</p>
+<h2 id="threadsjoin">Threads.Join</h2>
 <p>Since any good experiment begins with a question:</p>
 <ul>
 <li>If we knew all the direct and indirect dependencies on a Windows system:
@@ -214,13 +212,12 @@ together.</p>
 </ul>
 </li>
 </ul>
-<h2 id="initial-research">Initial Research</h2>
 <p>In order to collect the data, I needed a way to quickly pull dependencies from all PEs on disk.</p>
 <blockquote>
 <p>PE stands for Portable Executable. Their structure follows a predefined set of rules, or specifications. EXEs and DLLs are both PEs.</p>
 </blockquote>
 <p>I also knew I wanted get a visual representation of these dependencies. My thought was to create something that would allow for the easy ingestion of data into Neo4j, a graph database. You may be familiar with this if you&rsquo;ve ever used Bloodhound.</p>
-<p>Wanting to be able to test a single PE using any OS, and also to have a portable tool I can use on many different versions of fresh Windows installs, I chose Golang and I built <code>ino</code> - <a href="https://github.com/audibleblink/ino/tree/v0.0.1">https://github.com/audibleblink/ino/tree/v0.0.1</a></p>
+<p>Wanting to be able to test a single PE from any OS, and to also have a portable tool I can use on many different versions of fresh Windows installs, I chose Golang and I built <code>ino</code> - <a href="https://github.com/audibleblink/ino/tree/v0.0.1">https://github.com/audibleblink/ino/tree/v0.0.1</a></p>
 <p>Being new to the PE format, I discovered a few things at this point in my journey:</p>
 <ul>
 <li>PE files can import other PEs, regardless of extension
@@ -258,17 +255,17 @@ together.</p>
 }
 </code></pre></div><p>With the data collected from about 86K PEs on a fresh install of Windows, I moved on to importing to and visualizing with Neo4j.</p>
 <h2 id="first-round-of-analysis">First Round of Analysis</h2>
-<p>Neo4j is a graph database that surfaces relationships between pieces of data. You may be familiar with traditional databases that hold mass amounts of information, and yes, can correlate separate tables with Joins. While Neo can hold data for each table row (aka Node in Neo-speak), it&rsquo;s purpose is to shine a light on the &ldquo;Joins&rdquo;. It&rsquo;s an oversimplification, but if you were unfamiliar with Neo4j before this article, knowing that should get you through the rest of this part.</p>
-<p>A lot of it&rsquo;s power comes from not needing to know any intermediary nodes or attributes to surface relationships. You simply ask it, &ldquo;What&rsquo;s the shortest path between Node A and Node B?&rdquo;. If ever there was a way to find exactly just how many degrees you&rsquo;re separated from Kevin Bacon, this is it.</p>
+<p>Neo4j is a graph database that surfaces relationships between pieces of data. You may be familiar with traditional databases that hold mass amounts of information and correlate separate tables with Joins. While Neo can hold data for each table row (aka Node in Neo-speak), it&rsquo;s purpose is to shine a light on the &ldquo;Joins&rdquo;. It&rsquo;s an oversimplification, but if you were unfamiliar with Neo4j before this article, knowing that should get you through the rest of this part.</p>
+<p>A lot of its power comes from not needing to know any intermediary nodes in order to surface relationships. You simply ask it, &ldquo;What&rsquo;s the shortest path between Node A and Node B?&rdquo;. If ever there was a way to find exactly just how many degrees you&rsquo;re separated from Kevin Bacon, this is it.</p>
 <h3 id="the-model">The Model:</h3>
 <p><img src="1.png" alt=""></p>
 <blockquote>
-<p>Fail log: I should have created the model first. The tool influenced how I though about the graph. In retrospect, the Function name should have been its own node. Thanks to some very helpful conversations with Andy Robbins aka @wald0, I learne that anything you want to search by should be a node and not a property on that node or edge. Doing so will increase query time substantially.</p>
+<p>Fail log: I should have created the model first. The tool influenced how I though about the graph. In retrospect, the Function name should have been its own node. Thanks to some very helpful conversations with Andy Robbins aka @wald0, I learned that anything you want to search by should be a node and not a property on that node or edge. Doing so will increase query time substantially.</p>
 </blockquote>
 <blockquote>
 <p>Something like this would have been a more useful model:</p>
 </blockquote>
-<pre tabindex="0"><code>&gt; (EXE)-[:IMPORTS]-(:FUNCTION)-[:DEFINED_BY]-(DLL)-[:FORWARDS]-(FUNCTION)-[:FORWARDED_TO]-&gt;(DLL)
+<pre tabindex="0"><code>&gt; (EXE)-[:IMPORTS]-(:FUNCTION)-[:DEFINED_BY]-(DLL)-[:FORWARDS]-(FUNCTION)
 </code></pre><p>and the ingestion:</p>
 <pre tabindex="0"><code class="language-cypher" data-lang="cypher">CALL apoc.load.json(&quot;file:///sys32_dll.json&quot;) 
 YIELD value AS dllData
@@ -334,11 +331,11 @@ Arg 2: action to take on each returned &ldquo;row&rdquo;<br>
 Arg 3: go really fast</p>
 </blockquote>
 <h3 id="visualization">Visualization</h3>
-<p>Now we&rsquo;re getting to the fun part. With all of the nodes and relationships set, we can begin exploring.</p>
+<p>Now we&rsquo;re getting to the fun part. With all nodes and relationships set, we can begin exploring.</p>
 <p>Due to some other recent but unrelated work, I had a particular interest in anyone who imports <code>dbghelp.dll!MiniDumpWriteDump</code>.</p>
 <p><img src="2.png" alt=""></p>
 <blockquote>
-<p>Fail log: My logic for not creating duplicates was flawed</p>
+<p>Fail log: My logic for not creating duplicates didn&rsquo;t even work. lol</p>
 </blockquote>
 <p>What are some other queries we can run, knowing how our data all fits together?</p>
 <ul>
@@ -347,43 +344,34 @@ Arg 3: go really fast</p>
 <li>Who imports a particular Function?</li>
 <li>Show me all DLLs imported by a certain EXE</li>
 </ul>
-<p>It was around this time a report comparing different EDRs was making the rounds. Results indicated that execution via DLL loads were hardly caught. If we&rsquo;re just talking execution (or persistence), and not privesc, where are there programs installed that run regularly and whose directories are probably writable? Looking at you, %APPDATA%.</p>
+<p>It was around this time a report comparing different EDRs was making the rounds. Results indicated that execution via DLL loads were hardly caught. If we&rsquo;re just talking execution (or persistence), and not privilege escalation, where are there programs installed that run regularly and whose directories are probably writable? Looking at you, %APPDATA%.</p>
 <p>Let&rsquo;s continue playing with <code>dbghelp</code> Given we have a <code>Path</code> attribute where every PE is located&hellip;</p>
 <p><img src="3.png" alt=""></p>
 <p><strong>very interesting</strong></p>
 <p>Out of all the EXEs in APPDATA, why these? With the exception of maybe 2, I noticed that they&rsquo;re all Electron apps.</p>
-<p>Let me pause here and say, that the search order path in Windows is indeed a feature. This isn&rsquo;t very exciting or new. At best we have code execution or persistence. Teams.exe may be worth noting, since it&rsquo;s signed by Microsoft. The interesting part here, I think, is for objective-based Red Teams. Red Teams aren&rsquo;t in a hurry to exploit the world. Depending on the objective, gathering information which leads to objectives is key. I&rsquo;ll be honest, Red Teaming can sometime be down-right boring. Sometimes it&rsquo;s kicking in (metaphorical) doors but sometimes it&rsquo;s just a stakeout.</p>
+<p>Let me pause here and say, that the search order path in Windows is indeed a feature. This isn&rsquo;t very exciting or new. At best we have code execution or persistence. Teams.exe may be worth noting, since it&rsquo;s signed by Microsoft. The interesting part here, I think, is for objective-based Red Team engagements. Red Teams aren&rsquo;t in a hurry to exploit the world. Depending on the objective, gathering information which leads to objectives is the goal. I&rsquo;ll be honest, Red Teaming can sometimes be down-right boring. Sometimes it&rsquo;s kicking in (metaphorical) doors but sometimes it&rsquo;s just a stakeout.</p>
 <p>I googled around for similar research to see if anyone had beaten me to the punch.</p>
-<ul>
-<li><code>electron AND dbghelp.dll</code></li>
-<li><code>electron AND search order</code></li>
-<li><code>electron AND hijack</code></li>
-</ul>
 <p>These 2 results came back as relevant:</p>
 <ul>
 <li><a href="https://firefistace153.medium.com/using-slack-whatsapp-electron-apps-for-malware-attack-5b5b40efba2c">Using Slack, WhatsApp (electron Apps) for malware attack</a></li>
 <li>This <a href="https://github.com/electron/electron/issues/28384">issue</a> on Electron&rsquo;s GitHub Repo.</li>
 </ul>
 <p>The first one details the hijacking I&rsquo;ve covered, and the author goes on to PoC planting the DLL with a maldoc.</p>
-<p>The second is an Issue from March 2021 listing even more DLLs than what I found with static analysis. I fired up Procmon, and sure enough, many of these are lazy-loaded, thus not existing in the Import Address Table.</p>
+<p>The second is a Github Issue from March 2021, listing even more DLLs than what I found with static analysis. I fired up Procmon, and sure enough, many of these are lazy-loaded, thus not existing in the Import Address Table.</p>
 <h2 id="conclusion">Conclusion</h2>
 <p>By mapping out relationships of PEs and their dependencies, we&rsquo;ve discovered a universal way to load code into any Electron app, of which there are thousands. The possibilities are exciting when you consider what kind of data is handled by certain Electron apps with which you now get to share memory address space with.</p>
-<p>This first go has reminded me of the importance of patience in scoping and defining your work. It
-keeps it targeted and on track. It can also prevent you from having to restart over and over again.
-Learning by doing is great, but humans have the capacity to learn from the mistakes of others.
-Learning to use both methods is challenging, but rewarding.</p>
-<p>A relevant thread I wish I&rsquo;d considered before starting:</p>
+<p>This first go has reminded me of the importance of patience in scoping and defining your work. It keeps it targeted and on track. It can also prevent you from having to restart over and over again. Learning by doing is great, but humans have the capacity to learn from the mistakes of others.  Learning to use both methods is challenging, but rewarding.</p>
+<p>A relevant thread I wish had come before starting:</p>
 <p><img src="5.png" alt=""></p>
 <p>At this point, I think I&rsquo;ve reached the end of this particular data-set&rsquo;s utility.</p>
 <p>After satisfying the occasional curiosity of &ldquo;who imports/forwards what&rdquo;,
 I&rsquo;ve pivoted to something that hopefully is more impactful.</p>
 <h2 id="whats-next">What&rsquo;s Next</h2>
-<p>One additional question did come up during this side quest.</p>
-<p>What if an Exe&rsquo;s imports can&rsquo;t be
-hijacked because the imported Dll is in the same directory as the Exe, BUT, that Dll forwards a
-function to another Dll that isn&rsquo;t in the same directory?</p>
-<p>And what if that process is running as
-SYSTEM?</p>
+<p>A new thread:</p>
+<p>How common are second-order DLL hijacks? Where you can&rsquo;t hijack a DLL because the imported DLL
+exists within the same directory as the EXE, but that DLL contains a forward to a DLL that
+<em>doesn&rsquo;t</em> exists in the same directory.</p>
+<p>And how many of those EXEs are run with high privileges?</p>
 <p>I&rsquo;m currently shaking that tree and I hope to have that blog written up soon. Here&rsquo;s a preview.</p>
 <p><a href="4.png"> <img src="4.png"/> </a></p>
 <meta name="description" content="Accidentally Graphing DLL Hijacks in Every Electron App            ">
@@ -426,7 +414,7 @@ SYSTEM?</p>
           <line x1="16" y1="17" x2="8" y2="17"></line>
           <polyline points="10 9 9 9 8 9"></polyline>
         </svg>
-        2311 Words
+        2231 Words
       </p>
 
       <p>
