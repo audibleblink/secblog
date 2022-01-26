@@ -2,124 +2,124 @@
 <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9"
   xmlns:xhtml="http://www.w3.org/1999/xhtml">
   <url>
-    <loc>https://sec.alexflor.es/</loc>
+    <loc>https://ctrl.red/</loc>
     <lastmod>2022-01-25T16:50:47-04:00</lastmod>
   </url><url>
-    <loc>https://sec.alexflor.es/posts/2022/01/accidentally-graphing-dll-hijacks-in-every-electron-app/</loc>
+    <loc>https://ctrl.red/posts/2022/01/accidentally-graphing-dll-hijacks-in-every-electron-app/</loc>
     <lastmod>2022-01-25T16:50:47-04:00</lastmod>
   </url><url>
-    <loc>https://sec.alexflor.es/tags/neo4j/</loc>
+    <loc>https://ctrl.red/tags/neo4j/</loc>
     <lastmod>2022-01-25T16:50:47-04:00</lastmod>
   </url><url>
-    <loc>https://sec.alexflor.es/posts/</loc>
+    <loc>https://ctrl.red/posts/</loc>
     <lastmod>2022-01-25T16:50:47-04:00</lastmod>
   </url><url>
-    <loc>https://sec.alexflor.es/tags/</loc>
+    <loc>https://ctrl.red/tags/</loc>
     <lastmod>2022-01-25T16:50:47-04:00</lastmod>
   </url><url>
-    <loc>https://sec.alexflor.es/tags/windows/</loc>
+    <loc>https://ctrl.red/tags/windows/</loc>
     <lastmod>2022-01-25T16:50:47-04:00</lastmod>
   </url><url>
-    <loc>https://sec.alexflor.es/posts/2021/11/clustering-pi-zeros-with-clusterhat-docker-swarm-traefik-and-ansible/</loc>
+    <loc>https://ctrl.red/posts/2021/11/clustering-pi-zeros-with-clusterhat-docker-swarm-traefik-and-ansible/</loc>
     <lastmod>2021-11-10T00:00:00+00:00</lastmod>
   </url><url>
-    <loc>https://sec.alexflor.es/tags/devops/</loc>
+    <loc>https://ctrl.red/tags/devops/</loc>
     <lastmod>2021-11-10T00:00:00+00:00</lastmod>
   </url><url>
-    <loc>https://sec.alexflor.es/tags/homelab/</loc>
+    <loc>https://ctrl.red/tags/homelab/</loc>
     <lastmod>2021-11-10T00:00:00+00:00</lastmod>
   </url><url>
-    <loc>https://sec.alexflor.es/posts/2021/04/ret2csu/</loc>
+    <loc>https://ctrl.red/posts/2021/04/ret2csu/</loc>
     <lastmod>2021-04-24T11:42:16-04:00</lastmod>
   </url><url>
-    <loc>https://sec.alexflor.es/categories/</loc>
+    <loc>https://ctrl.red/categories/</loc>
     <lastmod>2020-05-04T15:58:04-04:00</lastmod>
   </url><url>
-    <loc>https://sec.alexflor.es/categories/passdb/</loc>
+    <loc>https://ctrl.red/categories/passdb/</loc>
     <lastmod>2020-05-04T15:58:04-04:00</lastmod>
   </url><url>
-    <loc>https://sec.alexflor.es/posts/2020/05/password-dump-database-part-2/</loc>
+    <loc>https://ctrl.red/posts/2020/05/password-dump-database-part-2/</loc>
     <lastmod>2020-05-04T15:58:04-04:00</lastmod>
   </url><url>
-    <loc>https://sec.alexflor.es/tags/exploitdev/</loc>
+    <loc>https://ctrl.red/tags/exploitdev/</loc>
     <lastmod>2020-01-04T19:13:37-05:00</lastmod>
   </url><url>
-    <loc>https://sec.alexflor.es/posts/2020/01/pwntool-tips-3/</loc>
+    <loc>https://ctrl.red/posts/2020/01/pwntool-tips-3/</loc>
     <lastmod>2020-01-04T19:13:37-05:00</lastmod>
   </url><url>
-    <loc>https://sec.alexflor.es/tags/pwntools/</loc>
+    <loc>https://ctrl.red/tags/pwntools/</loc>
     <lastmod>2020-01-04T19:13:37-05:00</lastmod>
   </url><url>
-    <loc>https://sec.alexflor.es/posts/2020/01/pwntool-tips-2/</loc>
+    <loc>https://ctrl.red/posts/2020/01/pwntool-tips-2/</loc>
     <lastmod>2020-01-03T13:13:01-05:00</lastmod>
   </url><url>
-    <loc>https://sec.alexflor.es/posts/2020/01/pwntool-tips-1/</loc>
+    <loc>https://ctrl.red/posts/2020/01/pwntool-tips-1/</loc>
     <lastmod>2020-01-02T20:56:48-05:00</lastmod>
   </url><url>
-    <loc>https://sec.alexflor.es/post/minipwn/</loc>
+    <loc>https://ctrl.red/post/minipwn/</loc>
     <lastmod>2019-12-28T21:59:34-05:00</lastmod>
   </url><url>
-    <loc>https://sec.alexflor.es/posts/2019/12/abusing-signals-with-sigrop-exploits/</loc>
+    <loc>https://ctrl.red/posts/2019/12/abusing-signals-with-sigrop-exploits/</loc>
     <lastmod>2019-12-28T21:59:34-05:00</lastmod>
   </url><url>
-    <loc>https://sec.alexflor.es/post/</loc>
+    <loc>https://ctrl.red/post/</loc>
     <lastmod>2019-12-28T21:59:34-05:00</lastmod>
   </url><url>
-    <loc>https://sec.alexflor.es/post/passdb/</loc>
+    <loc>https://ctrl.red/post/passdb/</loc>
     <lastmod>2019-09-28T19:33:14-04:00</lastmod>
   </url><url>
-    <loc>https://sec.alexflor.es/posts/2019/09/password-dump-database-part-1/</loc>
+    <loc>https://ctrl.red/posts/2019/09/password-dump-database-part-1/</loc>
     <lastmod>2019-09-28T19:33:14-04:00</lastmod>
   </url><url>
-    <loc>https://sec.alexflor.es/posts/2019/04/stop-using-python-for-subdomain-enumeration/</loc>
+    <loc>https://ctrl.red/posts/2019/04/stop-using-python-for-subdomain-enumeration/</loc>
     <lastmod>2019-04-20T13:02:17-04:00</lastmod>
   </url><url>
-    <loc>https://sec.alexflor.es/categories/howto/</loc>
+    <loc>https://ctrl.red/categories/howto/</loc>
     <lastmod>2018-12-30T17:06:30-05:00</lastmod>
   </url><url>
-    <loc>https://sec.alexflor.es/posts/2018/12/mind-your-oopsec/</loc>
+    <loc>https://ctrl.red/posts/2018/12/mind-your-oopsec/</loc>
     <lastmod>2018-12-30T17:06:30-05:00</lastmod>
   </url><url>
-    <loc>https://sec.alexflor.es/posts/2018/05/analyzing-data-exfiltration-over-icmp/</loc>
+    <loc>https://ctrl.red/posts/2018/05/analyzing-data-exfiltration-over-icmp/</loc>
     <lastmod>2018-05-11T20:06:55-04:00</lastmod>
   </url><url>
-    <loc>https://sec.alexflor.es/posts/2018/04/password-spraying-with-doxycannon/</loc>
+    <loc>https://ctrl.red/posts/2018/04/password-spraying-with-doxycannon/</loc>
     <lastmod>2018-04-16T22:43:36-04:00</lastmod>
   </url><url>
-    <loc>https://sec.alexflor.es/posts/2017/08/bashynumb.sh/</loc>
+    <loc>https://ctrl.red/posts/2017/08/bashynumb.sh/</loc>
     <lastmod>2017-08-22T22:47:45-04:00</lastmod>
   </url><url>
-    <loc>https://sec.alexflor.es/posts/2017/08/creating-a-vpn-access-point/</loc>
+    <loc>https://ctrl.red/posts/2017/08/creating-a-vpn-access-point/</loc>
     <lastmod>2017-08-18T20:07:36-04:00</lastmod>
   </url><url>
-    <loc>https://sec.alexflor.es/posts/2017/08/chrome-extension-steals-cloudflare-api-tokens/</loc>
+    <loc>https://ctrl.red/posts/2017/08/chrome-extension-steals-cloudflare-api-tokens/</loc>
     <lastmod>2017-08-03T20:59:56-04:00</lastmod>
   </url><url>
-    <loc>https://sec.alexflor.es/posts/2017/04/creating-bashbunny-payloads/</loc>
+    <loc>https://ctrl.red/posts/2017/04/creating-bashbunny-payloads/</loc>
     <lastmod>2017-04-01T22:08:35-04:00</lastmod>
   </url><url>
-    <loc>https://sec.alexflor.es/posts/2017/02/finding-your-way-out-from-behind-firewalls-with-strict-outbound-rules/</loc>
+    <loc>https://ctrl.red/posts/2017/02/finding-your-way-out-from-behind-firewalls-with-strict-outbound-rules/</loc>
     <lastmod>2017-02-07T19:44:18-05:00</lastmod>
   </url><url>
-    <loc>https://sec.alexflor.es/posts/2017/02/configuring-ssh-for-pivoting/</loc>
+    <loc>https://ctrl.red/posts/2017/02/configuring-ssh-for-pivoting/</loc>
     <lastmod>2017-02-02T16:32:04-05:00</lastmod>
   </url><url>
-    <loc>https://sec.alexflor.es/posts/2016/12/b2r-wallaby-walkthrough/</loc>
+    <loc>https://ctrl.red/posts/2016/12/b2r-wallaby-walkthrough/</loc>
     <lastmod>2016-12-30T19:16:02-04:00</lastmod>
   </url><url>
-    <loc>https://sec.alexflor.es/categories/boot2root/</loc>
+    <loc>https://ctrl.red/categories/boot2root/</loc>
     <lastmod>2016-12-30T19:16:02-04:00</lastmod>
   </url><url>
-    <loc>https://sec.alexflor.es/posts/2016/12/b2r-stapler/</loc>
+    <loc>https://ctrl.red/posts/2016/12/b2r-stapler/</loc>
     <lastmod>2016-12-24T23:45:38-05:00</lastmod>
   </url><url>
-    <loc>https://sec.alexflor.es/posts/2016/12/b2r-sickosv1.2/</loc>
+    <loc>https://ctrl.red/posts/2016/12/b2r-sickosv1.2/</loc>
     <lastmod>2016-12-20T23:45:50-05:00</lastmod>
   </url><url>
-    <loc>https://sec.alexflor.es/posts/2016/11/b2r-imf-walkthrough/</loc>
+    <loc>https://ctrl.red/posts/2016/11/b2r-imf-walkthrough/</loc>
     <lastmod>2016-11-01T19:16:02-04:00</lastmod>
   </url><url>
-    <loc>https://sec.alexflor.es/posts/2016/10/b2r-tr0ll-walkthrough/</loc>
+    <loc>https://ctrl.red/posts/2016/10/b2r-tr0ll-walkthrough/</loc>
     <lastmod>2016-10-20T20:57:00-04:00</lastmod>
   </url>
 </urlset>

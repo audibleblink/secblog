@@ -2,17 +2,17 @@
 <rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom">
   <channel>
     <title>[audible]blink</title>
-    <link>https://sec.alexflor.es/</link>
+    <link>https://ctrl.red/</link>
     <description>Recent content on [audible]blink</description>
     <generator>Hugo -- gohugo.io</generator>
     <language>en-us</language>
-    <lastBuildDate>Tue, 25 Jan 2022 16:50:47 -0400</lastBuildDate><atom:link href="https://sec.alexflor.es/index.xml" rel="self" type="application/rss+xml" />
+    <lastBuildDate>Tue, 25 Jan 2022 16:50:47 -0400</lastBuildDate><atom:link href="https://ctrl.red/index.xml" rel="self" type="application/rss+xml" />
     <item>
       <title>Accidentally Graphing DLL Hijacks in Every Electron App</title>
-      <link>https://sec.alexflor.es/posts/2022/01/accidentally-graphing-dll-hijacks-in-every-electron-app/</link>
+      <link>https://ctrl.red/posts/2022/01/accidentally-graphing-dll-hijacks-in-every-electron-app/</link>
       <pubDate>Tue, 25 Jan 2022 16:50:47 -0400</pubDate>
       
-      <guid>https://sec.alexflor.es/posts/2022/01/accidentally-graphing-dll-hijacks-in-every-electron-app/</guid>
+      <guid>https://ctrl.red/posts/2022/01/accidentally-graphing-dll-hijacks-in-every-electron-app/</guid>
       <description>or Building Your Own Binoculars
 I like this bi-line for a couple of reasons.
  It touches on self-sufficiency in the face of necessity It could bring up one of two things  You may be too far from the problem. Think about how to get closer You may not be seeing the forest for the trees. Being an expert on something can make it difficult to have an objective/practical opinion about the downstream effects your specialty has on the world around you.</description>
@@ -20,10 +20,10 @@ I like this bi-line for a couple of reasons.
     
     <item>
       <title>Clustering Pi Zeros With ClusterHAT, Docker Swarm, Traefik, and Ansible</title>
-      <link>https://sec.alexflor.es/posts/2021/11/clustering-pi-zeros-with-clusterhat-docker-swarm-traefik-and-ansible/</link>
+      <link>https://ctrl.red/posts/2021/11/clustering-pi-zeros-with-clusterhat-docker-swarm-traefik-and-ansible/</link>
       <pubDate>Wed, 10 Nov 2021 00:00:00 +0000</pubDate>
       
-      <guid>https://sec.alexflor.es/posts/2021/11/clustering-pi-zeros-with-clusterhat-docker-swarm-traefik-and-ansible/</guid>
+      <guid>https://ctrl.red/posts/2021/11/clustering-pi-zeros-with-clusterhat-docker-swarm-traefik-and-ansible/</guid>
       <description>It calls to you. Your drawer of misfit toys and abandoned projects.
 Every few months, I come back to the world of SoCs to see what&amp;rsquo;s new, but nothing ever really sticks around long enough for it to be considered useful enough to be permanent.
  Smart mirrors Twitter bots that shame you for not watering your plants Video Game emulators Home control devices The occasional GPIO project to manipulate things in MeatSpace  The only exception is probably an ad-blocking DNS server, the Pi-Hole.</description>
@@ -31,129 +31,129 @@ Every few months, I come back to the world of SoCs to see what&amp;rsquo;s new, 
     
     <item>
       <title>Ret2CSU</title>
-      <link>https://sec.alexflor.es/posts/2021/04/ret2csu/</link>
+      <link>https://ctrl.red/posts/2021/04/ret2csu/</link>
       <pubDate>Sat, 24 Apr 2021 11:42:16 -0400</pubDate>
       
-      <guid>https://sec.alexflor.es/posts/2021/04/ret2csu/</guid>
+      <guid>https://ctrl.red/posts/2021/04/ret2csu/</guid>
       <description>What is __libc_csu_init anyway? Hackthebox hosted the CTF event, CyberPocalypse2021 this last week. Great event. Let&amp;rsquo;s talk about the System dROP challenge.
 A while ago, I&amp;rsquo;d read a BlackHat paper on something called &amp;lsquo;ret2csu&amp;rsquo;. The TL;DR is that glibc attaches code that bootstraps your C. Within the attached code, there exists two segments of assembly, that when used together, can be very useful in constructing ROP chains without needing bother with any ASLR&amp;rsquo;d library, provided there exists some other useful code within the main ELF.</description>
     </item>
     
     <item>
       <title>Password Dump Database - Part 2</title>
-      <link>https://sec.alexflor.es/posts/2020/05/password-dump-database-part-2/</link>
+      <link>https://ctrl.red/posts/2020/05/password-dump-database-part-2/</link>
       <pubDate>Mon, 04 May 2020 15:58:04 -0400</pubDate>
       
-      <guid>https://sec.alexflor.es/posts/2020/05/password-dump-database-part-2/</guid>
+      <guid>https://ctrl.red/posts/2020/05/password-dump-database-part-2/</guid>
       <description>THE RETCONNING It is my sincerest hope that my last post was of some use to you because I&amp;rsquo;m about to tell you to forget it. Like almost all of it.
 Right around the time I discovered that even with an O(log n) insertion rate, and even while saturating the IO of 2 SSDs in a RAID-0 configuration would seeding still take months&amp;hellip; it was then, dear reader, that I decided&amp;hellip;</description>
     </item>
     
     <item>
       <title>Pwntool Tips 3</title>
-      <link>https://sec.alexflor.es/posts/2020/01/pwntool-tips-3/</link>
+      <link>https://ctrl.red/posts/2020/01/pwntool-tips-3/</link>
       <pubDate>Sat, 04 Jan 2020 19:13:37 -0500</pubDate>
       
-      <guid>https://sec.alexflor.es/posts/2020/01/pwntool-tips-3/</guid>
+      <guid>https://ctrl.red/posts/2020/01/pwntool-tips-3/</guid>
       <description>Before we start, in part 2 of the series I demonstrated finding asm instructions within a binary using the elf.search() function. We passed bytes ff e4 in order to find the address of a jmp rsp instruction. As it turns out, we can use also the mnemonic if we pass it through asm() first. This way, we don&amp;rsquo;t have to remember that jmp rsp is ff e4 on amd64 architecture.</description>
     </item>
     
     <item>
       <title>Pwntool Tips 2</title>
-      <link>https://sec.alexflor.es/posts/2020/01/pwntool-tips-2/</link>
+      <link>https://ctrl.red/posts/2020/01/pwntool-tips-2/</link>
       <pubDate>Fri, 03 Jan 2020 13:13:01 -0500</pubDate>
       
-      <guid>https://sec.alexflor.es/posts/2020/01/pwntool-tips-2/</guid>
+      <guid>https://ctrl.red/posts/2020/01/pwntool-tips-2/</guid>
       <description>ELF and ROP Modules Pwntools gives us the ability to interact with ELFs and shared libraries in a programmatic way. Full ELF docs Full ROP docs  ELF fit One of the Class-level members I want to talk about is fit. I&amp;rsquo;ve had to create lines in my exploit code that look like this:
 buf_len = 128 pad_len = buf_len - (len(gadgets) + len(mprotect)) payload = gadgets payload += mprotect payload += &amp;#34;A&amp;#34; * pad_len payload += canary payload += &amp;#34;A&amp;#34; * 16 # junk payload += jmprsp fit allows you to be declarative about where each of your exploit components should be in your payload.</description>
     </item>
     
     <item>
       <title>Pwntool Tips 1</title>
-      <link>https://sec.alexflor.es/posts/2020/01/pwntool-tips-1/</link>
+      <link>https://ctrl.red/posts/2020/01/pwntool-tips-1/</link>
       <pubDate>Thu, 02 Jan 2020 20:56:48 -0500</pubDate>
       
-      <guid>https://sec.alexflor.es/posts/2020/01/pwntool-tips-1/</guid>
+      <guid>https://ctrl.red/posts/2020/01/pwntool-tips-1/</guid>
       <description>Do you like clean exploit scripts? Do you fidget with and refactor them long after you&amp;rsquo;ve submitted the flag? If so, then this blog series is right up your alley!
 At some point you&amp;rsquo;ll be developing an exploit that requires you to return to some shared library, most likely libc. Problem is there&amp;rsquo;s a good chance the libc on your local dev box is not same version as the one on the remote box.</description>
     </item>
     
     <item>
       <title>Abusing Signals with SIGROP Exploits</title>
-      <link>https://sec.alexflor.es/post/minipwn/</link>
+      <link>https://ctrl.red/post/minipwn/</link>
       <pubDate>Sat, 28 Dec 2019 21:59:34 -0500</pubDate>
       
-      <guid>https://sec.alexflor.es/post/minipwn/</guid>
+      <guid>https://ctrl.red/post/minipwn/</guid>
       <description>TMHC: MiniPwn Walk-through This one&amp;rsquo;s just as much for me as it is for you. They say you don&amp;rsquo;t truly understand something until you&amp;rsquo;re able to teach it to someone else. So here we go!
 The Many Hats Club had a CTF on HackTheBox a few weekends ago that re-ignited a previous passion for exploit development. The reason it got me interested was that it required a new exploit technique of which I&amp;rsquo;d not yet heard, Signal Return Oriented Programming.</description>
     </item>
     
     <item>
       <title>Abusing Signals with SIGROP Exploits</title>
-      <link>https://sec.alexflor.es/posts/2019/12/abusing-signals-with-sigrop-exploits/</link>
+      <link>https://ctrl.red/posts/2019/12/abusing-signals-with-sigrop-exploits/</link>
       <pubDate>Sat, 28 Dec 2019 21:59:34 -0500</pubDate>
       
-      <guid>https://sec.alexflor.es/posts/2019/12/abusing-signals-with-sigrop-exploits/</guid>
+      <guid>https://ctrl.red/posts/2019/12/abusing-signals-with-sigrop-exploits/</guid>
       <description>TMHC: MiniPwn Walk-through This one&amp;rsquo;s just as much for me as it is for you. They say you don&amp;rsquo;t truly understand something until you&amp;rsquo;re able to teach it to someone else. So here we go!
 The Many Hats Club had a CTF on HackTheBox a few weekends ago that re-ignited a previous passion for exploit development. The reason it got me interested was that it required a new exploit technique of which I&amp;rsquo;d not yet heard, Signal Return Oriented Programming.</description>
     </item>
     
     <item>
       <title>Password Dump Database - Part 1</title>
-      <link>https://sec.alexflor.es/post/passdb/</link>
+      <link>https://ctrl.red/post/passdb/</link>
       <pubDate>Sat, 28 Sep 2019 19:33:14 -0400</pubDate>
       
-      <guid>https://sec.alexflor.es/post/passdb/</guid>
+      <guid>https://ctrl.red/post/passdb/</guid>
       <description>Preface This post is first in a series where I mostly catalogue my failures, what didn&amp;rsquo;t work, and the lessons I learned along the way. This isn&amp;rsquo;t a tool drop, or a new dump. Also, part 2 basically says every choice I make in Part 1 (this part) is wrong. If you&amp;rsquo;re a DB admin or have experience with manipulating large amounts of data, prepare to cringe&amp;hellip; HARD
 If you&amp;rsquo;re just interested in some stats and bencharks, you can skip straight to that section</description>
     </item>
     
     <item>
       <title>Password Dump Database - Part 1</title>
-      <link>https://sec.alexflor.es/posts/2019/09/password-dump-database-part-1/</link>
+      <link>https://ctrl.red/posts/2019/09/password-dump-database-part-1/</link>
       <pubDate>Sat, 28 Sep 2019 19:33:14 -0400</pubDate>
       
-      <guid>https://sec.alexflor.es/posts/2019/09/password-dump-database-part-1/</guid>
+      <guid>https://ctrl.red/posts/2019/09/password-dump-database-part-1/</guid>
       <description>Preface This post is first in a series where I mostly catalogue my failures, what didn&amp;rsquo;t work, and the lessons I learned along the way. This isn&amp;rsquo;t a tool drop, or a new dump. Also, part 2 basically says every choice I make in Part 1 (this part) is wrong. If you&amp;rsquo;re a DB admin or have experience with manipulating large amounts of data, prepare to cringe&amp;hellip; HARD
 If you&amp;rsquo;re just interested in some stats and bencharks, you can skip straight to that section</description>
     </item>
     
     <item>
       <title>Stop Using Python for Subdomain Enumeration</title>
-      <link>https://sec.alexflor.es/posts/2019/04/stop-using-python-for-subdomain-enumeration/</link>
+      <link>https://ctrl.red/posts/2019/04/stop-using-python-for-subdomain-enumeration/</link>
       <pubDate>Sat, 20 Apr 2019 13:02:17 -0400</pubDate>
       
-      <guid>https://sec.alexflor.es/posts/2019/04/stop-using-python-for-subdomain-enumeration/</guid>
+      <guid>https://ctrl.red/posts/2019/04/stop-using-python-for-subdomain-enumeration/</guid>
       <description>&lt;p&gt;Python (and all other scripting languages) use the host system&amp;rsquo;s name resolution APIs.
 Skip the bottleneck and craft the DNS packets manually.&lt;/p&gt;</description>
     </item>
     
     <item>
       <title>Mind Your OOPSEC</title>
-      <link>https://sec.alexflor.es/posts/2018/12/mind-your-oopsec/</link>
+      <link>https://ctrl.red/posts/2018/12/mind-your-oopsec/</link>
       <pubDate>Sun, 30 Dec 2018 17:06:30 -0500</pubDate>
       
-      <guid>https://sec.alexflor.es/posts/2018/12/mind-your-oopsec/</guid>
+      <guid>https://ctrl.red/posts/2018/12/mind-your-oopsec/</guid>
       <description>OPSEC is hard and those OOPS moments can often cost you a campaign when Red teaming. In this post I&amp;rsquo;ll go over how I set up my VMs so I never have to remember to turn on a VPN, stress about having some &amp;lsquo;killswitch&amp;rsquo; fail, or being on the losing end of some network-race-condition nonsense when waking my laptop.
 Automation isn&amp;rsquo;t always about convenience for the user. Sometimes it&amp;rsquo;s also about determinism.</description>
     </item>
     
     <item>
       <title>Analyzing Data Exfiltration over ICMP</title>
-      <link>https://sec.alexflor.es/posts/2018/05/analyzing-data-exfiltration-over-icmp/</link>
+      <link>https://ctrl.red/posts/2018/05/analyzing-data-exfiltration-over-icmp/</link>
       <pubDate>Fri, 11 May 2018 20:06:55 -0400</pubDate>
       
-      <guid>https://sec.alexflor.es/posts/2018/05/analyzing-data-exfiltration-over-icmp/</guid>
+      <guid>https://ctrl.red/posts/2018/05/analyzing-data-exfiltration-over-icmp/</guid>
       <description>I&amp;rsquo;m a big fan of learning through competition. Capture The Flag games have tremendous utility for training within the Security sector and even outside of it. Intentionally vulnerable web applications, like OWASP&amp;rsquo;s JuiceShop, are excellent tools for assisting in developing Secure Software Development Life-cycle programs within an organization.
 So let&amp;rsquo;s take an exercise I recently came across in a CTF event. The skills required to solve the challenge are actually quite useful in real-world defensive scenarios.</description>
     </item>
     
     <item>
       <title>Password Spraying with DoxyCannon</title>
-      <link>https://sec.alexflor.es/posts/2018/04/password-spraying-with-doxycannon/</link>
+      <link>https://ctrl.red/posts/2018/04/password-spraying-with-doxycannon/</link>
       <pubDate>Mon, 16 Apr 2018 22:43:36 -0400</pubDate>
       
-      <guid>https://sec.alexflor.es/posts/2018/04/password-spraying-with-doxycannon/</guid>
+      <guid>https://ctrl.red/posts/2018/04/password-spraying-with-doxycannon/</guid>
       <description>Password sprays are here to stay. It&amp;rsquo;s probably a good idea to configure some clever WAF rules, implement captcha systems, and set up additional alerting. But once implemented, how do you test and tune your protective measures?
 Enter DoxyCannon
 DoxyCannon&amp;rsquo;s name borrows from ProxyCannon, a script that instantiates cloud infrastructure through which one can proxy requests. Unlike ProxyCannon, DoxyCannon gives you the same functionality without needing to rely on cloud providers.</description>
@@ -161,94 +161,94 @@ DoxyCannon&amp;rsquo;s name borrows from ProxyCannon, a script that instantiates
     
     <item>
       <title>BashyNumb.sh</title>
-      <link>https://sec.alexflor.es/posts/2017/08/bashynumb.sh/</link>
+      <link>https://ctrl.red/posts/2017/08/bashynumb.sh/</link>
       <pubDate>Tue, 22 Aug 2017 22:47:45 -0400</pubDate>
       
-      <guid>https://sec.alexflor.es/posts/2017/08/bashynumb.sh/</guid>
+      <guid>https://ctrl.red/posts/2017/08/bashynumb.sh/</guid>
       <description>I&amp;rsquo;ve been running into more and more Linux boxes that don&amp;rsquo;t have python 2 installed. It&amp;rsquo;s been a little frustrating since I like to use a slightly modified version of the famous linuxprivchecker.py that almost all OSCP students know and love. I&amp;rsquo;m lazy and hate manual enumeration; makes my fingers go numb. I decided to spend an evening translating it to python 3, but quickly realized, &amp;ldquo;This python is just invoking shell commands, why am I doing this?</description>
     </item>
     
     <item>
       <title>Creating a VPN Access Point</title>
-      <link>https://sec.alexflor.es/posts/2017/08/creating-a-vpn-access-point/</link>
+      <link>https://ctrl.red/posts/2017/08/creating-a-vpn-access-point/</link>
       <pubDate>Fri, 18 Aug 2017 20:07:36 -0400</pubDate>
       
-      <guid>https://sec.alexflor.es/posts/2017/08/creating-a-vpn-access-point/</guid>
+      <guid>https://ctrl.red/posts/2017/08/creating-a-vpn-access-point/</guid>
       <description>By now, there shouldn&amp;rsquo;t be any doubt that not only are you being watched online, but your browsing habits, particularly your political ones, are of interest to the current administration. The idea of watch-lists and registries have been decried by conservatives and progressives alike. This should strike a chord with conservatives, who&amp;rsquo;ve protested gun registrations and national ID cards, as it demonstrates the governmental over-reach that conservatives often denounce. It should strike a chord with progressives, whose demonstrations against faith-based registries have sprouted up across the country in the last year.</description>
     </item>
     
     <item>
       <title>Chrome Extension Steals Cloudflare Api Tokens</title>
-      <link>https://sec.alexflor.es/posts/2017/08/chrome-extension-steals-cloudflare-api-tokens/</link>
+      <link>https://ctrl.red/posts/2017/08/chrome-extension-steals-cloudflare-api-tokens/</link>
       <pubDate>Thu, 03 Aug 2017 20:59:56 -0400</pubDate>
       
-      <guid>https://sec.alexflor.es/posts/2017/08/chrome-extension-steals-cloudflare-api-tokens/</guid>
+      <guid>https://ctrl.red/posts/2017/08/chrome-extension-steals-cloudflare-api-tokens/</guid>
       <description>Upon receiving news that the popular Chrome Extension, Web Developer, had been compromised, I quickly began to wonder about the what and how. Several stories exist about how the extension came to be compromised and they touched a bit on what it did. This post is meant to expand upon, what I believe to be, the more nefarious behavior of the extension. Since the extension calls out to an attacker-controlled URL, the payload hosted at that URL could be changed to anything at any time.</description>
     </item>
     
     <item>
       <title>Creating BashBunny Payloads</title>
-      <link>https://sec.alexflor.es/posts/2017/04/creating-bashbunny-payloads/</link>
+      <link>https://ctrl.red/posts/2017/04/creating-bashbunny-payloads/</link>
       <pubDate>Sat, 01 Apr 2017 22:08:35 -0400</pubDate>
       
-      <guid>https://sec.alexflor.es/posts/2017/04/creating-bashbunny-payloads/</guid>
+      <guid>https://ctrl.red/posts/2017/04/creating-bashbunny-payloads/</guid>
       <description>What is it? The BashBunny is an attack platform that allows attackers to create payloads in Bash. The device can be scripted to enumerate as a HID (keyboard), mass storage, serial, and Ethernet. This enables a multitude of attacks including thing like exfiltrating documents over a network interface or stealing account hashes from locked computers.
 Creating a Payload We want to create a payload that allows for easy exfiltration from macOS.</description>
     </item>
     
     <item>
       <title>Finding Your Way Out From Behind Firewalls with Strict Outbound Rules</title>
-      <link>https://sec.alexflor.es/posts/2017/02/finding-your-way-out-from-behind-firewalls-with-strict-outbound-rules/</link>
+      <link>https://ctrl.red/posts/2017/02/finding-your-way-out-from-behind-firewalls-with-strict-outbound-rules/</link>
       <pubDate>Tue, 07 Feb 2017 19:44:18 -0500</pubDate>
       
-      <guid>https://sec.alexflor.es/posts/2017/02/finding-your-way-out-from-behind-firewalls-with-strict-outbound-rules/</guid>
+      <guid>https://ctrl.red/posts/2017/02/finding-your-way-out-from-behind-firewalls-with-strict-outbound-rules/</guid>
       <description>You&amp;rsquo;ve achieved code execution on a machine, but for some reason your reverse shell isn&amp;rsquo;t pinging you back. Or that wget/tftp command isn&amp;rsquo;t downloading your recon/post-exploitation tools. There&amp;rsquo;s a chance you&amp;rsquo;re dealing with an egress problem. Typical ports that need outboud access are blocked. You try the main ones you can think of (21, 22, 53, 80, 8080, 443), but none of them seem to be connecting. Do you start at 1 and manually test?</description>
     </item>
     
     <item>
       <title>Configuring SSH for Pivoting</title>
-      <link>https://sec.alexflor.es/posts/2017/02/configuring-ssh-for-pivoting/</link>
+      <link>https://ctrl.red/posts/2017/02/configuring-ssh-for-pivoting/</link>
       <pubDate>Thu, 02 Feb 2017 16:32:04 -0500</pubDate>
       
-      <guid>https://sec.alexflor.es/posts/2017/02/configuring-ssh-for-pivoting/</guid>
+      <guid>https://ctrl.red/posts/2017/02/configuring-ssh-for-pivoting/</guid>
       <description>You&amp;rsquo;re on a pentesting engagement and you&amp;rsquo;ve discovered a dual homed machine that allows you access to a subnet you can&amp;rsquo;t access directly from your attack machine. Assuming you&amp;rsquo;ve compromised at least one machine on the initial network, you can use it as a proxy to other machines on the &amp;ldquo;hidden&amp;rdquo; subnet.
 The ssh client has an often-overlooked configuration file that resides in your ~/.ssh folder. You can configure things in here that are specific to certain hosts or you can set default configurations for every host.</description>
     </item>
     
     <item>
       <title>B2R: Wallaby Walkthrough</title>
-      <link>https://sec.alexflor.es/posts/2016/12/b2r-wallaby-walkthrough/</link>
+      <link>https://ctrl.red/posts/2016/12/b2r-wallaby-walkthrough/</link>
       <pubDate>Fri, 30 Dec 2016 19:16:02 -0400</pubDate>
       
-      <guid>https://sec.alexflor.es/posts/2016/12/b2r-wallaby-walkthrough/</guid>
+      <guid>https://ctrl.red/posts/2016/12/b2r-wallaby-walkthrough/</guid>
       <description>Executive Summary This machine had an unlisted but open webapp path that allowed for remote command execution. After establishing a reverse shell as the limited user www-data, privilege checks showed the user was allowed to modify firewall rules. There was also an IRC server that contained a bot that allowed command execution through the use of the .run command. The command would only obey the user waldo so modification of the firewall allows an attacker to kick and assume the waldo identity.</description>
     </item>
     
     <item>
       <title>B2R: Stapler</title>
-      <link>https://sec.alexflor.es/posts/2016/12/b2r-stapler/</link>
+      <link>https://ctrl.red/posts/2016/12/b2r-stapler/</link>
       <pubDate>Sat, 24 Dec 2016 23:45:38 -0500</pubDate>
       
-      <guid>https://sec.alexflor.es/posts/2016/12/b2r-stapler/</guid>
+      <guid>https://ctrl.red/posts/2016/12/b2r-stapler/</guid>
       <description>Adding the IP address of the VM to the hosts file allows one to cut down on some typing.
 Executive Summary This machine had several services running, some of which revealed employee names and accounts that could later be leveraged to compromise the system. A Wordpress plug-in vulnerability was found and used to extract database credentials, which then led to a non-privileged shell. Once scanned, it was discovered that a script ran every 20 minutes as the root user and that the script was writable to our non-privileged user.</description>
     </item>
     
     <item>
       <title>B2R: SickOSv1.2</title>
-      <link>https://sec.alexflor.es/posts/2016/12/b2r-sickosv1.2/</link>
+      <link>https://ctrl.red/posts/2016/12/b2r-sickosv1.2/</link>
       <pubDate>Tue, 20 Dec 2016 23:45:50 -0500</pubDate>
       
-      <guid>https://sec.alexflor.es/posts/2016/12/b2r-sickosv1.2/</guid>
+      <guid>https://ctrl.red/posts/2016/12/b2r-sickosv1.2/</guid>
       <description>Executive Summary This machine had an unprotected folder which allowed uploading of malicious PHP code which could then be executed remotely. An attacker could then create an unprivileged shell on the victim machine and begin to explore the system for additional vulnerabilities which could lead to a full compromise. During the exploration, an outdated version of chkrootkit was found. By exploiting a known vulnerability in the way chkrootkit parses arguments, an attacker could create a malicious file that would later be run by chkrootkit as a fully privileged user.</description>
     </item>
     
     <item>
       <title>B2R: IMF Walkthrough</title>
-      <link>https://sec.alexflor.es/posts/2016/11/b2r-imf-walkthrough/</link>
+      <link>https://ctrl.red/posts/2016/11/b2r-imf-walkthrough/</link>
       <pubDate>Tue, 01 Nov 2016 19:16:02 -0400</pubDate>
       
-      <guid>https://sec.alexflor.es/posts/2016/11/b2r-imf-walkthrough/</guid>
+      <guid>https://ctrl.red/posts/2016/11/b2r-imf-walkthrough/</guid>
       <description>After mapping the network and finding our IP address at 192.168.1.162, we can add it to our /etc/hosts temporarily to make things a little easier for us.
 echo &amp;quot;192.168.1.162 imf&amp;quot; &amp;gt;&amp;gt; /etc/hosts Lets see what kind of machine we&amp;rsquo;re dealing with.
 Ok, so web only. Great. nikto didn&amp;rsquo;t reveal any low-hanging fruit so let&amp;rsquo;s dive into the source.
@@ -257,10 +257,10 @@ Check that out! Our first flag was hidden in http://imf/contact.php. This looks 
     
     <item>
       <title>B2R: Tr0ll Walkthrough</title>
-      <link>https://sec.alexflor.es/posts/2016/10/b2r-tr0ll-walkthrough/</link>
+      <link>https://ctrl.red/posts/2016/10/b2r-tr0ll-walkthrough/</link>
       <pubDate>Thu, 20 Oct 2016 20:57:00 -0400</pubDate>
       
-      <guid>https://sec.alexflor.es/posts/2016/10/b2r-tr0ll-walkthrough/</guid>
+      <guid>https://ctrl.red/posts/2016/10/b2r-tr0ll-walkthrough/</guid>
       <description>A couple of weeks ago, work sent me to a security class for an upcoming product. While there, I learned about vulnhub, a repository of intentionally vulnerable virtual machines for anyone to compromise. Since coming back, vulnhub has become my new obsession. Here&amp;rsquo;s a walkthrough of my attempt.
 Note: I struggled a bit more that this writeup lets on. The struggle is ommited for clarity and brevity.
 __
