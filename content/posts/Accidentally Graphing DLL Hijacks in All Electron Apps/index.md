@@ -272,20 +272,22 @@ I'm currently shaking that tree and I hope to have that blog written up soon. He
 
 <a href="4.png"> <img src="4.png"/> </a>
 
+---
+
 <meta name="description" content="Accidentally Graphing DLL Hijacks in Every Electron App            ">
 
 <!-- Facebook Meta Tags -->
-<meta property="og:url" content="https://sec.alexflor.es/posts/2022/01/accidentally-graphing-dll-hijacks-in-every-electron-app/">
+<meta property="og:url" content="https://ctrl.red/posts/2022/01/accidentally-graphing-dll-hijacks-in-every-electron-app/">
 <meta property="og:type" content="website">
 <meta property="og:title" content="Building Your Own Binoculars">
-<meta property="og:description" content="Accidentally Graphing DLL Hijacks in Every Electron App            ">
-<meta property="og:image" content="https://sec.alexflor.es/posts/2022/01/accidentally-graphing-dll-hijacks-in-every-electron-app/4.png">
+<meta property="og:description" content="Accidentally Graphing DLL Hijacks in Every Electron App">
+<meta property="og:image" content="https://ctrl.red/posts/2022/01/accidentally-graphing-dll-hijacks-in-every-electron-app/4.png">
 
 <!-- Twitter Meta Tags -->
 <meta name="twitter:card" content="summary_large_image">
-<meta property="twitter:domain" content="sec.alexflor.es">
-<meta property="twitter:url" content="https://sec.alexflor.es/posts/2022/01/accidentally-graphing-dll-hijacks-in-every-electron-app/">
+<meta property="twitter:domain" content="ctrl.red">
+<meta property="twitter:url" content="https://ctrl.red/posts/2022/01/accidentally-graphing-dll-hijacks-in-every-electron-app/">
 <meta name="twitter:title" content="Building Your Own Binoculars">
-<meta name="twitter:description" content="Accidentally Graphing DLL Hijacks in Every Electron App            ">
-<meta name="twitter:image" content="https://sec.alexflor.es/posts/2022/01/accidentally-graphing-dll-hijacks-in-every-electron-app/4.png">
+<meta name="twitter:description" content="Accidentally Graphing DLL Hijacks in Every Electron App">
+<meta name="twitter:image" content="https://ctrl.red/posts/2022/01/accidentally-graphing-dll-hijacks-in-every-electron-app/4.png">
 
