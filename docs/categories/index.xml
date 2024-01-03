@@ -6,33 +6,28 @@
     <description>Recent content in Categories on [audible]blink</description>
     <generator>Hugo -- gohugo.io</generator>
     <language>en-us</language>
-    <lastBuildDate>Mon, 04 May 2020 15:58:04 -0400</lastBuildDate><atom:link href="https://ctrl.red/categories/index.xml" rel="self" type="application/rss+xml" />
+    <lastBuildDate>Mon, 04 May 2020 15:58:04 -0400</lastBuildDate>
+    <atom:link href="https://ctrl.red/categories/index.xml" rel="self" type="application/rss+xml" />
     <item>
       <title>PassDB</title>
       <link>https://ctrl.red/categories/passdb/</link>
       <pubDate>Mon, 04 May 2020 15:58:04 -0400</pubDate>
-      
       <guid>https://ctrl.red/categories/passdb/</guid>
       <description></description>
     </item>
-    
     <item>
       <title>HowTo</title>
       <link>https://ctrl.red/categories/howto/</link>
       <pubDate>Sun, 30 Dec 2018 17:06:30 -0500</pubDate>
-      
       <guid>https://ctrl.red/categories/howto/</guid>
       <description></description>
     </item>
-    
     <item>
       <title>Boot2Root</title>
       <link>https://ctrl.red/categories/boot2root/</link>
       <pubDate>Fri, 30 Dec 2016 19:16:02 -0400</pubDate>
-      
       <guid>https://ctrl.red/categories/boot2root/</guid>
       <description></description>
     </item>
-    
   </channel>
 </rss>

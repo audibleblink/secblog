@@ -6,58 +6,42 @@
     <description>Recent content in Boot2Root on [audible]blink</description>
     <generator>Hugo -- gohugo.io</generator>
     <language>en-us</language>
-    <lastBuildDate>Fri, 30 Dec 2016 19:16:02 -0400</lastBuildDate><atom:link href="https://ctrl.red/categories/boot2root/index.xml" rel="self" type="application/rss+xml" />
+    <lastBuildDate>Fri, 30 Dec 2016 19:16:02 -0400</lastBuildDate>
+    <atom:link href="https://ctrl.red/categories/boot2root/index.xml" rel="self" type="application/rss+xml" />
     <item>
       <title>B2R: Wallaby Walkthrough</title>
       <link>https://ctrl.red/posts/2016/12/b2r-wallaby-walkthrough/</link>
       <pubDate>Fri, 30 Dec 2016 19:16:02 -0400</pubDate>
-      
       <guid>https://ctrl.red/posts/2016/12/b2r-wallaby-walkthrough/</guid>
       <description>Executive Summary This machine had an unlisted but open webapp path that allowed for remote command execution. After establishing a reverse shell as the limited user www-data, privilege checks showed the user was allowed to modify firewall rules. There was also an IRC server that contained a bot that allowed command execution through the use of the .run command. The command would only obey the user waldo so modification of the firewall allows an attacker to kick and assume the waldo identity.</description>
     </item>
-    
     <item>
       <title>B2R: Stapler</title>
       <link>https://ctrl.red/posts/2016/12/b2r-stapler/</link>
       <pubDate>Sat, 24 Dec 2016 23:45:38 -0500</pubDate>
-      
       <guid>https://ctrl.red/posts/2016/12/b2r-stapler/</guid>
-      <description>Adding the IP address of the VM to the hosts file allows one to cut down on some typing.
-Executive Summary This machine had several services running, some of which revealed employee names and accounts that could later be leveraged to compromise the system. A Wordpress plug-in vulnerability was found and used to extract database credentials, which then led to a non-privileged shell. Once scanned, it was discovered that a script ran every 20 minutes as the root user and that the script was writable to our non-privileged user.</description>
+      <description>Adding the IP address of the VM to the hosts file allows one to cut down on some typing.&#xA;Executive Summary This machine had several services running, some of which revealed employee names and accounts that could later be leveraged to compromise the system. A Wordpress plug-in vulnerability was found and used to extract database credentials, which then led to a non-privileged shell. Once scanned, it was discovered that a script ran every 20 minutes as the root user and that the script was writable to our non-privileged user.</description>
     </item>
-    
     <item>
       <title>B2R: SickOSv1.2</title>
       <link>https://ctrl.red/posts/2016/12/b2r-sickosv1.2/</link>
       <pubDate>Tue, 20 Dec 2016 23:45:50 -0500</pubDate>
-      
       <guid>https://ctrl.red/posts/2016/12/b2r-sickosv1.2/</guid>
       <description>Executive Summary This machine had an unprotected folder which allowed uploading of malicious PHP code which could then be executed remotely. An attacker could then create an unprivileged shell on the victim machine and begin to explore the system for additional vulnerabilities which could lead to a full compromise. During the exploration, an outdated version of chkrootkit was found. By exploiting a known vulnerability in the way chkrootkit parses arguments, an attacker could create a malicious file that would later be run by chkrootkit as a fully privileged user.</description>
     </item>
-    
     <item>
       <title>B2R: IMF Walkthrough</title>
       <link>https://ctrl.red/posts/2016/11/b2r-imf-walkthrough/</link>
       <pubDate>Tue, 01 Nov 2016 19:16:02 -0400</pubDate>
-      
       <guid>https://ctrl.red/posts/2016/11/b2r-imf-walkthrough/</guid>
-      <description>After mapping the network and finding our IP address at 192.168.1.162, we can add it to our /etc/hosts temporarily to make things a little easier for us.
-echo &amp;quot;192.168.1.162 imf&amp;quot; &amp;gt;&amp;gt; /etc/hosts Lets see what kind of machine we&amp;rsquo;re dealing with.
-Ok, so web only. Great. nikto didn&amp;rsquo;t reveal any low-hanging fruit so let&amp;rsquo;s dive into the source.
-Check that out! Our first flag was hidden in http://imf/contact.php. This looks like base64.</description>
+      <description>After mapping the network and finding our IP address at 192.168.1.162, we can add it to our /etc/hosts temporarily to make things a little easier for us.&#xA;echo &amp;#34;192.168.1.162 imf&amp;#34; &amp;gt;&amp;gt; /etc/hosts Lets see what kind of machine we&amp;rsquo;re dealing with.&#xA;Ok, so web only. Great. nikto didn&amp;rsquo;t reveal any low-hanging fruit so let&amp;rsquo;s dive into the source.&#xA;Check that out! Our first flag was hidden in http://imf/contact.php. This looks like base64.</description>
     </item>
-    
     <item>
       <title>B2R: Tr0ll Walkthrough</title>
       <link>https://ctrl.red/posts/2016/10/b2r-tr0ll-walkthrough/</link>
       <pubDate>Thu, 20 Oct 2016 20:57:00 -0400</pubDate>
-      
       <guid>https://ctrl.red/posts/2016/10/b2r-tr0ll-walkthrough/</guid>
-      <description>A couple of weeks ago, work sent me to a security class for an upcoming product. While there, I learned about vulnhub, a repository of intentionally vulnerable virtual machines for anyone to compromise. Since coming back, vulnhub has become my new obsession. Here&amp;rsquo;s a walkthrough of my attempt.
-Note: I struggled a bit more that this writeup lets on. The struggle is ommited for clarity and brevity.
-__
-After finding the VM with an nmap scan, we see a couple of open ports.</description>
+      <description>A couple of weeks ago, work sent me to a security class for an upcoming product. While there, I learned about vulnhub, a repository of intentionally vulnerable virtual machines for anyone to compromise. Since coming back, vulnhub has become my new obsession. Here&amp;rsquo;s a walkthrough of my attempt.&#xA;Note: I struggled a bit more that this writeup lets on. The struggle is ommited for clarity and brevity.&#xA;__&#xA;After finding the VM with an nmap scan, we see a couple of open ports.</description>
     </item>
-    
   </channel>
 </rss>
